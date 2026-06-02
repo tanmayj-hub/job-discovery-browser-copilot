@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import json
+from collections.abc import Iterable
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
 from playwright.sync_api import Locator, Page
@@ -32,6 +34,44 @@ JOB_ROLE_HINTS = (
     "systems",
     "ops",
 )
+JOB_CONTAINER_SELECTORS = (
+    "article",
+    "section",
+    "div",
+    "li",
+)
+TITLE_SELECTORS = ("h1", "h2", "h3", "h4", "a", "strong", "[data-job-title]")
+PAGINATION_LABELS = (
+    "next",
+    "next page",
+    "load more",
+    "show more",
+    "more jobs",
+)
+NOISE_TEXT_HINTS = (
+    "home",
+    "about",
+    "contact",
+    "privacy",
+    "terms",
+    "cookie",
+    "accessibility",
+    "investor",
+    "benefits",
+    "sign in",
+    "log in",
+    "careers",
+)
+NOISE_URL_HINTS = (
+    "/privacy",
+    "/terms",
+    "/contact",
+    "/about",
+    "/benefits",
+    "/signin",
+    "/login",
+)
+RESTRICTED_DOMAINS = ("linkedin.com", "indeed.com")
 
 
 def find_search_input(page: Page) -> Locator | None:
@@ -62,6 +102,449 @@ def search_with_keywords(page: Page, keywords: list[str]) -> str | None:
     return query
 
 
+def _clean_text(value: object) -> str:
+    return " ".join(str(value or "").split())
+
+
+def _strip_html(value: object) -> str:
+    return BeautifulSoup(str(value or ""), "html.parser").get_text(" ", strip=True)
+
+
+def _is_restricted_url(url: str) -> bool:
+    hostname = urlparse(url).netloc.lower()
+    return any(domain in hostname for domain in RESTRICTED_DOMAINS)
+
+
+def _is_noise_candidate(title: str, href: str, context: str) -> bool:
+    normalized_title = title.lower()
+    normalized_href = href.lower()
+    normalized_context = context.lower()
+    if any(hint == normalized_title for hint in NOISE_TEXT_HINTS):
+        return True
+    if any(hint in normalized_href for hint in NOISE_URL_HINTS):
+        return True
+    if "footer" in normalized_context or "navigation" in normalized_context:
+        return True
+    if title.lower().startswith("back to") or title.lower().startswith("learn more"):
+        return True
+    return False
+
+
+def _best_title_from_container(container: BeautifulSoup) -> str:
+    for selector in TITLE_SELECTORS:
+        element = container.select_one(selector)
+        if element is not None:
+            title = _clean_text(element.get_text(" ", strip=True))
+            if title:
+                return title
+    return ""
+
+
+def _best_link_from_container(container: BeautifulSoup, base_url: str) -> str | None:
+    link = container.select_one("a[href]")
+    if link is None:
+        return None
+    href = str(link.get("href") or "").strip()
+    if not href or href.startswith("#") or href.startswith("javascript:"):
+        return None
+    return urljoin(base_url, href)
+
+
+def _build_job_record(
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+    title: str,
+    base_url: str,
+    href: str | None = None,
+    location: str | None = None,
+    description: str | None = None,
+    date_posted: str | None = None,
+    apply_url: str | None = None,
+) -> dict[str, Any] | None:
+    cleaned_title = _clean_text(title)
+    cleaned_description = _clean_text(description)
+    resolved_href = urljoin(base_url, href) if href else base_url
+    if not cleaned_title or _is_restricted_url(resolved_href):
+        return None
+    if _is_noise_candidate(cleaned_title, resolved_href, cleaned_description):
+        return None
+
+    job = {
+        "company_name": company_name,
+        "title": cleaned_title,
+        "location": _clean_text(location) or extract_location(cleaned_description) or None,
+        "job_url": resolved_href,
+        "apply_url": urljoin(base_url, apply_url) if apply_url else None,
+        "source_name": source_name,
+        "source_mode": source_mode,
+        "description": cleaned_description or None,
+        "date_posted": date_posted,
+        "status": "new",
+    }
+    score_result = score_job(job)
+    job["match_score"] = score_result.match_score
+    job["match_reasons"] = score_result.match_reasons
+    job["risk_flags"] = score_result.risk_flags
+    if not _is_relevant_job(job):
+        return None
+    return job
+
+
+def _is_relevant_job(job: dict[str, Any]) -> bool:
+    if int(job.get("match_score", 0)) <= 0:
+        return False
+    reasons = [str(reason).lower() for reason in job.get("match_reasons", [])]
+    return any(
+        reason.startswith("title matches")
+        or reason.startswith("description mentions")
+        or reason.startswith("matched skills")
+        or reason.startswith("location signals")
+        for reason in reasons
+    )
+
+
+def _dedupe_jobs(jobs: Iterable[dict[str, Any]], *, max_cards: int) -> list[dict[str, Any]]:
+    deduped: list[dict[str, Any]] = []
+    seen_urls: set[str] = set()
+    seen_fallbacks: set[tuple[str, str]] = set()
+    for job in jobs:
+        job_url = str(job.get("job_url") or "").strip()
+        title = str(job.get("title") or "").strip()
+        location = str(job.get("location") or "").strip()
+        if job_url:
+            if job_url in seen_urls:
+                continue
+            seen_urls.add(job_url)
+        else:
+            fallback_key = (title, location)
+            if fallback_key in seen_fallbacks:
+                continue
+            seen_fallbacks.add(fallback_key)
+        deduped.append(job)
+        if len(deduped) >= max_cards:
+            break
+    return deduped
+
+
+def _extract_from_job_links(
+    soup: BeautifulSoup,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+    base_url: str,
+) -> list[dict[str, Any]]:
+    jobs: list[dict[str, Any]] = []
+    for link in soup.select("a[href]"):
+        if link.find_parent(["nav", "footer", "header", "aside"]):
+            continue
+        href = str(link.get("href") or "").strip()
+        title = _clean_text(link.get_text(" ", strip=True))
+        context = _clean_text(link.find_parent(["article", "li", "tr", "section", "div"]) or "")
+        if not title or not any(hint in title.lower() for hint in JOB_ROLE_HINTS):
+            continue
+        job = _build_job_record(
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            title=title,
+            base_url=base_url,
+            href=href,
+            description=context,
+        )
+        if job is not None:
+            jobs.append(job)
+    return jobs
+
+
+def _extract_from_list_items(
+    soup: BeautifulSoup,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+    base_url: str,
+) -> list[dict[str, Any]]:
+    jobs: list[dict[str, Any]] = []
+    for item in soup.select("li"):
+        if item.find_parent(["nav", "footer", "header", "aside"]):
+            continue
+        title = _best_title_from_container(item)
+        href = _best_link_from_container(item, base_url)
+        text = _clean_text(item.get_text(" ", strip=True))
+        if not title or not any(hint in text.lower() for hint in JOB_ROLE_HINTS):
+            continue
+        job = _build_job_record(
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            title=title,
+            base_url=base_url,
+            href=href,
+            description=text,
+        )
+        if job is not None:
+            jobs.append(job)
+    return jobs
+
+
+def _extract_from_cards(
+    soup: BeautifulSoup,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+    base_url: str,
+) -> list[dict[str, Any]]:
+    jobs: list[dict[str, Any]] = []
+    for selector in JOB_CONTAINER_SELECTORS:
+        for container in soup.select(selector):
+            if container.find_parent(["nav", "footer", "header", "aside"]):
+                continue
+            title = _best_title_from_container(container)
+            href = _best_link_from_container(container, base_url)
+            text = _clean_text(container.get_text(" ", strip=True))
+            if not title or not any(hint in text.lower() for hint in JOB_ROLE_HINTS):
+                continue
+            job = _build_job_record(
+                company_name=company_name,
+                source_name=source_name,
+                source_mode=source_mode,
+                title=title,
+                base_url=base_url,
+                href=href,
+                description=text,
+            )
+            if job is not None:
+                jobs.append(job)
+    return jobs
+
+
+def _extract_from_tables(
+    soup: BeautifulSoup,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+    base_url: str,
+) -> list[dict[str, Any]]:
+    jobs: list[dict[str, Any]] = []
+    for row in soup.select("table tr"):
+        cells = row.find_all(["td", "th"])
+        if len(cells) < 2:
+            continue
+        title = _clean_text(cells[0].get_text(" ", strip=True))
+        href = None
+        first_link = row.select_one("a[href]")
+        if first_link is not None:
+            href = str(first_link.get("href") or "").strip()
+        location = _clean_text(cells[1].get_text(" ", strip=True))
+        description = _clean_text(row.get_text(" ", strip=True))
+        if not title or not any(hint in description.lower() for hint in JOB_ROLE_HINTS):
+            continue
+        job = _build_job_record(
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            title=title,
+            base_url=base_url,
+            href=href,
+            location=location,
+            description=description,
+        )
+        if job is not None:
+            jobs.append(job)
+    return jobs
+
+
+def _extract_json_ld_jobs(
+    soup: BeautifulSoup,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+    base_url: str,
+) -> list[dict[str, Any]]:
+    jobs: list[dict[str, Any]] = []
+    for script in soup.select("script[type='application/ld+json']"):
+        raw = script.string or script.get_text(" ", strip=True)
+        if not raw:
+            continue
+        try:
+            payload = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        for item in _iter_json_ld_items(payload):
+            if str(item.get("@type") or "").lower() != "jobposting":
+                continue
+            title = _clean_text(item.get("title"))
+            description = _strip_html(item.get("description"))
+            job_url = str(item.get("url") or item.get("directApply") or "").strip() or None
+            date_posted = _clean_text(item.get("datePosted")) or None
+            location = _extract_json_ld_location(item)
+            job = _build_job_record(
+                company_name=company_name,
+                source_name=source_name,
+                source_mode=source_mode,
+                title=title,
+                base_url=base_url,
+                href=job_url,
+                apply_url=job_url,
+                location=location,
+                description=description,
+                date_posted=date_posted,
+            )
+            if job is not None:
+                jobs.append(job)
+    return jobs
+
+
+def _iter_json_ld_items(payload: object) -> list[dict[str, Any]]:
+    if isinstance(payload, dict):
+        if isinstance(payload.get("@graph"), list):
+            return [item for item in payload["@graph"] if isinstance(item, dict)]
+        return [payload]
+    if isinstance(payload, list):
+        return [item for item in payload if isinstance(item, dict)]
+    return []
+
+
+def _extract_json_ld_location(item: dict[str, Any]) -> str | None:
+    locations = item.get("jobLocation") or item.get("applicantLocationRequirements")
+    if isinstance(locations, dict):
+        locations = [locations]
+    if not isinstance(locations, list):
+        return None
+
+    parts: list[str] = []
+    for location in locations:
+        if not isinstance(location, dict):
+            continue
+        address = location.get("address")
+        if isinstance(address, dict):
+            for field in ("addressLocality", "addressRegion", "addressCountry"):
+                value = _clean_text(address.get(field))
+                if value:
+                    parts.append(value)
+        else:
+            value = _clean_text(location.get("name") or location)
+            if value:
+                parts.append(value)
+    return ", ".join(dict.fromkeys(parts)) or None
+
+
+def extract_jobs_from_html(
+    html: str,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+    base_url: str,
+    max_cards: int = 20,
+) -> list[dict[str, Any]]:
+    """Extract relevant job records from one HTML document."""
+
+    soup = BeautifulSoup(html, "html.parser")
+    candidates: list[dict[str, Any]] = []
+    candidates.extend(
+        _extract_json_ld_jobs(
+            soup,
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            base_url=base_url,
+        )
+    )
+    candidates.extend(
+        _extract_from_job_links(
+            soup,
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            base_url=base_url,
+        )
+    )
+    candidates.extend(
+        _extract_from_list_items(
+            soup,
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            base_url=base_url,
+        )
+    )
+    candidates.extend(
+        _extract_from_cards(
+            soup,
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            base_url=base_url,
+        )
+    )
+    candidates.extend(
+        _extract_from_tables(
+            soup,
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            base_url=base_url,
+        )
+    )
+    return _dedupe_jobs(candidates, max_cards=max_cards)
+
+
+def _find_safe_pagination_target(page: Page) -> Locator | None:
+    locator = page.locator("button, a, [role='button']")
+    candidate_count = min(locator.count(), 50)
+    current_host = urlparse(page.url).netloc.lower()
+
+    for index in range(candidate_count):
+        candidate = locator.nth(index)
+        if not candidate.is_visible():
+            continue
+        try:
+            enabled = candidate.is_enabled()
+        except Exception:  # noqa: BLE001
+            enabled = True
+        if not enabled:
+            continue
+
+        text = _clean_text(candidate.inner_text()).lower()
+        if text not in PAGINATION_LABELS:
+            continue
+        if any(blocked in text for blocked in ("sign in", "log in", "linkedin", "indeed")):
+            continue
+        href = str(candidate.get_attribute("href") or "").strip()
+        if href:
+            resolved = urljoin(page.url, href)
+            resolved_host = urlparse(resolved).netloc.lower()
+            if resolved_host and resolved_host != current_host:
+                continue
+            if _is_restricted_url(resolved):
+                continue
+        return candidate
+    return None
+
+
+def _collect_paginated_snapshots(page: Page, *, max_pages: int) -> list[tuple[str, str]]:
+    snapshots: list[tuple[str, str]] = [(page.url, page.content())]
+    for _ in range(max_pages - 1):
+        target = _find_safe_pagination_target(page)
+        if target is None:
+            break
+        before = page.content()
+        target.click()
+        page.wait_for_timeout(1_000)
+        after = page.content()
+        if after == before:
+            break
+        snapshots.append((page.url, after))
+    return snapshots
+
+
 def extract_visible_job_cards(
     page: Page,
     *,
@@ -69,84 +552,26 @@ def extract_visible_job_cards(
     source_name: str,
     source_mode: str,
     max_cards: int = 20,
+    max_pages: int = 2,
 ) -> list[dict[str, Any]]:
-    """Extract visible job-like links from the current page."""
+    """Extract relevant jobs from one page and up to one safe pagination step."""
 
-    base_url = page.url
-    cards = page.evaluate(
-        """
-        ({ maxCards, roleHints }) => {
-          const isVisible = (element) => {
-            const style = window.getComputedStyle(element);
-            const rect = element.getBoundingClientRect();
-            return (
-              style &&
-              style.visibility !== "hidden" &&
-              style.display !== "none" &&
-              rect.width > 0 &&
-              rect.height > 0
-            );
-          };
+    if _is_restricted_url(page.url):
+        return []
 
-          const anchors = Array.from(document.querySelectorAll("a[href]"));
-          const results = [];
-          const seen = new Set();
-
-          for (const anchor of anchors) {
-            if (!isVisible(anchor)) continue;
-            const title = (anchor.innerText || anchor.textContent || "").trim();
-            if (!title || title.length < 4 || title.length > 120) continue;
-            const normalized = title.toLowerCase();
-            if (!roleHints.some((hint) => normalized.includes(hint))) continue;
-
-            const container =
-              anchor.closest("article, li, tr, section, div") || anchor.parentElement || anchor;
-            const description = (container.innerText || "").trim().replace(/\\s+/g, " ");
-            const href = anchor.href || "";
-            const key = `${title}::${href}`;
-            if (seen.has(key)) continue;
-            seen.add(key);
-
-            results.push({
-              title,
-              href,
-              text: description.slice(0, 700),
-            });
-            if (results.length >= maxCards) break;
-          }
-
-          return results;
-        }
-        """,
-        {"maxCards": max_cards, "roleHints": list(JOB_ROLE_HINTS)},
-    )
-
-    extracted_jobs: list[dict[str, Any]] = []
-    for card in cards:
-        description = str(card.get("text", "")).strip()
-        title = str(card.get("title", "")).strip()
-        if not title:
-            continue
-
-        normalized_job = {
-            "company_name": company_name,
-            "title": title,
-            "location": extract_location(description),
-            "job_url": urljoin(base_url, str(card.get("href", "")).strip()) or base_url,
-            "apply_url": None,
-            "source_name": source_name,
-            "source_mode": source_mode,
-            "description": description,
-            "date_posted": None,
-            "status": "new",
-        }
-        score_result = score_job(normalized_job)
-        normalized_job["match_score"] = score_result.match_score
-        normalized_job["match_reasons"] = score_result.match_reasons
-        normalized_job["risk_flags"] = score_result.risk_flags
-        extracted_jobs.append(normalized_job)
-
-    return extracted_jobs
+    candidates: list[dict[str, Any]] = []
+    for url, html in _collect_paginated_snapshots(page, max_pages=max_pages):
+        candidates.extend(
+            extract_jobs_from_html(
+                html,
+                company_name=company_name,
+                source_name=source_name,
+                source_mode=source_mode,
+                base_url=url,
+                max_cards=max_cards,
+            )
+        )
+    return _dedupe_jobs(candidates, max_cards=max_cards)
 
 
 def extract_location(description: str) -> str | None:

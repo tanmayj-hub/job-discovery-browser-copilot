@@ -192,7 +192,7 @@ def collect_company_jobs(
             page,
             company_name=company_name,
             source_name=source_name,
-            source_mode="browser_allowed",
+            source_mode=classification.source_mode,
         )
         late_barriers = detect_browser_barriers(
             page_text=current_text,

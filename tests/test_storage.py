@@ -32,7 +32,7 @@ def _sample_company() -> dict[str, object]:
         "priority": "High",
         "monitoring_hint": "Manual check",
         "status": "Watching",
-        "source_mode": "direct",
+        "source_mode": "api_allowed",
     }
 
 
@@ -44,7 +44,7 @@ def _sample_job(**overrides: object) -> dict[str, object]:
         "job_url": "https://careers.example.com/jobs/1",
         "apply_url": "https://careers.example.com/jobs/1/apply",
         "source_name": "greenhouse",
-        "source_mode": "direct",
+        "source_mode": "api_allowed",
         "description": "AWS, Kubernetes, Terraform, and Linux support role.",
         "date_posted": "2026-06-02",
         "last_seen": "2026-06-02T08:00:00",

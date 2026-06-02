@@ -57,9 +57,21 @@ def get_classifier_api() -> dict[str, Any]:
     """Load source classification helpers after the src path is available."""
 
     from classifier.source_classifier import classify_source
+    from importer.excel_importer import update_company_record_in_yaml
 
     return {
         "classify_source": classify_source,
+        "update_company_record_in_yaml": update_company_record_in_yaml,
+    }
+
+
+def get_dashboard_api() -> dict[str, Any]:
+    """Load dashboard-specific helpers after the src path is available."""
+
+    from dashboard.manual_entry import score_and_save_manual_job
+
+    return {
+        "score_and_save_manual_job": score_and_save_manual_job,
     }
 
 
@@ -450,9 +462,17 @@ def render_missing_urls_tab(connection: Any) -> None:
     storage_api = get_storage_api()
     classifier_api = get_classifier_api()
     missing_companies = storage_api["get_companies_needing_url"](connection)
+    feedback = st.session_state.pop("missing_urls_feedback", None)
 
     render_section_heading("Missing URLs")
     st.caption("Fill in careers URLs and reclassify those companies into the right source mode.")
+
+    if feedback:
+        st.success(
+            f"Saved {feedback['company_name']} with source mode `{feedback['source_mode']}`."
+        )
+        if feedback.get("reasons"):
+            st.info(f"Classification reason: {' | '.join(feedback['reasons'])}")
 
     if not missing_companies:
         st.success("Every tracked company currently has a valid careers URL.")
@@ -505,11 +525,19 @@ def render_missing_urls_tab(connection: Any) -> None:
             source_mode=classification.source_mode,
             source_name=classification.source_name,
         )
-        st.success(
-            f"Saved {selected_company_name} with source mode `{classification.source_mode}`."
+        classifier_api["update_company_record_in_yaml"](
+            COMPANIES_CONFIG_PATH,
+            company_name=selected_company_name,
+            updates={
+                "careers_url": careers_url.strip() or None,
+                "source_mode": classification.source_mode,
+            },
         )
-        if classification.reasons:
-            st.caption(" | ".join(classification.reasons))
+        st.session_state["missing_urls_feedback"] = {
+            "company_name": selected_company_name,
+            "source_mode": classification.source_mode,
+            "reasons": classification.reasons,
+        }
         st.rerun()
 
 
@@ -641,6 +669,96 @@ def render_intervention_queue_tab(connection: Any) -> None:
             st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+
+def render_manual_job_entry_tab(connection: Any) -> None:
+    """Render the manual job entry workflow."""
+
+    storage_api = get_storage_api()
+    dashboard_api = get_dashboard_api()
+    companies = storage_api["get_companies"](connection)
+    feedback = st.session_state.pop("manual_job_feedback", None)
+
+    render_section_heading("Manual Job Entry")
+    st.caption(
+        "Add a job manually for manual-only sources such as LinkedIn, Indeed, "
+        "or difficult career pages."
+    )
+
+    if feedback:
+        st.success(
+            f"Saved manual job with score `{feedback['match_score']}` and "
+            f"status `{feedback['status']}`."
+        )
+        st.write(f"Match reasons: {format_list_value(feedback.get('match_reasons'))}")
+        st.write(f"Risk flags: {format_list_value(feedback.get('risk_flags'))}")
+
+    if not companies:
+        st.warning("Load companies into the watchlist before adding manual jobs.")
+        return
+
+    with st.form("manual_job_entry_form"):
+        company_name = st.selectbox(
+            "Company",
+            options=[company["name"] for company in companies],
+            key="manual_job_company",
+        )
+        title = st.text_input("Job title", placeholder="Cloud Engineer")
+        location = st.text_input("Location", placeholder="Toronto, Ontario, Canada")
+        job_url = st.text_input("Job URL", placeholder="https://example.com/jobs/123")
+        apply_url = st.text_input(
+            "Apply URL (optional)",
+            placeholder="https://example.com/jobs/123/apply",
+        )
+        source_name = st.text_input("Source name", placeholder="LinkedIn")
+        source_mode = st.selectbox(
+            "Source mode",
+            options=[
+                "manual_only",
+                "browser_allowed",
+                "human_in_loop",
+                "api_allowed",
+                "needs_url",
+                "avoid",
+            ],
+            index=0,
+            key="manual_job_source_mode",
+        )
+        description = st.text_area(
+            "Description / notes (optional)",
+            placeholder="Paste the job summary, notes, or keywords here.",
+        )
+        status = st.selectbox(
+            "Status",
+            options=["new", "saved", "rejected", "reviewed", "needs_manual_review"],
+            index=0,
+            key="manual_job_status",
+        )
+        submitted = st.form_submit_button("Score and save manual job", use_container_width=True)
+
+    if not submitted:
+        return
+
+    if not title.strip() or not job_url.strip() or not source_name.strip():
+        st.error("Company, job title, job URL, and source name are required.")
+        return
+
+    saved = dashboard_api["score_and_save_manual_job"](
+        connection,
+        {
+            "company_name": company_name,
+            "title": title,
+            "location": location,
+            "job_url": job_url,
+            "apply_url": apply_url,
+            "source_name": source_name,
+            "source_mode": source_mode,
+            "description": description,
+            "status": status,
+        },
+    )
+    st.session_state["manual_job_feedback"] = saved
+    st.rerun()
 
 
 def get_export_files() -> list[Path]:
@@ -783,6 +901,7 @@ def main() -> None:
         "Saved Jobs",
         "Company Watchlist",
         "Missing URLs",
+        "Manual Job Entry",
         "Intervention Queue",
         "Exports",
     ]
@@ -802,6 +921,8 @@ def main() -> None:
         render_company_watchlist_tab(connection)
     elif selected_section == "Missing URLs":
         render_missing_urls_tab(connection)
+    elif selected_section == "Manual Job Entry":
+        render_manual_job_entry_tab(connection)
     elif selected_section == "Intervention Queue":
         render_intervention_queue_tab(connection)
     else:

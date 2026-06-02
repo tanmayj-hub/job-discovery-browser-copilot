@@ -21,7 +21,6 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: needs_url
-  ats_hint: jobs
 - name: TD
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -67,7 +66,6 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: needs_url
-  ats_hint: jobs
 - name: BMO
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -90,7 +88,6 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: needs_url
-  ats_hint: jobs
 - name: CIBC
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -180,7 +177,6 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: needs_url
-  ats_hint: jobs
 - name: EQ Bank (Equitable Bank)
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -203,7 +199,6 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: needs_url
-  ats_hint: jobs
 - name: Laurentian Bank
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -226,7 +221,6 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: needs_url
-  ats_hint: jobs
 - name: ATB Financial
   sector: Banking & Capital Markets
   category: Bank/Market

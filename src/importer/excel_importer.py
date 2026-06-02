@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
+from importlib import import_module
 from pathlib import Path
 from typing import Literal
 from urllib.parse import urlparse
@@ -12,21 +14,35 @@ import yaml
 from openpyxl import load_workbook
 from pydantic import BaseModel, ConfigDict, Field
 
+try:
+    from classifier.source_classifier import classify_source
+except ModuleNotFoundError:  # pragma: no cover
+    # Support running the importer as `python -m src.importer.excel_importer`.
+    PROJECT_ROOT = Path(__file__).resolve().parents[2]
+    if str(PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(PROJECT_ROOT))
+    classify_source = import_module("src.classifier.source_classifier").classify_source
+
 ALLOWED_CATEGORY = "Bank/Market"
 ALLOWED_SECTOR = "IT Consulting & Systems Integrators"
 DEFAULT_INPUT_PATH = Path("data/input/Rishi canada companies list (1).xlsx")
 DEFAULT_OUTPUT_PATH = Path("config/companies.yaml")
 DEFAULT_SHEET_NAME = "Companies"
-SOURCE_MODE_DIRECT = "direct"
+SOURCE_MODE_API_ALLOWED = "api_allowed"
+SOURCE_MODE_BROWSER_ALLOWED = "browser_allowed"
+SOURCE_MODE_HUMAN_IN_LOOP = "human_in_loop"
+SOURCE_MODE_MANUAL_ONLY = "manual_only"
 SOURCE_MODE_NEEDS_URL = "needs_url"
+SOURCE_MODE_AVOID = "avoid"
 ATS_HINTS = (
-    "workday",
-    "ultipro",
-    "oraclecloud",
-    "jobs",
     "greenhouse",
     "lever",
+    "ashby",
+    "smartrecruiters",
+    "workday",
     "successfactors",
+    "oraclecloud",
+    "ultipro",
 )
 
 
@@ -46,7 +62,14 @@ class CompanyConfig(BaseModel):
     priority: str | None = None
     monitoring_hint: str | None = None
     status: str | None = None
-    source_mode: Literal["direct", "needs_url"]
+    source_mode: Literal[
+        "api_allowed",
+        "browser_allowed",
+        "human_in_loop",
+        "manual_only",
+        "needs_url",
+        "avoid",
+    ]
     ats_hint: str | None = None
 
 
@@ -89,6 +112,30 @@ def extract_ats_hint(website_category: str | None) -> str | None:
         if hint in lower_text:
             return hint
     return None
+
+
+def classify_company_source_mode(
+    *,
+    company_name: str,
+    careers_url: str | None,
+    website_category: str | None,
+    ats_hint: str | None,
+) -> str:
+    """Return the normalized source mode for one company record."""
+
+    if not careers_url:
+        return SOURCE_MODE_NEEDS_URL
+
+    result = classify_source(
+        {
+            "name": company_name,
+            "source_name": website_category or company_name,
+            "website_category": website_category,
+            "careers_url": careers_url,
+            "ats_hint": ats_hint,
+        }
+    )
+    return result.source_mode
 
 
 def should_include_row(
@@ -137,6 +184,7 @@ def load_company_configs(
         careers_url_raw = clean_text(row_data.get("Careers page URL (fill in)"))
         careers_url = careers_url_raw if is_real_url(careers_url_raw) else None
         website_category = clean_text(row_data.get("website category"))
+        ats_hint = extract_ats_hint(website_category)
 
         configs.append(
             CompanyConfig(
@@ -154,8 +202,13 @@ def load_company_configs(
                 priority=clean_text(row_data.get("Priority")),
                 monitoring_hint=clean_text(row_data.get("Monitoring hint")),
                 status=clean_text(row_data.get("Status")),
-                source_mode=SOURCE_MODE_DIRECT if careers_url else SOURCE_MODE_NEEDS_URL,
-                ats_hint=extract_ats_hint(website_category),
+                source_mode=classify_company_source_mode(
+                    company_name=company,
+                    careers_url=careers_url,
+                    website_category=website_category,
+                    ats_hint=ats_hint,
+                ),
+                ats_hint=ats_hint,
             )
         )
 
@@ -168,6 +221,40 @@ def build_companies_payload(configs: list[CompanyConfig]) -> dict[str, list[dict
     return {
         "companies": [config.model_dump(exclude_none=True) for config in configs],
     }
+
+
+def update_company_record_in_yaml(
+    output_path: Path,
+    *,
+    company_name: str,
+    updates: dict[str, object],
+) -> dict[str, object]:
+    """Update one company record in config/companies.yaml and return the new record."""
+
+    payload = yaml.safe_load(output_path.read_text(encoding="utf-8")) or {}
+    companies = payload.get("companies", [])
+    if not isinstance(companies, list):
+        raise ValueError(f"Expected 'companies' to be a list in {output_path}")
+
+    for company in companies:
+        if not isinstance(company, dict):
+            continue
+        if str(company.get("name") or "").strip() != company_name:
+            continue
+
+        for field, value in updates.items():
+            if value is None:
+                company.pop(field, None)
+            else:
+                company[field] = value
+
+        output_path.write_text(
+            yaml.safe_dump(payload, sort_keys=False, allow_unicode=True, default_flow_style=False),
+            encoding="utf-8",
+        )
+        return company
+
+    raise ValueError(f"Company {company_name!r} not found in {output_path}")
 
 
 def write_companies_yaml(configs: list[CompanyConfig], output_path: Path) -> None:

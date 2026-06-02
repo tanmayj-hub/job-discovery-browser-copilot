@@ -1,0 +1,137 @@
+companies:
+- name: RBC
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current website category hint: jobs."
+- name: TD
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current ATS hint: workday."
+- name: Scotiabank
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current website category hint: jobs."
+- name: BMO
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current website category hint: jobs."
+- name: CIBC
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current ATS hint: workday."
+- name: National Bank of Canada
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current website category hint: emplois."
+- name: Desjardins
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current website category hint: workplace.relevance."
+- name: Tangerine
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current website category hint: jobs."
+- name: EQ Bank (Equitable Bank)
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current website category hint: jobs."
+- name: Laurentian Bank
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current website category hint: jobs."
+- name: ATB Financial
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current website category hint: careers."
+- name: Vancity
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current ATS hint: ultipro."
+- name: TMX Group
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Current ATS hint: workday."
+- name: Accenture
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Deloitte
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: PwC
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: EY
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: KPMG
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: IBM Consulting
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: CGI
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Capgemini
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: NTT DATA
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Cognizant
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: HCLTech
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Tata Consultancy Services (TCS)
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Infosys
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Wipro
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Tech Mahindra
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Slalom
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Thoughtworks
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: DXC Technology
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Genpact
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Kyndryl
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL for this consulting target."
+- name: Ateko
+  careers_url: ""
+  confidence: low
+  notes: "Needs verified official careers URL. Prioritize manual verification."
