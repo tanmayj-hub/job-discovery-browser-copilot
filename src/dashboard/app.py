@@ -14,6 +14,7 @@ PACKAGE_DIR = Path(__file__).resolve().parent
 SRC_DIR = PACKAGE_DIR.parent
 BASE_DIR = SRC_DIR.parent
 COMPANIES_CONFIG_PATH = BASE_DIR / "config" / "companies.yaml"
+STARTER_CAREER_URLS_PATH = BASE_DIR / "config" / "starter_career_urls.yaml"
 DATABASE_PATH = BASE_DIR / "data" / "job_discovery.db"
 EXPORTS_DIR = BASE_DIR / "data" / "exports"
 
@@ -62,6 +63,18 @@ def get_classifier_api() -> dict[str, Any]:
     return {
         "classify_source": classify_source,
         "update_company_record_in_yaml": update_company_record_in_yaml,
+    }
+
+
+def get_importer_api() -> dict[str, Any]:
+    """Load importer helpers after the src path is available."""
+
+    from dashboard.starter_urls import build_starter_career_url_map
+    from importer.apply_career_urls import apply_career_url_updates
+
+    return {
+        "apply_career_url_updates": apply_career_url_updates,
+        "build_starter_career_url_map": build_starter_career_url_map,
     }
 
 
@@ -461,8 +474,11 @@ def render_missing_urls_tab(connection: Any) -> None:
 
     storage_api = get_storage_api()
     classifier_api = get_classifier_api()
+    importer_api = get_importer_api()
     missing_companies = storage_api["get_companies_needing_url"](connection)
     feedback = st.session_state.pop("missing_urls_feedback", None)
+    starter_apply_feedback = st.session_state.pop("starter_apply_feedback", None)
+    starter_map = importer_api["build_starter_career_url_map"](STARTER_CAREER_URLS_PATH)
 
     render_section_heading("Missing URLs")
     st.caption("Fill in careers URLs and reclassify those companies into the right source mode.")
@@ -473,10 +489,44 @@ def render_missing_urls_tab(connection: Any) -> None:
         )
         if feedback.get("reasons"):
             st.info(f"Classification reason: {' | '.join(feedback['reasons'])}")
+    if starter_apply_feedback:
+        st.success(
+            "Applied starter career URLs. "
+            f"Updated `{starter_apply_feedback['updated']}` companies."
+        )
+        st.info(
+            " | ".join(
+                [
+                    f"Still missing: {starter_apply_feedback['still_missing']}",
+                    f"API allowed: {starter_apply_feedback['api_allowed']}",
+                    f"Browser allowed: {starter_apply_feedback['browser_allowed']}",
+                    f"Human in loop: {starter_apply_feedback['human_in_loop']}",
+                ]
+            )
+        )
 
     if not missing_companies:
         st.success("Every tracked company currently has a valid careers URL.")
         return
+
+    verified_starter_count = sum(
+        1 for entry in starter_map.values() if str(entry.get("careers_url") or "").strip()
+    )
+    action_col1, action_col2 = st.columns([1.2, 2])
+    with action_col1:
+        if st.button("Apply verified starter URLs", use_container_width=True):
+            summary = importer_api["apply_career_url_updates"](
+                starter_path=STARTER_CAREER_URLS_PATH,
+                companies_path=COMPANIES_CONFIG_PATH,
+            )
+            storage_api["upsert_companies"](connection, load_companies_config())
+            st.session_state["starter_apply_feedback"] = summary
+            st.rerun()
+    with action_col2:
+        st.caption(
+            f"{verified_starter_count} starter URLs are currently verified in "
+            "`config/starter_career_urls.yaml`."
+        )
 
     rows = [
         {
@@ -499,11 +549,21 @@ def render_missing_urls_tab(connection: Any) -> None:
     selected_company = next(
         company for company in missing_companies if company["name"] == selected_company_name
     )
+    starter_entry = starter_map.get(selected_company_name, {})
+
+    if starter_entry:
+        st.markdown('<div class="detail-card">', unsafe_allow_html=True)
+        st.write(f"Starter suggestion: `{starter_entry.get('careers_url') or '-'}`")
+        st.write(f"Confidence: `{starter_entry.get('confidence') or 'low'}`")
+        st.write(f"Notes: {starter_entry.get('notes') or '-'}")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     with st.form(f"company_url_form_{selected_company_name}"):
         careers_url = st.text_input(
             "Careers URL",
-            value=selected_company.get("careers_url") or "",
+            value=selected_company.get("careers_url")
+            or starter_entry.get("careers_url")
+            or "",
             placeholder="https://company.example/careers",
         )
         st.write(f"ATS hint: `{selected_company.get('ats_hint') or '-'}`")

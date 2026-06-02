@@ -77,6 +77,12 @@ Run the daily workflow:
 python -m src.main daily-run
 ```
 
+Apply verified starter career URLs into the main company config:
+
+```powershell
+python -m src.importer.apply_career_urls
+```
+
 Run tests:
 
 ```powershell

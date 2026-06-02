@@ -1,137 +1,137 @@
 companies:
 - name: RBC
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current website category hint: jobs."
+  careers_url: https://jobs.rbc.com/en
+  confidence: high
+  notes: Official RBC jobs site.
 - name: TD
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current ATS hint: workday."
+  careers_url: https://careers.td.com/
+  confidence: high
+  notes: Official TD careers hub. The company record already carries a Workday hint.
 - name: Scotiabank
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current website category hint: jobs."
+  careers_url: https://www.scotiabank.com/careers/en/careers.html
+  confidence: high
+  notes: Official Scotiabank careers page.
 - name: BMO
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current website category hint: jobs."
+  careers_url: https://jobs.bmo.com/global/en/home
+  confidence: high
+  notes: Official BMO jobs portal.
 - name: CIBC
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current ATS hint: workday."
+  careers_url: https://www.cibc.com/en/about-cibc/careers.html
+  confidence: high
+  notes: Official CIBC careers page. The company record already carries a Workday hint.
 - name: National Bank of Canada
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current website category hint: emplois."
+  careers_url: https://emplois.bnc.ca/en_CA/careers
+  confidence: high
+  notes: Official National Bank careers site.
 - name: Desjardins
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current website category hint: workplace.relevance."
+  careers_url: https://www.desjardins.com/en/careers.html
+  confidence: high
+  notes: Official Desjardins careers page.
 - name: Tangerine
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current website category hint: jobs."
+  careers_url: https://www.tangerine.ca/en/careers
+  confidence: high
+  notes: Official Tangerine careers page.
 - name: EQ Bank (Equitable Bank)
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current website category hint: jobs."
+  careers_url: https://www.eqbank.ca/about-us/about/careers
+  confidence: high
+  notes: Official EQ Bank careers page.
 - name: Laurentian Bank
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current website category hint: jobs."
+  careers_url: https://www.laurentianbank.ca/en/about-us/careers
+  confidence: high
+  notes: Official Laurentian Bank careers page.
 - name: ATB Financial
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current website category hint: careers."
+  careers_url: https://careers.atb.com/
+  confidence: high
+  notes: Official ATB careers site.
 - name: Vancity
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current ATS hint: ultipro."
+  careers_url: https://jobs.vancity.com/
+  confidence: high
+  notes: Official Vancity jobs site. The company record already carries an UltiPro hint.
 - name: TMX Group
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Current ATS hint: workday."
+  careers_url: https://www.tmx.com/careers
+  confidence: high
+  notes: Official TMX Group careers page. The company record already carries a Workday hint.
 - name: Accenture
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.accenture.com/ca-en/careers
+  confidence: high
+  notes: Official Accenture Canada careers page.
 - name: Deloitte
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.deloitte.com/ca/en/careers.html
+  confidence: high
+  notes: Official Deloitte Canada careers page.
 - name: PwC
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://jobs-ca.pwc.com/ca/en/home
+  confidence: high
+  notes: Official PwC Canada jobs portal.
 - name: EY
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.ey.com/en_ca/careers
+  confidence: high
+  notes: Official EY Canada careers page.
 - name: KPMG
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://kpmg.com/ca/en/careers.html
+  confidence: high
+  notes: Official KPMG Canada careers page.
 - name: IBM Consulting
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.ibm.com/careers
+  confidence: medium
+  notes: Official IBM careers hub. It is verified, but it is broader than IBM Consulting alone.
 - name: CGI
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.cgi.com/canada/en-ca/careers
+  confidence: high
+  notes: Official CGI Canada careers page.
 - name: Capgemini
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://careers.capgemini.com/?locale=en_US
+  confidence: high
+  notes: Official Capgemini job search portal.
 - name: NTT DATA
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://ca.nttdata.com/en/careers
+  confidence: high
+  notes: Official NTT DATA Canada careers page.
 - name: Cognizant
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://careers.cognizant.com/ca-en/
+  confidence: high
+  notes: Official Cognizant Canada careers page.
 - name: HCLTech
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.hcltech.com/careers
+  confidence: high
+  notes: Official HCLTech careers page.
 - name: Tata Consultancy Services (TCS)
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.tcs.com/careers
+  confidence: high
+  notes: Official TCS global careers page with Canada listed under the Americas.
 - name: Infosys
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://careers.infosys.com/
+  confidence: high
+  notes: Official Infosys careers portal.
 - name: Wipro
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://careers.wipro.com/?locale=en_US
+  confidence: high
+  notes: Official Wipro careers portal.
 - name: Tech Mahindra
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://careers.techmahindra.com/
+  confidence: high
+  notes: Official Tech Mahindra careers portal.
 - name: Slalom
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.slalom.com/us/en/careers
+  confidence: medium
+  notes: Official Slalom careers page. Verified, but not Canada-specific.
 - name: Thoughtworks
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.thoughtworks.com/en-ca/careers
+  confidence: high
+  notes: Official Thoughtworks Canada careers page.
 - name: DXC Technology
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://careers.dxc.com/global/en/home
+  confidence: high
+  notes: Official DXC careers portal.
 - name: Genpact
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.genpact.com/careers/job-search
+  confidence: high
+  notes: Official Genpact job search page.
 - name: Kyndryl
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL for this consulting target."
+  careers_url: https://www.kyndryl.com/us/en/careers
+  confidence: medium
+  notes: Official Kyndryl careers page. Verified, but not Canada-specific.
 - name: Ateko
-  careers_url: ""
-  confidence: low
-  notes: "Needs verified official careers URL. Prioritize manual verification."
+  careers_url: https://ateko.com/en/careers/
+  confidence: high
+  notes: Official Ateko careers page.

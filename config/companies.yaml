@@ -20,7 +20,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://jobs.rbc.com/en
 - name: TD
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -42,8 +43,9 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: human_in_loop
   ats_hint: workday
+  careers_url: https://careers.td.com/
 - name: Scotiabank
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -65,7 +67,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.scotiabank.com/careers/en/careers.html
 - name: BMO
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -87,7 +90,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://jobs.bmo.com/global/en/home
 - name: CIBC
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -109,8 +113,9 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: human_in_loop
   ats_hint: workday
+  careers_url: https://www.cibc.com/en/about-cibc/careers.html
 - name: National Bank of Canada
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -132,7 +137,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://emplois.bnc.ca/en_CA/careers
 - name: Desjardins
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -154,7 +160,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.desjardins.com/en/careers.html
 - name: Tangerine
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -176,7 +183,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.tangerine.ca/en/careers
 - name: EQ Bank (Equitable Bank)
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -198,7 +206,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.eqbank.ca/about-us/about/careers
 - name: Laurentian Bank
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -220,7 +229,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.laurentianbank.ca/en/about-us/careers
 - name: ATB Financial
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -242,7 +252,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://careers.atb.com/
 - name: Vancity
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -264,8 +275,9 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: human_in_loop
   ats_hint: ultipro
+  careers_url: https://jobs.vancity.com/
 - name: TMX Group
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -287,8 +299,9 @@ companies:
   priority: High
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
-  source_mode: needs_url
+  source_mode: human_in_loop
   ats_hint: workday
+  careers_url: https://www.tmx.com/careers
 - name: Accenture
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -309,7 +322,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.accenture.com/ca-en/careers
 - name: Deloitte
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -330,7 +344,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.deloitte.com/ca/en/careers.html
 - name: PwC
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -351,7 +366,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://jobs-ca.pwc.com/ca/en/home
 - name: EY
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -372,7 +388,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.ey.com/en_ca/careers
 - name: KPMG
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -393,7 +410,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://kpmg.com/ca/en/careers.html
 - name: IBM Consulting
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -414,7 +432,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.ibm.com/careers
 - name: CGI
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -435,7 +454,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.cgi.com/canada/en-ca/careers
 - name: Capgemini
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -456,7 +476,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://careers.capgemini.com/?locale=en_US
 - name: NTT DATA
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -477,7 +498,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://ca.nttdata.com/en/careers
 - name: Cognizant
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -498,7 +520,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://careers.cognizant.com/ca-en/
 - name: HCLTech
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -519,7 +542,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.hcltech.com/careers
 - name: Tata Consultancy Services (TCS)
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -540,7 +564,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.tcs.com/careers
 - name: Infosys
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -561,7 +586,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://careers.infosys.com/
 - name: Wipro
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -582,7 +608,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://careers.wipro.com/?locale=en_US
 - name: Tech Mahindra
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -603,7 +630,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://careers.techmahindra.com/
 - name: Slalom
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -624,7 +652,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.slalom.com/us/en/careers
 - name: Thoughtworks
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -645,7 +674,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.thoughtworks.com/en-ca/careers
 - name: DXC Technology
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -666,7 +696,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://careers.dxc.com/global/en/home
 - name: Genpact
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -687,7 +718,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.genpact.com/careers/job-search
 - name: Kyndryl
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -708,7 +740,8 @@ companies:
   priority: High
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://www.kyndryl.com/us/en/careers
 - name: Ateko
   sector: IT Consulting & Systems Integrators
   category: Platform Consulting (ServiceNow/Salesforce/Cloud)
@@ -735,4 +768,5 @@ companies:
   monitoring_hint: Likely dynamic job board; consider structured scrape or change
     monitor
   status: Not started
-  source_mode: needs_url
+  source_mode: browser_allowed
+  careers_url: https://ateko.com/en/careers/
