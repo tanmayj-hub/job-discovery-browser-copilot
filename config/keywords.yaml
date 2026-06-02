@@ -1,0 +1,107 @@
+target_roles:
+  - Cloud Engineer
+  - Cloud Support Engineer
+  - DevOps Engineer
+  - Junior DevOps Engineer
+  - Platform Engineer
+  - Infrastructure Analyst
+  - Systems Administrator
+  - Linux Administrator
+  - Technical Support Engineer
+  - Site Reliability Engineer
+  - Cloud Operations Analyst
+
+target_skills:
+  AWS:
+    - aws
+    - amazon web services
+  Azure:
+    - azure
+    - microsoft azure
+  GCP:
+    - gcp
+    - google cloud
+    - google cloud platform
+  Linux:
+    - linux
+    - ubuntu
+    - red hat
+    - rhel
+  Kubernetes:
+    - kubernetes
+    - k8s
+  Docker:
+    - docker
+    - containers
+    - containerization
+  Terraform:
+    - terraform
+    - infrastructure as code
+    - iac
+  CI/CD:
+    - ci/cd
+    - ci cd
+    - cicd
+    - continuous integration
+    - continuous delivery
+  GitHub Actions:
+    - github actions
+  Jenkins:
+    - jenkins
+  monitoring:
+    - monitoring
+    - observability
+    - alerting
+    - logging
+  CloudWatch:
+    - cloudwatch
+    - amazon cloudwatch
+  networking:
+    - networking
+    - network
+    - tcp/ip
+    - dns
+    - vpn
+  IAM:
+    - iam
+    - identity and access management
+  scripting:
+    - scripting
+    - automation scripts
+    - shell scripting
+  Bash:
+    - bash
+    - shell
+  Python:
+    - python
+  troubleshooting:
+    - troubleshooting
+    - debug
+    - debugging
+    - root cause
+  support:
+    - support
+    - incident support
+    - production support
+    - customer support
+
+locations:
+  - Toronto
+  - Markham
+  - Mississauga
+  - Ontario
+  - Canada
+  - Remote
+  - Hybrid
+
+negative_signals:
+  - Senior
+  - Principal
+  - Staff
+  - Architect with 8+ years
+  - Director
+  - Manager
+  - US only
+  - Requires US citizenship
+  - Requires 8+ years
+  - Requires 10+ years

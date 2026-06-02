@@ -1,0 +1,29 @@
+modes:
+  - api_allowed
+  - browser_allowed
+  - human_in_loop
+  - manual_only
+  - needs_url
+  - avoid
+
+restricted_portals:
+  - linkedin
+  - linkedin.com
+  - indeed
+  - indeed.com
+
+api_allowed_ats:
+  - greenhouse
+  - lever
+  - ashby
+  - smartrecruiters
+
+human_in_loop_ats:
+  - workday
+  - successfactors
+  - oraclecloud
+  - ultipro
+
+barrier_signals:
+  - captcha
+  - login

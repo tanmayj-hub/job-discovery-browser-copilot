@@ -1,0 +1,24 @@
+weights:
+  role_in_title: 45
+  role_in_text: 20
+  skill_per_match: 4
+  skill_cap: 24
+  location_per_match: 4
+  location_cap: 12
+  support_signal_bonus: 8
+  support_signal_cap: 8
+  negative_penalty: 15
+  negative_cap: 45
+
+support_signals:
+  - support
+  - troubleshooting
+  - incident
+  - operations
+  - administrator
+  - admin
+  - on-call
+
+thresholds:
+  strong_match: 75
+  moderate_match: 55

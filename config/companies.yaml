@@ -1,0 +1,744 @@
+companies:
+- name: RBC
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: jobs.
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: jobs
+- name: TD
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: workday
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: workday
+- name: Scotiabank
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: jobs.
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: jobs
+- name: BMO
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: jobs.
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: jobs
+- name: CIBC
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: workday
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: workday
+- name: National Bank of Canada
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: emplois.
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+- name: Desjardins
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: workplace.relevance
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+- name: Tangerine
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: jobs.
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: jobs
+- name: EQ Bank (Equitable Bank)
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: jobs.
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: jobs
+- name: Laurentian Bank
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: jobs.
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: jobs
+- name: ATB Financial
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: careers.
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+- name: Vancity
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: ultipro
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: ultipro
+- name: TMX Group
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: workday
+  canada_hubs_notes: Canada-wide; major hubs Toronto/Montreal/Vancouver/Calgary
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+  status: Watching
+  source_mode: needs_url
+  ats_hint: workday
+- name: Accenture
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Deloitte
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: PwC
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: EY
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: KPMG
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: IBM Consulting
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: CGI
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Capgemini
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: NTT DATA
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Cognizant
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: HCLTech
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Tata Consultancy Services (TCS)
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Infosys
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Wipro
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Tech Mahindra
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Slalom
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Thoughtworks
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: DXC Technology
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Genpact
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Kyndryl
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  canada_hubs_notes: Canada-wide; many client-site roles
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  - SRE
+  - Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  priority: High
+  monitoring_hint: Often Workday/SuccessFactors
+  status: Watching
+  source_mode: needs_url
+- name: Ateko
+  sector: IT Consulting & Systems Integrators
+  category: Platform Consulting (ServiceNow/Salesforce/Cloud)
+  canada_hubs_notes: HQ Montréal; backed by Bell Canada
+  role_families:
+  - Cloud Services
+  - Platform Engineering
+  - DevOps
+  - SRE
+  - Consulting
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - servicenoW
+  - salesforce
+  - aws
+  - azure
+  - gcp
+  - terraform
+  - kubernetes
+  priority: Medium
+  monitoring_hint: Likely dynamic job board; consider structured scrape or change
+    monitor
+  status: Not started
+  source_mode: needs_url

@@ -1,0 +1,8 @@
+beautifulsoup4
+openpyxl
+playwright
+pydantic
+PyYAML
+pytest
+ruff
+streamlit

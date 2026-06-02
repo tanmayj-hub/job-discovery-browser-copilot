@@ -1,0 +1,24 @@
+[project]
+name = "job-discovery-browser-copilot"
+version = "0.1.0"
+description = "Human-in-the-loop job discovery dashboard for Canadian banks and IT consulting companies."
+requires-python = ">=3.11"
+readme = "README.md"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = ["data", "docs/screenshots"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false

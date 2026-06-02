@@ -1,0 +1,17 @@
+app:
+  name: "Job Discovery Browser Co-Pilot"
+  environment: "development"
+
+storage:
+  sqlite_path: "data/job_discovery.db"
+
+browser:
+  headless: false
+  manual_only: true
+
+safety:
+  allow_auto_apply: false
+  allow_restricted_portal_automation: false
+  restricted_sites:
+    - "linkedin.com"
+    - "indeed.com"
