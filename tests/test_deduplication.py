@@ -99,3 +99,53 @@ def test_deduplicate_jobs_uses_external_ats_identity_when_available() -> None:
     assert len(deduped) == 2
     assert deduped[0]["external_job_id"] == "123"
     assert deduped[1]["external_job_id"] == "456"
+
+
+def test_deduplicate_jobs_does_not_merge_same_external_id_across_different_companies() -> None:
+    jobs = [
+        {
+            "company_name": "Example Co",
+            "title": "Cloud Engineer",
+            "location": "Toronto",
+            "external_job_id": "123",
+            "ats_type": "greenhouse",
+            "board_slug": "example",
+        },
+        {
+            "company_name": "Another Co",
+            "title": "Cloud Engineer",
+            "location": "Toronto",
+            "external_job_id": "123",
+            "ats_type": "greenhouse",
+            "board_slug": "example",
+        },
+    ]
+
+    deduped = deduplicate_jobs(jobs)
+
+    assert len(deduped) == 2
+
+
+def test_deduplicate_jobs_does_not_merge_same_external_id_across_different_boards() -> None:
+    jobs = [
+        {
+            "company_name": "Example Co",
+            "title": "DevOps Engineer",
+            "location": "Remote",
+            "external_job_id": "abc123",
+            "ats_type": "lever",
+            "board_slug": "example-one",
+        },
+        {
+            "company_name": "Example Co",
+            "title": "DevOps Engineer",
+            "location": "Remote",
+            "external_job_id": "abc123",
+            "ats_type": "lever",
+            "board_slug": "example-two",
+        },
+    ]
+
+    deduped = deduplicate_jobs(jobs)
+
+    assert len(deduped) == 2

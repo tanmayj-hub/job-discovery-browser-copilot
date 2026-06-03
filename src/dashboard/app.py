@@ -245,8 +245,11 @@ def prepare_jobs_table_rows(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "Score": job.get("match_score", 0),
                 "Status": job.get("status") or "new",
                 "Source Mode": job.get("source_mode") or "-",
-                "First Seen": format_timestamp(job.get("first_seen")),
-                "Last Seen": format_timestamp(job.get("last_seen")),
+                "ATS Type": job.get("ats_type") or "-",
+                "Board Slug": job.get("board_slug") or "-",
+                "External ID": job.get("external_job_id") or "-",
+                "First Seen": format_timestamp(job.get("first_seen_at") or job.get("first_seen")),
+                "Last Seen": format_timestamp(job.get("last_seen_at") or job.get("last_seen")),
                 "Match Reasons": format_list_value(job.get("match_reasons")),
                 "Risk Flags": format_list_value(job.get("risk_flags")),
             }
@@ -312,11 +315,23 @@ def render_job_details(
 
     info_col1, info_col2, info_col3 = st.columns(3)
     with info_col1:
-        st.write(f"First seen: `{format_timestamp(job.get('first_seen'))}`")
+        st.write(
+            f"First seen: `{format_timestamp(job.get('first_seen_at') or job.get('first_seen'))}`"
+        )
     with info_col2:
-        st.write(f"Last seen: `{format_timestamp(job.get('last_seen'))}`")
+        st.write(
+            f"Last seen: `{format_timestamp(job.get('last_seen_at') or job.get('last_seen'))}`"
+        )
     with info_col3:
         st.write(f"Sector: `{job.get('sector') or '-'}`")
+
+    meta_col1, meta_col2, meta_col3 = st.columns(3)
+    with meta_col1:
+        st.write(f"ATS type: `{job.get('ats_type') or '-'}`")
+    with meta_col2:
+        st.write(f"Board slug: `{job.get('board_slug') or '-'}`")
+    with meta_col3:
+        st.write(f"External ID: `{job.get('external_job_id') or '-'}`")
 
     st.write("Match reasons")
     st.write(format_list_value(job.get("match_reasons")))

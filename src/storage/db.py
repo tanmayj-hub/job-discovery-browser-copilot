@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import sqlite3
 from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 JOB_STATUS_VALUES = {
     "new",
@@ -23,6 +27,15 @@ INTERVENTION_STATUS_VALUES = {
     "skipped",
 }
 SCHEMA_PATH = Path(__file__).with_name("schema.sql")
+
+
+@dataclass(slots=True)
+class JobUpsertResult:
+    """Structured upsert outcome for one job row."""
+
+    job_id: int
+    action: str
+    content_changed: bool
 
 
 def _ensure_list_json(value: object) -> str:
@@ -41,11 +54,94 @@ def _serialize_timestamp(value: object) -> str | None:
     return str(value)
 
 
+def _current_timestamp() -> str:
+    return datetime.now(UTC).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def normalize_job_url(url: str | None) -> str | None:
+    """Normalize job URLs for stable identity matching."""
+
+    text = str(url or "").strip()
+    if not text:
+        return None
+    parsed = urlsplit(text)
+    if not parsed.scheme or not parsed.netloc:
+        return text
+    path = parsed.path.rstrip("/") or "/"
+    query_items = parse_qsl(parsed.query, keep_blank_values=True)
+    normalized_query = urlencode(sorted(query_items))
+    return urlunsplit(
+        (
+            parsed.scheme.lower(),
+            parsed.netloc.lower(),
+            path,
+            normalized_query,
+            "",
+        )
+    )
+
+
+def normalize_job_text(value: str | None) -> str:
+    """Normalize job text fields for resilient dedupe matching."""
+
+    return " ".join(str(value or "").strip().lower().split())
+
+
+def build_job_identity(job: Mapping[str, Any]) -> tuple[str, ...]:
+    """Build the strongest available stable identity for a normalized job."""
+
+    company_name = normalize_job_text(job.get("company_name"))
+    ats_type = normalize_job_text(job.get("ats_type"))
+    board_slug = normalize_job_text(job.get("board_slug"))
+    external_job_id = normalize_job_text(job.get("external_job_id"))
+    job_url = normalize_job_url(job.get("job_url"))
+    title = normalize_job_text(job.get("title"))
+    location = normalize_job_text(job.get("location"))
+    source_name = normalize_job_text(job.get("source_name"))
+
+    if company_name and ats_type and board_slug and external_job_id:
+        return ("company_ats_board_external", company_name, ats_type, board_slug, external_job_id)
+    if company_name and ats_type and external_job_id:
+        return ("company_ats_external", company_name, ats_type, external_job_id)
+    if job_url:
+        return ("job_url", job_url)
+    return ("company_title_location_source", company_name, title, location, source_name)
+
+
+def compute_content_hash(job: Mapping[str, Any]) -> str:
+    """Hash stable job content for change detection across repeated runs."""
+
+    payload = {
+        "title": normalize_job_text(job.get("title")),
+        "location": normalize_job_text(job.get("location")),
+        "description": normalize_job_text(job.get("description")),
+        "job_url": normalize_job_url(job.get("job_url")),
+        "external_job_id": normalize_job_text(job.get("external_job_id")),
+        "ats_type": normalize_job_text(job.get("ats_type")),
+        "board_slug": normalize_job_text(job.get("board_slug")),
+    }
+    serialized = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
+
+
+def _table_columns(connection: sqlite3.Connection, table_name: str) -> set[str]:
+    return {
+        row["name"]
+        for row in connection.execute(f"PRAGMA table_info({table_name})").fetchall()
+    }
+
+
 def _row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
     data = dict(row)
     for field in ("role_families", "keywords", "match_reasons", "risk_flags"):
         if field in data and isinstance(data[field], str):
             data[field] = json.loads(data[field])
+    if "first_seen_at" in data and not data.get("first_seen_at"):
+        data["first_seen_at"] = data.get("first_seen")
+    if "last_seen_at" in data and not data.get("last_seen_at"):
+        data["last_seen_at"] = data.get("last_seen")
+    if "last_updated_at" in data and not data.get("last_updated_at"):
+        data["last_updated_at"] = data.get("updated_at")
     return data
 
 
@@ -73,6 +169,15 @@ def initialize_database(
     connection.execute(
         "CREATE INDEX IF NOT EXISTS idx_interventions_status ON interventions(status)",
     )
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_jobs_external_identity
+        ON jobs(company_name, ats_type, board_slug, external_job_id)
+        """,
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_jobs_external_job_id ON jobs(external_job_id)",
+    )
     connection.commit()
     return connection
 
@@ -80,25 +185,19 @@ def initialize_database(
 def migrate_database(connection: sqlite3.Connection) -> None:
     """Apply lightweight schema migrations for existing local databases."""
 
-    columns = {
-        row["name"]
-        for row in connection.execute("PRAGMA table_info(interventions)").fetchall()
-    }
-    if not columns:
-        return
-
-    if "reason" not in columns:
+    intervention_columns = _table_columns(connection, "interventions")
+    if intervention_columns and "reason" not in intervention_columns:
         connection.execute("ALTER TABLE interventions ADD COLUMN reason TEXT")
-    if "source_url" not in columns:
+    if intervention_columns and "source_url" not in intervention_columns:
         connection.execute("ALTER TABLE interventions ADD COLUMN source_url TEXT")
-    if "action_required" not in columns:
+    if intervention_columns and "action_required" not in intervention_columns:
         connection.execute("ALTER TABLE interventions ADD COLUMN action_required TEXT")
-    if "status" not in columns:
+    if intervention_columns and "status" not in intervention_columns:
         connection.execute("ALTER TABLE interventions ADD COLUMN status TEXT")
         connection.execute(
             "UPDATE interventions SET status = 'pending' WHERE status IS NULL OR status = ''",
         )
-    if "detected_at" not in columns:
+    if intervention_columns and "detected_at" not in intervention_columns:
         connection.execute("ALTER TABLE interventions ADD COLUMN detected_at TEXT")
         connection.execute(
             """
@@ -108,14 +207,51 @@ def migrate_database(connection: sqlite3.Connection) -> None:
             """,
         )
 
-    job_columns = {
-        row["name"]
-        for row in connection.execute("PRAGMA table_info(jobs)").fetchall()
-    }
+    job_columns = _table_columns(connection, "jobs")
+    if not job_columns:
+        return
+
     if "risk_flags" not in job_columns:
         connection.execute("ALTER TABLE jobs ADD COLUMN risk_flags TEXT")
         connection.execute(
             "UPDATE jobs SET risk_flags = '[]' WHERE risk_flags IS NULL OR risk_flags = ''",
+        )
+    if "external_job_id" not in job_columns:
+        connection.execute("ALTER TABLE jobs ADD COLUMN external_job_id TEXT")
+    if "ats_type" not in job_columns:
+        connection.execute("ALTER TABLE jobs ADD COLUMN ats_type TEXT")
+    if "board_slug" not in job_columns:
+        connection.execute("ALTER TABLE jobs ADD COLUMN board_slug TEXT")
+    if "raw_payload_json" not in job_columns:
+        connection.execute("ALTER TABLE jobs ADD COLUMN raw_payload_json TEXT")
+    if "content_hash" not in job_columns:
+        connection.execute("ALTER TABLE jobs ADD COLUMN content_hash TEXT")
+    if "first_seen_at" not in job_columns:
+        connection.execute("ALTER TABLE jobs ADD COLUMN first_seen_at TEXT")
+        connection.execute(
+            """
+            UPDATE jobs
+            SET first_seen_at = COALESCE(first_seen, created_at, CURRENT_TIMESTAMP)
+            WHERE first_seen_at IS NULL OR first_seen_at = ''
+            """,
+        )
+    if "last_seen_at" not in job_columns:
+        connection.execute("ALTER TABLE jobs ADD COLUMN last_seen_at TEXT")
+        connection.execute(
+            """
+            UPDATE jobs
+            SET last_seen_at = COALESCE(last_seen, updated_at, created_at, CURRENT_TIMESTAMP)
+            WHERE last_seen_at IS NULL OR last_seen_at = ''
+            """,
+        )
+    if "last_updated_at" not in job_columns:
+        connection.execute("ALTER TABLE jobs ADD COLUMN last_updated_at TEXT")
+        connection.execute(
+            """
+            UPDATE jobs
+            SET last_updated_at = COALESCE(updated_at, last_seen, created_at, CURRENT_TIMESTAMP)
+            WHERE last_updated_at IS NULL OR last_updated_at = ''
+            """,
         )
 
 
@@ -223,42 +359,169 @@ def upsert_companies(
     return count
 
 
-def _find_existing_job_id(connection: sqlite3.Connection, job: Mapping[str, Any]) -> int | None:
-    if job.get("job_url"):
-        row = connection.execute(
-            "SELECT id FROM jobs WHERE job_url = ?",
-            (job["job_url"],),
-        ).fetchone()
-        if row:
-            return int(row["id"])
+def _prepare_job_for_storage(
+    job: Mapping[str, Any],
+    *,
+    now: str | None = None,
+) -> dict[str, Any]:
+    timestamp = now or _current_timestamp()
+    first_seen_at = (
+        _serialize_timestamp(job.get("first_seen_at") or job.get("first_seen")) or timestamp
+    )
+    last_seen_at = (
+        _serialize_timestamp(job.get("last_seen_at") or job.get("last_seen")) or timestamp
+    )
 
-    row = connection.execute(
-        """
-        SELECT id
-        FROM jobs
-        WHERE company_name = ?
-          AND title = ?
-          AND COALESCE(location, '') = COALESCE(?, '')
-          AND COALESCE(source_name, '') = COALESCE(?, '')
-        """,
-        (
-            job["company_name"],
-            job["title"],
-            job.get("location"),
-            job.get("source_name"),
+    prepared = {
+        "company_name": str(job["company_name"]).strip(),
+        "title": str(job["title"]).strip(),
+        "location": str(job.get("location") or "").strip() or None,
+        "job_url": normalize_job_url(job.get("job_url")),
+        "apply_url": normalize_job_url(job.get("apply_url")),
+        "source_name": str(job.get("source_name") or "").strip() or None,
+        "source_mode": str(job["source_mode"]).strip(),
+        "description": str(job.get("description") or "").strip() or None,
+        "date_posted": _serialize_timestamp(job.get("date_posted")),
+        "external_job_id": str(job.get("external_job_id") or "").strip() or None,
+        "ats_type": str(job.get("ats_type") or "").strip() or None,
+        "board_slug": str(job.get("board_slug") or "").strip() or None,
+        "raw_payload_json": str(job.get("raw_payload_json") or "").strip() or None,
+        "first_seen_at": first_seen_at,
+        "last_seen_at": last_seen_at,
+        "last_updated_at": (
+            _serialize_timestamp(job.get("last_updated_at") or job.get("updated_at"))
+            or last_seen_at
         ),
-    ).fetchone()
-    return None if row is None else int(row["id"])
+        "first_seen": _serialize_timestamp(job.get("first_seen")) or first_seen_at,
+        "last_seen": _serialize_timestamp(job.get("last_seen")) or last_seen_at,
+        "match_score": int(job.get("match_score", 0)),
+        "match_reasons": job.get("match_reasons"),
+        "risk_flags": job.get("risk_flags"),
+        "status": str(job.get("status") or "new").strip(),
+    }
+    prepared["content_hash"] = compute_content_hash(prepared)
+    return prepared
 
 
-def upsert_job(connection: sqlite3.Connection, job: Mapping[str, Any]) -> int:
-    """Insert a new job or update the existing matching record."""
+def _build_identity_candidates(job: Mapping[str, Any]) -> list[tuple[str, ...]]:
+    strongest = build_job_identity(job)
+    candidates = [strongest]
+    normalized_url = normalize_job_url(job.get("job_url"))
+    company_name = normalize_job_text(job.get("company_name"))
+    title = normalize_job_text(job.get("title"))
+    location = normalize_job_text(job.get("location"))
+    source_name = normalize_job_text(job.get("source_name"))
 
-    reasons_json = _ensure_list_json(job.get("match_reasons"))
-    risk_flags_json = _ensure_list_json(job.get("risk_flags"))
-    existing_job_id = _find_existing_job_id(connection, job)
+    if strongest[0] != "job_url" and normalized_url:
+        candidates.append(("job_url", normalized_url))
+    fallback = ("company_title_location_source", company_name, title, location, source_name)
+    if strongest[0] != "company_title_location_source":
+        candidates.append(fallback)
 
-    if existing_job_id is None:
+    seen: set[tuple[str, ...]] = set()
+    deduped: list[tuple[str, ...]] = []
+    for candidate in candidates:
+        if candidate not in seen:
+            deduped.append(candidate)
+            seen.add(candidate)
+    return deduped
+
+
+def _find_existing_job_row(
+    connection: sqlite3.Connection,
+    job: Mapping[str, Any],
+) -> sqlite3.Row | None:
+    for identity in _build_identity_candidates(job):
+        kind = identity[0]
+        if kind == "company_ats_board_external":
+            row = connection.execute(
+                """
+                SELECT *
+                FROM jobs
+                WHERE lower(trim(company_name)) = ?
+                  AND lower(trim(COALESCE(ats_type, ''))) = ?
+                  AND lower(trim(COALESCE(board_slug, ''))) = ?
+                  AND lower(trim(COALESCE(external_job_id, ''))) = ?
+                """,
+                identity[1:],
+            ).fetchone()
+        elif kind == "company_ats_external":
+            row = connection.execute(
+                """
+                SELECT *
+                FROM jobs
+                WHERE lower(trim(company_name)) = ?
+                  AND lower(trim(COALESCE(ats_type, ''))) = ?
+                  AND lower(trim(COALESCE(external_job_id, ''))) = ?
+                """,
+                identity[1:],
+            ).fetchone()
+        elif kind == "job_url":
+            row = connection.execute(
+                "SELECT * FROM jobs WHERE job_url = ?",
+                (identity[1],),
+            ).fetchone()
+        else:
+            row = connection.execute(
+                """
+                SELECT *
+                FROM jobs
+                WHERE lower(trim(company_name)) = ?
+                  AND lower(trim(title)) = ?
+                  AND lower(trim(COALESCE(location, ''))) = ?
+                  AND lower(trim(COALESCE(source_name, ''))) = ?
+                """,
+                identity[1:],
+            ).fetchone()
+
+        if row is not None:
+            return row
+    return None
+
+
+def _job_fields_changed(
+    existing: Mapping[str, Any],
+    prepared: Mapping[str, Any],
+    *,
+    reasons_json: str,
+    risk_flags_json: str,
+) -> bool:
+    comparisons = {
+        "title": prepared["title"],
+        "location": prepared["location"],
+        "job_url": prepared["job_url"],
+        "apply_url": prepared["apply_url"],
+        "source_name": prepared["source_name"],
+        "source_mode": prepared["source_mode"],
+        "description": prepared["description"],
+        "date_posted": prepared["date_posted"],
+        "external_job_id": prepared["external_job_id"],
+        "ats_type": prepared["ats_type"],
+        "board_slug": prepared["board_slug"],
+        "raw_payload_json": prepared["raw_payload_json"],
+        "content_hash": prepared["content_hash"],
+        "match_score": prepared["match_score"],
+        "status": prepared["status"],
+    }
+    for field, expected in comparisons.items():
+        if existing.get(field) != expected:
+            return True
+    if _ensure_list_json(existing.get("match_reasons")) != reasons_json:
+        return True
+    if _ensure_list_json(existing.get("risk_flags")) != risk_flags_json:
+        return True
+    return False
+
+
+def upsert_job_record(connection: sqlite3.Connection, job: Mapping[str, Any]) -> JobUpsertResult:
+    """Insert or update one job and return a structured change summary."""
+
+    prepared = _prepare_job_for_storage(job)
+    reasons_json = _ensure_list_json(prepared.get("match_reasons"))
+    risk_flags_json = _ensure_list_json(prepared.get("risk_flags"))
+    existing_row = _find_existing_job_row(connection, prepared)
+
+    if existing_row is None:
         cursor = connection.execute(
             """
             INSERT INTO jobs (
@@ -271,8 +534,16 @@ def upsert_job(connection: sqlite3.Connection, job: Mapping[str, Any]) -> int:
                 source_mode,
                 description,
                 date_posted,
+                external_job_id,
+                ats_type,
+                board_slug,
+                raw_payload_json,
+                content_hash,
                 first_seen,
                 last_seen,
+                first_seen_at,
+                last_seen_at,
+                last_updated_at,
                 match_score,
                 match_reasons,
                 risk_flags,
@@ -280,32 +551,71 @@ def upsert_job(connection: sqlite3.Connection, job: Mapping[str, Any]) -> int:
                 updated_at
             )
             VALUES (
-                ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                COALESCE(?, CURRENT_TIMESTAMP),
-                COALESCE(?, CURRENT_TIMESTAMP),
-                ?, ?, ?, ?, CURRENT_TIMESTAMP
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP
             )
             """,
             (
-                job["company_name"],
-                job["title"],
-                job.get("location"),
-                job.get("job_url"),
-                job.get("apply_url"),
-                job.get("source_name"),
-                job["source_mode"],
-                job.get("description"),
-                _serialize_timestamp(job.get("date_posted")),
-                _serialize_timestamp(job.get("first_seen")),
-                _serialize_timestamp(job.get("last_seen")),
-                int(job.get("match_score", 0)),
+                prepared["company_name"],
+                prepared["title"],
+                prepared["location"],
+                prepared["job_url"],
+                prepared["apply_url"],
+                prepared["source_name"],
+                prepared["source_mode"],
+                prepared["description"],
+                prepared["date_posted"],
+                prepared["external_job_id"],
+                prepared["ats_type"],
+                prepared["board_slug"],
+                prepared["raw_payload_json"],
+                prepared["content_hash"],
+                prepared["first_seen"],
+                prepared["last_seen"],
+                prepared["first_seen_at"],
+                prepared["last_seen_at"],
+                prepared["last_updated_at"],
+                prepared["match_score"],
                 reasons_json,
                 risk_flags_json,
-                job.get("status", "new"),
+                prepared["status"],
             ),
         )
         connection.commit()
-        return int(cursor.lastrowid)
+        return JobUpsertResult(
+            job_id=int(cursor.lastrowid),
+            action="inserted",
+            content_changed=True,
+        )
+
+    existing = _row_to_dict(existing_row)
+    changed = _job_fields_changed(
+        existing,
+        prepared,
+        reasons_json=reasons_json,
+        risk_flags_json=risk_flags_json,
+    )
+
+    if not changed:
+        connection.execute(
+            """
+            UPDATE jobs
+            SET last_seen = ?,
+                last_seen_at = ?
+            WHERE id = ?
+            """,
+            (
+                prepared["last_seen"],
+                prepared["last_seen_at"],
+                int(existing_row["id"]),
+            ),
+        )
+        connection.commit()
+        return JobUpsertResult(
+            job_id=int(existing_row["id"]),
+            action="unchanged",
+            content_changed=False,
+        )
 
     connection.execute(
         """
@@ -319,7 +629,14 @@ def upsert_job(connection: sqlite3.Connection, job: Mapping[str, Any]) -> int:
             source_mode = ?,
             description = ?,
             date_posted = ?,
-            last_seen = COALESCE(?, CURRENT_TIMESTAMP),
+            external_job_id = ?,
+            ats_type = ?,
+            board_slug = ?,
+            raw_payload_json = ?,
+            content_hash = ?,
+            last_seen = ?,
+            last_seen_at = ?,
+            last_updated_at = ?,
             match_score = ?,
             match_reasons = ?,
             risk_flags = ?,
@@ -328,25 +645,42 @@ def upsert_job(connection: sqlite3.Connection, job: Mapping[str, Any]) -> int:
         WHERE id = ?
         """,
         (
-            job["company_name"],
-            job["title"],
-            job.get("location"),
-            job.get("job_url"),
-            job.get("apply_url"),
-            job.get("source_name"),
-            job["source_mode"],
-            job.get("description"),
-            _serialize_timestamp(job.get("date_posted")),
-            _serialize_timestamp(job.get("last_seen")),
-            int(job.get("match_score", 0)),
+            prepared["company_name"],
+            prepared["title"],
+            prepared["location"],
+            prepared["job_url"],
+            prepared["apply_url"],
+            prepared["source_name"],
+            prepared["source_mode"],
+            prepared["description"],
+            prepared["date_posted"],
+            prepared["external_job_id"],
+            prepared["ats_type"],
+            prepared["board_slug"],
+            prepared["raw_payload_json"],
+            prepared["content_hash"],
+            prepared["last_seen"],
+            prepared["last_seen_at"],
+            prepared["last_seen_at"],
+            prepared["match_score"],
             reasons_json,
             risk_flags_json,
-            job.get("status", "new"),
-            existing_job_id,
+            prepared["status"],
+            int(existing_row["id"]),
         ),
     )
     connection.commit()
-    return existing_job_id
+    return JobUpsertResult(
+        job_id=int(existing_row["id"]),
+        action="updated",
+        content_changed=True,
+    )
+
+
+def upsert_job(connection: sqlite3.Connection, job: Mapping[str, Any]) -> int:
+    """Insert a new job or update the existing matching record."""
+
+    return upsert_job_record(connection, job).job_id
 
 
 def upsert_jobs(connection: sqlite3.Connection, jobs: Iterable[Mapping[str, Any]]) -> list[int]:
@@ -359,7 +693,12 @@ def get_new_jobs(connection: sqlite3.Connection) -> list[dict[str, Any]]:
     """Return jobs still marked as new."""
 
     rows = connection.execute(
-        "SELECT * FROM jobs WHERE status = 'new' ORDER BY match_score DESC, created_at DESC",
+        """
+        SELECT *
+        FROM jobs
+        WHERE status = 'new'
+        ORDER BY match_score DESC, COALESCE(last_seen_at, last_seen) DESC, created_at DESC
+        """,
     ).fetchall()
     return [_row_to_dict(row) for row in rows]
 
@@ -386,7 +725,10 @@ def get_jobs(
     if status is not None:
         query += " WHERE jobs.status = ?"
         params = (status,)
-    query += " ORDER BY jobs.match_score DESC, jobs.last_seen DESC, jobs.id DESC"
+    query += (
+        " ORDER BY jobs.match_score DESC, "
+        "COALESCE(jobs.last_seen_at, jobs.last_seen) DESC, jobs.id DESC"
+    )
     rows = connection.execute(query, params).fetchall()
     return [_row_to_dict(row) for row in rows]
 
@@ -806,7 +1148,7 @@ def export_jobs(
     if status is not None:
         query += " WHERE status = ?"
         params = (status,)
-    query += " ORDER BY match_score DESC, last_seen DESC, id DESC"
+    query += " ORDER BY match_score DESC, COALESCE(last_seen_at, last_seen) DESC, id DESC"
 
     rows = [_row_to_dict(row) for row in connection.execute(query, params).fetchall()]
 
@@ -826,8 +1168,15 @@ def export_jobs(
                 "source_mode",
                 "description",
                 "date_posted",
+                "external_job_id",
+                "ats_type",
+                "board_slug",
+                "content_hash",
                 "first_seen",
                 "last_seen",
+                "first_seen_at",
+                "last_seen_at",
+                "last_updated_at",
                 "match_score",
                 "match_reasons",
                 "risk_flags",
@@ -841,6 +1190,7 @@ def export_jobs(
             for row in rows:
                 serializable_row = row.copy()
                 serializable_row["match_reasons"] = json.dumps(row.get("match_reasons", []))
+                serializable_row["risk_flags"] = json.dumps(row.get("risk_flags", []))
                 writer.writerow(serializable_row)
 
     return rows

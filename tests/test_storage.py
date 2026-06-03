@@ -5,6 +5,8 @@ from pathlib import Path
 
 from storage.db import (
     append_intervention_notes,
+    build_job_identity,
+    compute_content_hash,
     create_intervention,
     get_intervention_queue,
     get_interventions,
@@ -15,6 +17,7 @@ from storage.db import (
     update_job_status,
     upsert_companies,
     upsert_job,
+    upsert_job_record,
 )
 
 
@@ -70,6 +73,118 @@ def test_initialize_database_creates_tables(tmp_path: Path) -> None:
     assert {"companies", "sources", "jobs", "daily_runs", "interventions"}.issubset(tables)
 
 
+def test_initialize_database_adds_new_job_metadata_columns(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    columns = {
+        row["name"] for row in connection.execute("PRAGMA table_info(jobs)").fetchall()
+    }
+
+    assert {
+        "external_job_id",
+        "ats_type",
+        "board_slug",
+        "raw_payload_json",
+        "content_hash",
+        "first_seen_at",
+        "last_seen_at",
+        "last_updated_at",
+    }.issubset(columns)
+
+
+def test_initialize_database_migrates_old_jobs_table(tmp_path: Path) -> None:
+    db_path = tmp_path / "legacy_job_discovery.db"
+    connection = sqlite3.connect(db_path)
+    connection.execute("PRAGMA foreign_keys = ON")
+    connection.executescript(
+        """
+        CREATE TABLE companies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            sector TEXT NOT NULL,
+            category TEXT NOT NULL,
+            careers_url TEXT,
+            website_category TEXT,
+            ats_hint TEXT,
+            canada_hubs_notes TEXT,
+            role_families TEXT NOT NULL DEFAULT '[]',
+            keywords TEXT NOT NULL DEFAULT '[]',
+            priority TEXT,
+            monitoring_hint TEXT,
+            status TEXT,
+            source_mode TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE sources (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company_name TEXT NOT NULL,
+            source_name TEXT NOT NULL,
+            source_mode TEXT NOT NULL,
+            careers_url TEXT,
+            website_category TEXT,
+            ats_hint TEXT,
+            is_active INTEGER NOT NULL DEFAULT 1,
+            last_checked TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(company_name, source_name)
+        );
+        CREATE TABLE jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company_name TEXT NOT NULL,
+            title TEXT NOT NULL,
+            location TEXT,
+            job_url TEXT,
+            apply_url TEXT,
+            source_name TEXT,
+            source_mode TEXT NOT NULL,
+            description TEXT,
+            date_posted TEXT,
+            first_seen TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_seen TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            match_score INTEGER NOT NULL DEFAULT 0,
+            match_reasons TEXT NOT NULL DEFAULT '[]',
+            status TEXT NOT NULL DEFAULT 'new',
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE daily_runs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_name TEXT NOT NULL,
+            run_date TEXT NOT NULL DEFAULT CURRENT_DATE,
+            started_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            completed_at TEXT,
+            status TEXT NOT NULL DEFAULT 'running',
+            jobs_seen INTEGER NOT NULL DEFAULT 0,
+            jobs_new INTEGER NOT NULL DEFAULT 0,
+            notes TEXT
+        );
+        CREATE TABLE interventions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_id INTEGER,
+            company_name TEXT,
+            intervention_type TEXT NOT NULL,
+            notes TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            resolved_at TEXT
+        );
+        """
+    )
+    connection.commit()
+    connection.close()
+
+    migrated = initialize_database(db_path)
+    columns = {
+        row["name"] for row in migrated.execute("PRAGMA table_info(jobs)").fetchall()
+    }
+
+    assert "external_job_id" in columns
+    assert "content_hash" in columns
+    assert "first_seen_at" in columns
+    assert "last_seen_at" in columns
+    assert "last_updated_at" in columns
+
+
 def test_insert_job(tmp_path: Path) -> None:
     connection = initialize_database(tmp_path / "job_discovery.db")
     upsert_companies(connection, [_sample_company()])
@@ -80,6 +195,11 @@ def test_insert_job(tmp_path: Path) -> None:
     assert stored_job is not None
     assert stored_job["title"] == "Cloud Engineer"
     assert stored_job["match_score"] == 88
+    assert stored_job["ats_type"] is None
+    assert stored_job["content_hash"] == compute_content_hash(_sample_job())
+    assert stored_job["first_seen_at"] is not None
+    assert stored_job["last_seen_at"] == "2026-06-02T08:00:00"
+    assert stored_job["last_updated_at"] == "2026-06-02T08:00:00"
     assert stored_job["match_reasons"] == [
         "title matches target role",
         "matched skills: AWS, Kubernetes",
@@ -112,6 +232,124 @@ def test_duplicate_job_update_reuses_existing_row(tmp_path: Path) -> None:
     assert stored_job["match_score"] == 92
     assert stored_job["match_reasons"] == ["updated score"]
     assert stored_job["last_seen"] == "2026-06-03T09:30:00"
+    assert stored_job["last_seen_at"] == "2026-06-03T09:30:00"
+    assert stored_job["last_updated_at"] == "2026-06-03T09:30:00"
+
+
+def test_same_unchanged_job_only_updates_last_seen(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    first_result = upsert_job_record(
+        connection,
+        _sample_job(
+            first_seen_at="2026-06-02T08:00:00",
+            last_seen_at="2026-06-02T08:00:00",
+        ),
+    )
+    second_result = upsert_job_record(
+        connection,
+        _sample_job(
+            first_seen_at="2026-06-02T08:00:00",
+            last_seen_at="2026-06-03T10:15:00",
+        ),
+    )
+
+    stored_job = get_job_by_id(connection, first_result.job_id)
+
+    assert second_result.job_id == first_result.job_id
+    assert second_result.action == "unchanged"
+    assert stored_job is not None
+    assert stored_job["first_seen_at"] == "2026-06-02T08:00:00"
+    assert stored_job["last_seen_at"] == "2026-06-03T10:15:00"
+    assert stored_job["last_updated_at"] == "2026-06-02T08:00:00"
+
+
+def test_greenhouse_external_identity_prevents_duplicate_rows(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    first_id = upsert_job(
+        connection,
+        _sample_job(
+            job_url="https://boards.greenhouse.io/example/jobs/12345",
+            source_name="greenhouse",
+            external_job_id="12345",
+            ats_type="greenhouse",
+            board_slug="example",
+        ),
+    )
+    second_id = upsert_job(
+        connection,
+        _sample_job(
+            job_url="https://boards.greenhouse.io/example/jobs/12345?gh_jid=12345",
+            source_name="greenhouse",
+            external_job_id="12345",
+            ats_type="greenhouse",
+            board_slug="example",
+            description="Updated description",
+            last_seen_at="2026-06-04T09:00:00",
+        ),
+    )
+
+    count = connection.execute("SELECT COUNT(*) AS count FROM jobs").fetchone()["count"]
+    stored_job = get_job_by_id(connection, first_id)
+
+    assert second_id == first_id
+    assert count == 1
+    assert stored_job is not None
+    assert stored_job["external_job_id"] == "12345"
+    assert stored_job["board_slug"] == "example"
+    assert stored_job["description"] == "Updated description"
+
+
+def test_lever_external_identity_prevents_duplicate_rows(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    first_id = upsert_job(
+        connection,
+        _sample_job(
+            job_url="https://jobs.lever.co/example/abc123",
+            source_name="lever",
+            external_job_id="abc123",
+            ats_type="lever",
+            board_slug="example",
+        ),
+    )
+    second_id = upsert_job(
+        connection,
+        _sample_job(
+            job_url="https://jobs.lever.co/example/abc123/",
+            source_name="lever",
+            external_job_id="abc123",
+            ats_type="lever",
+            board_slug="example",
+        ),
+    )
+
+    count = connection.execute("SELECT COUNT(*) AS count FROM jobs").fetchone()["count"]
+
+    assert second_id == first_id
+    assert count == 1
+
+
+def test_build_job_identity_prioritizes_company_ats_board_and_external_id() -> None:
+    identity = build_job_identity(
+        _sample_job(
+            external_job_id="12345",
+            ats_type="greenhouse",
+            board_slug="example",
+        )
+    )
+
+    assert identity == (
+        "company_ats_board_external",
+        "example co",
+        "greenhouse",
+        "example",
+        "12345",
+    )
 
 
 def test_update_status(tmp_path: Path) -> None:

@@ -15,12 +15,13 @@ from classifier.source_classifier import classify_source
 from collectors.router import collect_companies_routed
 from processing.score import score_job
 from storage.db import (
+    build_job_identity,
     get_companies,
     get_intervention_queue,
     get_job_by_id,
     initialize_database,
     upsert_companies,
-    upsert_job,
+    upsert_job_record,
 )
 
 CollectorFunc = Callable[[Any, list[dict[str, Any]]], list[Any]]
@@ -49,6 +50,10 @@ class DailyRunResult:
     jobs_discovered: int
     jobs_scored: int
     jobs_relevant: int
+    jobs_inserted: int
+    jobs_updated: int
+    jobs_unchanged: int
+    duplicates_skipped: int
     jobs_saved: list[dict[str, Any]]
     location_scope_used: bool
     keyword_scope_used: bool
@@ -166,49 +171,43 @@ def deduplicate_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Deduplicate normalized jobs in memory before persistence."""
 
     deduped: list[dict[str, Any]] = []
-    seen_external: set[tuple[str, str, str]] = set()
-    seen: set[tuple[str, str, str, str]] = set()
+    seen: set[tuple[str, ...]] = set()
     for job in jobs:
-        external_job_id = str(job.get("external_job_id") or "").strip()
-        ats_type = str(job.get("ats_type") or "").strip()
-        board_slug = str(job.get("board_slug") or "").strip()
-        if external_job_id and (ats_type or board_slug):
-            external_key = (ats_type, board_slug, external_job_id)
-            if external_key in seen_external:
-                continue
-            seen_external.add(external_key)
-            deduped.append(job)
+        identity = build_job_identity(job)
+        if identity in seen:
             continue
-        key = (
-            job.get("job_url") or "",
-            job.get("company_name") or "",
-            job.get("title") or "",
-            job.get("location") or "",
-        )
-        if key in seen:
-            continue
-        seen.add(key)
+        seen.add(identity)
         deduped.append(job)
     return deduped
 
 
-def save_jobs(connection, jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Persist normalized jobs and return the saved records."""
+def save_jobs(connection, jobs: list[dict[str, Any]]) -> dict[str, Any]:
+    """Persist normalized jobs and return saved rows plus change counts."""
 
+    jobs_inserted = 0
+    jobs_updated = 0
+    jobs_unchanged = 0
     saved_jobs: list[dict[str, Any]] = []
     for job in jobs:
-        existing = None
-        if job.get("job_url"):
-            existing = connection.execute(
-                "SELECT id FROM jobs WHERE job_url = ?",
-                (job["job_url"],),
-            ).fetchone()
-        job_id = upsert_job(connection, job)
+        upsert_result = upsert_job_record(connection, job)
+        if upsert_result.action == "inserted":
+            jobs_inserted += 1
+        elif upsert_result.action == "updated":
+            jobs_updated += 1
+        else:
+            jobs_unchanged += 1
+        job_id = upsert_result.job_id
         saved = get_job_by_id(connection, job_id)
         if saved is not None:
-            saved["was_new"] = existing is None
+            saved["was_new"] = upsert_result.action == "inserted"
+            saved["save_action"] = upsert_result.action
             saved_jobs.append(saved)
-    return saved_jobs
+    return {
+        "jobs": saved_jobs,
+        "jobs_inserted": jobs_inserted,
+        "jobs_updated": jobs_updated,
+        "jobs_unchanged": jobs_unchanged,
+    }
 
 
 def default_collectors() -> dict[str, CollectorFunc]:
@@ -287,6 +286,10 @@ def write_daily_report(
     jobs_discovered: int,
     jobs_scored: int,
     jobs_relevant: int,
+    jobs_inserted: int,
+    jobs_updated: int,
+    jobs_unchanged: int,
+    duplicates_skipped: int,
     location_scope_used: bool,
     keyword_scope_used: bool,
     routing_results: list[dict[str, Any]],
@@ -305,6 +308,10 @@ def write_daily_report(
         f"- Jobs scored: {jobs_scored}",
         f"- Jobs relevant: {jobs_relevant}",
         f"- Jobs saved: {len(jobs)}",
+        f"- Jobs inserted: {jobs_inserted}",
+        f"- Jobs updated: {jobs_updated}",
+        f"- Jobs unchanged: {jobs_unchanged}",
+        f"- Duplicates skipped before scoring: {duplicates_skipped}",
         f"- Location scope used: {location_scope_used}",
         f"- Keyword scope used: {keyword_scope_used}",
         f"- Interventions needed: {len(interventions_needed)}",
@@ -376,8 +383,15 @@ def write_jobs_csv(path: Path, jobs: list[dict[str, Any]]) -> None:
         "source_mode",
         "description",
         "date_posted",
+        "external_job_id",
+        "ats_type",
+        "board_slug",
+        "content_hash",
         "first_seen",
         "last_seen",
+        "first_seen_at",
+        "last_seen_at",
+        "last_updated_at",
         "match_score",
         "match_reasons",
         "risk_flags",
@@ -489,9 +503,11 @@ def run_daily_workflow(
                 )
 
     deduped_jobs = deduplicate_jobs(normalized_jobs)
+    duplicates_skipped = max(0, len(normalized_jobs) - len(deduped_jobs))
     scored_jobs = [score_normalized_job(job) for job in deduped_jobs]
     relevant_jobs = [job for job in scored_jobs if is_relevant_scored_job(job)]
-    saved_jobs = save_jobs(connection, relevant_jobs)
+    save_summary = save_jobs(connection, relevant_jobs)
+    saved_jobs = save_summary["jobs"]
     artifacts = build_daily_artifact_paths(exports_dir, run_date=effective_date)
     write_jobs_csv(artifacts.csv_path, saved_jobs)
     write_daily_report(
@@ -505,6 +521,10 @@ def run_daily_workflow(
         jobs_discovered=jobs_discovered,
         jobs_scored=len(scored_jobs),
         jobs_relevant=len(relevant_jobs),
+        jobs_inserted=save_summary["jobs_inserted"],
+        jobs_updated=save_summary["jobs_updated"],
+        jobs_unchanged=save_summary["jobs_unchanged"],
+        duplicates_skipped=duplicates_skipped,
         location_scope_used=location_scope_used,
         keyword_scope_used=keyword_scope_used,
         routing_results=routing_results,
@@ -519,6 +539,10 @@ def run_daily_workflow(
         jobs_discovered=jobs_discovered,
         jobs_scored=len(scored_jobs),
         jobs_relevant=len(relevant_jobs),
+        jobs_inserted=save_summary["jobs_inserted"],
+        jobs_updated=save_summary["jobs_updated"],
+        jobs_unchanged=save_summary["jobs_unchanged"],
+        duplicates_skipped=duplicates_skipped,
         jobs_saved=saved_jobs,
         location_scope_used=location_scope_used,
         keyword_scope_used=keyword_scope_used,

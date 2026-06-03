@@ -115,4 +115,4 @@ Collection should pause and create an intervention when the browser encounters:
 - Missing or invalid careers URLs classify as `needs_url`
 - Unknown public career pages classify as `browser_allowed`
 
-Greenhouse and Lever public job feeds are now collected broadly first and scored locally later. Ashby and SmartRecruiters still remain unimplemented in the router, which keeps the routing small and local-first without expanding into unsupported collectors.
+Greenhouse and Lever public job feeds are now collected broadly first and scored locally later. Their stored jobs also preserve `external_job_id`, `ats_type`, and `board_slug` so local dedupe prefers stable ATS identity before falling back to URL or title/location matching. Ashby and SmartRecruiters still remain unimplemented in the router, which keeps the routing small and local-first without expanding into unsupported collectors.

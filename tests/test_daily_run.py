@@ -6,7 +6,7 @@ from pathlib import Path
 import yaml
 
 from reports.daily_run import run_daily_workflow
-from storage.db import get_companies, initialize_database
+from storage.db import get_companies, get_jobs, initialize_database
 
 
 def _write_companies_yaml(path: Path) -> None:
@@ -103,9 +103,7 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
         companies: list[dict[str, object]],
     ) -> list[dict[str, object]]:
         company = companies[0]
-        company_job_url = (
-            f"https://{company['name'].lower().replace(' ', '')}.example.com/jobs/1"
-        )
+        company_job_url = f"https://{company['name'].lower().replace(' ', '')}.example.com/jobs/1"
         if company["name"] == "Human Co":
             return [
                 {
@@ -135,23 +133,23 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
                 "jobs_seen": 2,
                 "jobs_new": 0,
                 "jobs": [
-                        {
-                            "company_name": str(company["name"]),
-                            "title": "Cloud Engineer",
-                            "location": "Toronto, Ontario, Canada",
-                            "job_url": company_job_url,
-                            "description": "AWS Kubernetes Terraform Python support role.",
-                            "source_name": str(company.get("website_category") or company["name"]),
-                            "source_mode": str(company["source_mode"]),
+                    {
+                        "company_name": str(company["name"]),
+                        "title": "Cloud Engineer",
+                        "location": "Toronto, Ontario, Canada",
+                        "job_url": company_job_url,
+                        "description": "AWS Kubernetes Terraform Python support role.",
+                        "source_name": str(company.get("website_category") or company["name"]),
+                        "source_mode": str(company["source_mode"]),
                     },
-                        {
-                            "company_name": str(company["name"]),
-                            "title": "Cloud Engineer",
-                            "location": "Toronto, Ontario, Canada",
-                            "job_url": company_job_url,
-                            "description": "Duplicate job listing that should be deduped.",
-                            "source_name": str(company.get("website_category") or company["name"]),
-                            "source_mode": str(company["source_mode"]),
+                    {
+                        "company_name": str(company["name"]),
+                        "title": "Cloud Engineer",
+                        "location": "Toronto, Ontario, Canada",
+                        "job_url": company_job_url,
+                        "description": "Duplicate job listing that should be deduped.",
+                        "source_name": str(company.get("website_category") or company["name"]),
+                        "source_mode": str(company["source_mode"]),
                     },
                 ],
             }
@@ -180,6 +178,10 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert result.jobs_discovered == 5
     assert result.jobs_scored == 3
     assert result.jobs_relevant == 3
+    assert result.jobs_inserted == 3
+    assert result.jobs_updated == 0
+    assert result.jobs_unchanged == 0
+    assert result.duplicates_skipped == 2
     assert len(result.jobs_saved) == 3
     assert result.keyword_scope_used is False
     assert result.artifacts.report_path.exists()
@@ -190,15 +192,189 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert "Jobs discovered before scoring: 5" in report_text
     assert "Jobs scored: 3" in report_text
     assert "Jobs relevant: 3" in report_text
+    assert "Jobs inserted: 3" in report_text
+    assert "Jobs updated: 0" in report_text
+    assert "Jobs unchanged: 0" in report_text
+    assert "Duplicates skipped before scoring: 2" in report_text
     assert "Keyword scope used: False" in report_text
     assert "Top Matched Jobs" in report_text
     assert "Companies Skipped" in report_text
 
     csv_text = result.artifacts.csv_path.read_text(encoding="utf-8")
-    assert "company_name,title" in csv_text
+    assert "external_job_id,ats_type,board_slug,content_hash" in csv_text
 
     connection = initialize_database(db_path)
     companies = {company["name"]: company for company in get_companies(connection)}
     assert companies["API Co"]["source_mode"] == "api_allowed"
     assert companies["Human Co"]["source_mode"] == "human_in_loop"
     assert companies["Missing URL Co"]["source_mode"] == "needs_url"
+
+
+def test_daily_run_preserves_greenhouse_and_lever_metadata_in_storage(tmp_path: Path) -> None:
+    config_path = tmp_path / "companies.yaml"
+    db_path = tmp_path / "job_discovery.db"
+    exports_dir = tmp_path / "exports"
+    _write_companies_yaml(config_path)
+
+    def sample_collector(
+        _connection,
+        companies: list[dict[str, object]],
+    ) -> list[dict[str, object]]:
+        company = companies[0]
+        if company["name"] == "API Co":
+            return [
+                {
+                    "company_name": "API Co",
+                    "source_name": "greenhouse",
+                    "status": "completed",
+                    "jobs": [
+                        {
+                            "company_name": "API Co",
+                            "title": "Cloud Engineer",
+                            "location": "Toronto, Ontario, Canada",
+                            "job_url": "https://boards.greenhouse.io/example/jobs/12345",
+                            "apply_url": "https://boards.greenhouse.io/example/jobs/12345",
+                            "description": "AWS Terraform Linux support role.",
+                            "source_name": "greenhouse",
+                            "source_mode": "api_allowed",
+                            "external_job_id": "12345",
+                            "ats_type": "greenhouse",
+                            "board_slug": "example",
+                            "raw_payload_json": '{"id":12345}',
+                        }
+                    ],
+                }
+            ]
+        if company["name"] == "Browser Co":
+            return [
+                {
+                    "company_name": "Browser Co",
+                    "source_name": "company-careers",
+                    "status": "completed",
+                    "jobs": [
+                        {
+                            "company_name": "Browser Co",
+                            "title": "Cloud Support Engineer",
+                            "location": "Remote Canada",
+                            "job_url": "https://careers.browser.example.com/jobs/1",
+                            "description": "Linux troubleshooting support role.",
+                            "source_name": "company-careers",
+                            "source_mode": "browser_allowed",
+                        }
+                    ],
+                }
+            ]
+        return [
+            {
+                "company_name": "Human Co",
+                "source_name": "lever",
+                "status": "completed",
+                "jobs": [
+                    {
+                        "company_name": "Human Co",
+                        "title": "Junior DevOps Engineer",
+                        "location": "Remote Canada",
+                        "job_url": "https://jobs.lever.co/human/abc123",
+                        "apply_url": "https://jobs.lever.co/human/abc123/apply",
+                        "description": "Linux CI/CD support role.",
+                        "source_name": "lever",
+                        "source_mode": "api_allowed",
+                        "external_job_id": "abc123",
+                        "ats_type": "lever",
+                        "board_slug": "human",
+                        "raw_payload_json": '{"id":"abc123"}',
+                    }
+                ],
+            }
+        ]
+
+    collectors = {
+        "api_allowed": sample_collector,
+        "browser_allowed": sample_collector,
+        "human_in_loop": sample_collector,
+    }
+
+    run_daily_workflow(
+        config_path=config_path,
+        db_path=db_path,
+        exports_dir=exports_dir,
+        run_date=date(2026, 6, 3),
+        collectors=collectors,
+    )
+
+    connection = initialize_database(db_path)
+    jobs = {job["company_name"]: job for job in get_jobs(connection)}
+
+    assert jobs["API Co"]["external_job_id"] == "12345"
+    assert jobs["API Co"]["ats_type"] == "greenhouse"
+    assert jobs["API Co"]["board_slug"] == "example"
+    assert jobs["API Co"]["raw_payload_json"] == '{"id":12345}'
+    assert jobs["Human Co"]["external_job_id"] == "abc123"
+    assert jobs["Human Co"]["ats_type"] == "lever"
+    assert jobs["Human Co"]["board_slug"] == "human"
+
+
+def test_repeated_daily_run_does_not_duplicate_api_jobs(tmp_path: Path) -> None:
+    config_path = tmp_path / "companies.yaml"
+    db_path = tmp_path / "job_discovery.db"
+    exports_dir = tmp_path / "exports"
+    _write_companies_yaml(config_path)
+
+    def sample_collector(
+        _connection,
+        companies: list[dict[str, object]],
+    ) -> list[dict[str, object]]:
+        company = companies[0]
+        return [
+            {
+                "company_name": str(company["name"]),
+                "source_name": str(company.get("website_category") or company["name"]),
+                "status": "completed",
+                "jobs": [
+                    {
+                        "company_name": str(company["name"]),
+                        "title": "Cloud Engineer",
+                        "location": "Toronto, Ontario, Canada",
+                        "job_url": (
+                            "https://jobs.example.com/"
+                            f"{company['name'].lower().replace(' ', '-')}/1"
+                        ),
+                        "description": "AWS Kubernetes Terraform Python support role.",
+                        "source_name": str(company.get("website_category") or company["name"]),
+                        "source_mode": str(company["source_mode"]),
+                        "external_job_id": "12345" if company["name"] == "API Co" else None,
+                        "ats_type": "greenhouse" if company["name"] == "API Co" else None,
+                        "board_slug": "example" if company["name"] == "API Co" else None,
+                    }
+                ],
+            }
+        ]
+
+    collectors = {
+        "api_allowed": sample_collector,
+        "browser_allowed": sample_collector,
+        "human_in_loop": sample_collector,
+    }
+
+    first_run = run_daily_workflow(
+        config_path=config_path,
+        db_path=db_path,
+        exports_dir=exports_dir,
+        run_date=date(2026, 6, 3),
+        collectors=collectors,
+    )
+    second_run = run_daily_workflow(
+        config_path=config_path,
+        db_path=db_path,
+        exports_dir=exports_dir,
+        run_date=date(2026, 6, 4),
+        collectors=collectors,
+    )
+
+    connection = initialize_database(db_path)
+    jobs = get_jobs(connection)
+
+    assert first_run.jobs_inserted == 3
+    assert second_run.jobs_inserted == 0
+    assert second_run.jobs_unchanged == 3
+    assert len(jobs) == 3

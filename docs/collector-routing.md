@@ -32,6 +32,7 @@ These collectors:
 - do not send Cloud/DevOps/Admin role keywords into the ATS API
 - normalize jobs into the shared collector model
 - leave scoring, dedupe, and saving to the downstream daily-run flow
+- pass `external_job_id`, `ats_type`, and `board_slug` into storage for stronger dedupe
 
 Ashby and SmartRecruiters are still classified as `api_allowed`, but their collectors are not implemented yet.
 

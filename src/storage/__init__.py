@@ -2,6 +2,8 @@
 
 from .db import (
     append_intervention_notes,
+    build_job_identity,
+    compute_content_hash,
     create_daily_run,
     create_intervention,
     export_jobs,
@@ -22,11 +24,14 @@ from .db import (
     update_job_status,
     upsert_companies,
     upsert_job,
+    upsert_job_record,
     upsert_jobs,
 )
 
 __all__ = [
     "append_intervention_notes",
+    "build_job_identity",
+    "compute_content_hash",
     "create_daily_run",
     "create_intervention",
     "export_jobs",
@@ -45,6 +50,7 @@ __all__ = [
     "update_intervention_status",
     "update_job_status",
     "update_company_source",
+    "upsert_job_record",
     "upsert_companies",
     "upsert_job",
     "upsert_jobs",
