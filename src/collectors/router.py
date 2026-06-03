@@ -9,12 +9,21 @@ from typing import Any
 import yaml
 
 from classifier.source_classifier import classify_source
+from collectors.api import collect_greenhouse_jobs, collect_lever_jobs
 from collectors.base import CollectorResult
 from collectors.browser_collector import collect_companies_with_browser
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DISCOVERY_CONFIG_PATH = PROJECT_ROOT / "config" / "discovery.yaml"
 API_FRIENDLY_ATS_TYPES = {"greenhouse", "lever", "ashby", "smartrecruiters"}
+
+
+def _get_api_collector(ats_type: str | None):
+    if ats_type == "greenhouse":
+        return collect_greenhouse_jobs
+    if ats_type == "lever":
+        return collect_lever_jobs
+    return None
 
 
 def load_api_browser_fallback_flag(
@@ -87,6 +96,10 @@ def collect_company_jobs_routed(
         if allow_api_browser_fallback is None
         else allow_api_browser_fallback
     )
+    routed_company = dict(company)
+    routed_company["source_mode"] = classification.source_mode
+    routed_company["source_name"] = company.get("source_name") or source_name
+    routed_company["ats_type"] = classification.ats_type
 
     if classification.source_mode == "manual_only":
         return CollectorResult(
@@ -111,6 +124,28 @@ def collect_company_jobs_routed(
         )
 
     if classification.source_mode == "api_allowed":
+        api_collector = _get_api_collector(classification.ats_type)
+        if api_collector is not None:
+            api_result = api_collector(routed_company)
+            if api_result.status in {"success", "no_jobs_found"} or not fallback_enabled:
+                return api_result
+
+            browser_result = collect_companies_with_browser(
+                conn,
+                companies=[company],
+                headless=headless,
+                save_jobs=save_jobs,
+                allowed_source_modes={"api_allowed", "browser_allowed", "human_in_loop"},
+            )[0]
+            return _as_collector_result(
+                browser_result,
+                collector="browser_fallback",
+                ats_type=classification.ats_type,
+                source_mode=classification.source_mode,
+                fallback_used=True,
+                intervention_required=browser_result.get("status") == "paused",
+            )
+
         if classification.ats_type in API_FRIENDLY_ATS_TYPES and not fallback_enabled:
             return CollectorResult(
                 company_name=company_name,

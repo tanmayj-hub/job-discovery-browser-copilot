@@ -7,7 +7,7 @@ The app tracks two related but different ideas:
 - `ats_type`: what kind of career board or ATS the source appears to use
 - `source_mode`: what the app is allowed to do with that source right now
 
-Task 2 added deterministic ATS detection, and Task 3 adds a small collector-routing skeleton. Real API collectors still do not exist yet.
+Task 2 added deterministic ATS detection, Task 3 added a small collector-routing skeleton, and Task 4 adds real public API collectors for Greenhouse and Lever only.
 
 ## ATS Types
 
@@ -32,7 +32,7 @@ When the source does not match a known ATS, `ats_type` remains empty and the app
 
 ### `api_allowed`
 
-Use this for ATS types that are API-friendly in principle. Real API collectors still come later.
+Use this for ATS types that are API-friendly in principle. Greenhouse and Lever now have real public API collectors. Ashby and SmartRecruiters are still detection-only in this mode.
 
 Typical hints:
 
@@ -115,4 +115,4 @@ Collection should pause and create an intervention when the browser encounters:
 - Missing or invalid careers URLs classify as `needs_url`
 - Unknown public career pages classify as `browser_allowed`
 
-This keeps routing small and local-first while leaving real ATS/API collection for a later task.
+Greenhouse and Lever public job feeds are now collected broadly first and scored locally later. Ashby and SmartRecruiters still remain unimplemented in the router, which keeps the routing small and local-first without expanding into unsupported collectors.

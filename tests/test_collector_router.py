@@ -244,6 +244,20 @@ def test_api_allowed_greenhouse_returns_not_implemented_when_fallback_disabled(
         raise AssertionError("browser collector should not be called")
 
     monkeypatch.setattr(router_module, "collect_companies_with_browser", fail_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_greenhouse_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="greenhouse",
+            status="success",
+            collector="greenhouse_api",
+            ats_type="greenhouse",
+            source_mode="api_allowed",
+            jobs_discovered=1,
+            jobs=[{"title": "Cloud Engineer"}],
+        ),
+    )
 
     result = collect_company_jobs_routed(
         connection,
@@ -256,12 +270,54 @@ def test_api_allowed_greenhouse_returns_not_implemented_when_fallback_disabled(
         allow_api_browser_fallback=False,
     )
 
-    assert result.status == "api_collector_not_implemented"
-    assert result.collector == "api_not_implemented"
+    assert result.status == "success"
+    assert result.collector == "greenhouse_api"
+    assert result.jobs_discovered == 1
     assert result.fallback_used is False
 
 
-def test_api_allowed_lever_returns_not_implemented_when_fallback_disabled(
+def test_api_allowed_lever_calls_api_collector_when_fallback_disabled(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+
+    def fail_browser(*args, **kwargs):  # noqa: ARG001
+        raise AssertionError("browser collector should not be called")
+
+    monkeypatch.setattr(router_module, "collect_companies_with_browser", fail_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_lever_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="lever",
+            status="success",
+            collector="lever_api",
+            ats_type="lever",
+            source_mode="api_allowed",
+            jobs_discovered=2,
+            jobs=[{"title": "DevOps Engineer"}, {"title": "Support Engineer"}],
+        ),
+    )
+
+    result = collect_company_jobs_routed(
+        connection,
+        _company(
+            source_mode="api_allowed",
+            ats_hint="lever",
+            website_category="lever",
+            careers_url="https://jobs.lever.co/example",
+        ),
+        allow_api_browser_fallback=False,
+    )
+
+    assert result.status == "success"
+    assert result.collector == "lever_api"
+    assert result.jobs_discovered == 2
+
+
+def test_api_allowed_ashby_returns_not_implemented_when_fallback_disabled(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -276,15 +332,81 @@ def test_api_allowed_lever_returns_not_implemented_when_fallback_disabled(
         connection,
         _company(
             source_mode="api_allowed",
-            ats_hint="lever",
-            website_category="lever",
-            careers_url="https://jobs.lever.co/example",
+            ats_hint="ashby",
+            website_category="ashby",
+            careers_url="https://jobs.ashbyhq.com/example",
         ),
         allow_api_browser_fallback=False,
     )
 
     assert result.status == "api_collector_not_implemented"
     assert result.collector == "api_not_implemented"
+
+
+def test_api_allowed_smartrecruiters_returns_not_implemented_when_fallback_disabled(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+
+    def fail_browser(*args, **kwargs):  # noqa: ARG001
+        raise AssertionError("browser collector should not be called")
+
+    monkeypatch.setattr(router_module, "collect_companies_with_browser", fail_browser)
+
+    result = collect_company_jobs_routed(
+        connection,
+        _company(
+            source_mode="api_allowed",
+            ats_hint="smartrecruiters",
+            website_category="smartrecruiters",
+            careers_url="https://jobs.smartrecruiters.com/Example/example",
+        ),
+        allow_api_browser_fallback=False,
+    )
+
+    assert result.status == "api_collector_not_implemented"
+    assert result.collector == "api_not_implemented"
+
+
+def test_api_failure_does_not_silently_browser_fallback_when_disabled(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+
+    def fail_browser(*args, **kwargs):  # noqa: ARG001
+        raise AssertionError("browser collector should not be called")
+
+    monkeypatch.setattr(router_module, "collect_companies_with_browser", fail_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_greenhouse_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="greenhouse",
+            status="api_error",
+            collector="greenhouse_api",
+            ats_type="greenhouse",
+            source_mode="api_allowed",
+            error="API unavailable",
+        ),
+    )
+
+    result = collect_company_jobs_routed(
+        connection,
+        _company(
+            source_mode="api_allowed",
+            ats_hint="greenhouse",
+            website_category="greenhouse",
+            careers_url="https://boards.greenhouse.io/example",
+        ),
+        allow_api_browser_fallback=False,
+    )
+
+    assert result.status == "api_error"
+    assert result.collector == "greenhouse_api"
+    assert result.fallback_used is False
 
 
 def test_api_allowed_greenhouse_can_use_browser_fallback_when_enabled(
@@ -308,6 +430,19 @@ def test_api_allowed_greenhouse_can_use_browser_fallback_when_enabled(
         ]
 
     monkeypatch.setattr(router_module, "collect_companies_with_browser", fake_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_greenhouse_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="greenhouse",
+            status="api_error",
+            collector="greenhouse_api",
+            ats_type="greenhouse",
+            source_mode="api_allowed",
+            error="API unavailable",
+        ),
+    )
 
     result = collect_company_jobs_routed(
         connection,

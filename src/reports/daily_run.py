@@ -128,6 +128,10 @@ def normalize_job(raw_job: dict[str, Any], company: dict[str, Any]) -> dict[str,
         "source_mode": str(raw_job.get("source_mode") or company["source_mode"]).strip(),
         "description": str(raw_job.get("description") or "").strip() or None,
         "date_posted": raw_job.get("date_posted"),
+        "external_job_id": str(raw_job.get("external_job_id") or "").strip() or None,
+        "ats_type": str(raw_job.get("ats_type") or "").strip() or None,
+        "board_slug": str(raw_job.get("board_slug") or "").strip() or None,
+        "raw_payload_json": str(raw_job.get("raw_payload_json") or "").strip() or None,
         "status": str(raw_job.get("status") or "new").strip(),
     }
 
@@ -162,8 +166,19 @@ def deduplicate_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Deduplicate normalized jobs in memory before persistence."""
 
     deduped: list[dict[str, Any]] = []
+    seen_external: set[tuple[str, str, str]] = set()
     seen: set[tuple[str, str, str, str]] = set()
     for job in jobs:
+        external_job_id = str(job.get("external_job_id") or "").strip()
+        ats_type = str(job.get("ats_type") or "").strip()
+        board_slug = str(job.get("board_slug") or "").strip()
+        if external_job_id and (ats_type or board_slug):
+            external_key = (ats_type, board_slug, external_job_id)
+            if external_key in seen_external:
+                continue
+            seen_external.add(external_key)
+            deduped.append(job)
+            continue
         key = (
             job.get("job_url") or "",
             job.get("company_name") or "",

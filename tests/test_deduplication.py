@@ -61,3 +61,41 @@ def test_deduplicate_jobs_falls_back_to_company_title_and_location() -> None:
     assert len(deduped) == 2
     assert deduped[0]["location"] == "Toronto"
     assert deduped[1]["location"] == "Mississauga"
+
+
+def test_deduplicate_jobs_uses_external_ats_identity_when_available() -> None:
+    jobs = [
+        {
+            "company_name": "Example Co",
+            "title": "Cloud Engineer",
+            "location": "Toronto",
+            "job_url": None,
+            "external_job_id": "123",
+            "ats_type": "greenhouse",
+            "board_slug": "example",
+        },
+        {
+            "company_name": "Example Co",
+            "title": "Cloud Engineer II",
+            "location": "Remote",
+            "job_url": None,
+            "external_job_id": "123",
+            "ats_type": "greenhouse",
+            "board_slug": "example",
+        },
+        {
+            "company_name": "Example Co",
+            "title": "Cloud Engineer",
+            "location": "Toronto",
+            "job_url": None,
+            "external_job_id": "456",
+            "ats_type": "greenhouse",
+            "board_slug": "example",
+        },
+    ]
+
+    deduped = deduplicate_jobs(jobs)
+
+    assert len(deduped) == 2
+    assert deduped[0]["external_job_id"] == "123"
+    assert deduped[1]["external_job_id"] == "456"
