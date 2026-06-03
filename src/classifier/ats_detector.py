@@ -6,53 +6,54 @@ from urllib.parse import urlparse
 
 RESTRICTED_DOMAINS = ("linkedin.com", "indeed.com", "glassdoor.com")
 
-ATS_PATTERNS: dict[str, tuple[str, ...]] = {
+ATS_URL_PATTERNS: dict[str, tuple[str, ...]] = {
     "greenhouse": (
         "boards.greenhouse.io",
         "job-boards.greenhouse.io",
         "boards-api.greenhouse.io",
-        "greenhouse",
     ),
     "lever": (
         "jobs.lever.co",
         "api.lever.co",
-        "lever",
     ),
     "ashby": (
         "ashbyhq.com",
         "jobs.ashbyhq.com",
-        "ashby",
     ),
     "smartrecruiters": (
         "smartrecruiters.com",
         "jobs.smartrecruiters.com",
-        "smartrecruiters",
     ),
     "workday": (
         "myworkdayjobs.com",
         "workdayjobs.com",
-        "workday",
     ),
     "successfactors": (
         "successfactors.com",
         "sapsf.com",
-        "successfactors",
     ),
     "oracle_hcm": (
         "oraclecloud.com",
         "fa-ext.oraclecloud.com",
-        "oracle_hcm",
-        "oraclecloud",
-        "oracle",
     ),
     "icims": (
         "icims.com",
-        "icims",
     ),
     "phenom": (
         "phenompeople.com",
-        "phenom",
     ),
+}
+
+ATS_HINT_PATTERNS: dict[str, tuple[str, ...]] = {
+    "greenhouse": ("greenhouse",),
+    "lever": ("lever",),
+    "ashby": ("ashby", "ashbyhq"),
+    "smartrecruiters": ("smartrecruiters", "smart recruiters", "smart_recruiters"),
+    "workday": ("workday",),
+    "successfactors": ("successfactors", "success factors", "success_factors", "sapsf"),
+    "oracle_hcm": ("oracle", "oraclecloud", "oracle cloud", "oracle_hcm"),
+    "icims": ("icims",),
+    "phenom": ("phenom",),
 }
 
 API_ALLOWED_ATS = {"greenhouse", "lever", "ashby", "smartrecruiters"}
@@ -89,7 +90,7 @@ def normalize_ats_hint(ats_hint: str | None) -> str | None:
     if not text:
         return None
     text = NORMALIZED_HINTS.get(text, text)
-    if text in ATS_PATTERNS or text == "restricted_board" or text == "ultipro":
+    if text in ATS_HINT_PATTERNS or text == "restricted_board" or text == "ultipro":
         return text
     return None
 
@@ -120,7 +121,7 @@ def detect_ats_type(
         normalized_hint = normalize_ats_hint(candidate)
         if normalized_hint:
             return normalized_hint
-        for ats_type, patterns in ATS_PATTERNS.items():
+        for ats_type, patterns in ATS_HINT_PATTERNS.items():
             if any(pattern in candidate_text for pattern in patterns):
                 return ats_type
 
@@ -128,9 +129,9 @@ def detect_ats_type(
         return None
 
     parsed = urlparse(str(url))
-    normalized_url = f"{parsed.netloc}{parsed.path}".lower()
-    for ats_type, patterns in ATS_PATTERNS.items():
-        if any(pattern in normalized_url for pattern in patterns):
+    hostname = parsed.netloc.lower()
+    for ats_type, patterns in ATS_URL_PATTERNS.items():
+        if any(hostname == pattern or hostname.endswith(f".{pattern}") for pattern in patterns):
             return ats_type
     return None
 
