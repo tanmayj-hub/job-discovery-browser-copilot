@@ -130,7 +130,7 @@ FORBIDDEN_PRE_EXTRACTION_TERMS = (
 
 
 def _is_search_results_style_page(page: Page) -> bool:
-    """Return True when the page is an actual job results surface where keyword search helps."""
+    """Return True when the page is a results surface where location-scoped search can help."""
 
     url_text = page.url.lower()
     return any(marker in url_text for marker in ("jobsearch", "search-results", "jobs/search"))

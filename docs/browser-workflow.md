@@ -9,11 +9,30 @@ Use Playwright in a visible browser window to review safe company career sources
 1. Load companies from the local watchlist.
 2. Classify each source and skip anything not eligible.
 3. Open the careers URL in headed mode.
-4. Look for a search field when the page supports search.
-5. Search with the configured keywords when appropriate.
-6. Extract visible job-like cards and links.
-7. Normalize, score, and save jobs to SQLite.
-8. Record interventions instead of forcing progress on blocked pages.
+4. Navigate to a public job search or results page when the page exposes one.
+5. First extract visible or listed jobs without using role or skill keywords.
+6. If the page requires search or filtering to reveal jobs, use location-scope terms only.
+7. Do not use Cloud, DevOps, AWS, Terraform, Kubernetes, Linux, SRE, or similar role and skill terms as pre-extraction search terms.
+8. Normalize and dedupe discovered jobs.
+9. Score jobs locally after collection.
+10. Save or export relevant jobs and report discovery, scoring, relevance, and saved counts.
+11. Record interventions instead of forcing progress on blocked pages.
+
+## Discovery Scope
+
+Role, skill, and title keywords are not used before extraction by default.
+
+Location terms are allowed before extraction when a company board requires search or filtering to reveal public job listings.
+
+Default location terms come from [discovery.yaml](C:/projects/job-discovery-browser-copilot/config/discovery.yaml):
+
+- Canada
+- Toronto
+- Ontario
+- Remote Canada
+- Remote
+
+Keyword fallback is disabled by default.
 
 ## Pause Conditions
 
