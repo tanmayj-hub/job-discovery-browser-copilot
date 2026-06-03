@@ -12,7 +12,7 @@ from typing import Any
 import yaml
 
 from classifier.source_classifier import classify_source
-from collectors.browser_collector import collect_companies_with_browser
+from collectors.router import collect_companies_routed
 from processing.score import score_job
 from storage.db import (
     get_companies,
@@ -23,7 +23,7 @@ from storage.db import (
     upsert_job,
 )
 
-CollectorFunc = Callable[[Any, list[dict[str, Any]]], list[dict[str, Any]]]
+CollectorFunc = Callable[[Any, list[dict[str, Any]]], list[Any]]
 
 ELIGIBLE_SOURCE_MODES = {"api_allowed", "browser_allowed", "human_in_loop"}
 SKIPPED_SOURCE_MODES = {"needs_url", "manual_only", "avoid"}
@@ -52,6 +52,7 @@ class DailyRunResult:
     jobs_saved: list[dict[str, Any]]
     location_scope_used: bool
     keyword_scope_used: bool
+    routing_results: list[dict[str, Any]]
     artifacts: DailyRunArtifacts
 
 
@@ -198,20 +199,50 @@ def save_jobs(connection, jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def default_collectors() -> dict[str, CollectorFunc]:
     """Return default collector functions keyed by source mode."""
 
-    def browser_batch(connection, companies: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        return collect_companies_with_browser(
-            connection,
-            companies=companies,
-            headless=False,
-            save_jobs=False,
-            allowed_source_modes=ELIGIBLE_SOURCE_MODES,
-        )
+    def routed_batch(connection, companies: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return [
+            result.to_dict()
+            for result in collect_companies_routed(
+                connection,
+                companies=companies,
+                headless=False,
+                save_jobs=False,
+            )
+        ]
 
     return {
-        "api_allowed": browser_batch,
-        "browser_allowed": browser_batch,
-        "human_in_loop": browser_batch,
+        "api_allowed": routed_batch,
+        "browser_allowed": routed_batch,
+        "human_in_loop": routed_batch,
     }
+
+
+def _routing_summary_line(item: dict[str, Any]) -> str:
+    collector = str(item.get("collector") or "-")
+    status = str(item.get("status") or "-")
+    source_mode = str(item.get("source_mode") or "-")
+    ats_type = str(item.get("ats_type") or "-")
+    fallback_used = bool(item.get("fallback_used", False))
+    intervention_required = bool(item.get("intervention_required", False))
+    return (
+        f"- {item['company_name']} | mode {source_mode} | ats {ats_type} | "
+        f"collector {collector} | status {status} | "
+        f"fallback_used={fallback_used} | intervention_required={intervention_required}"
+    )
+
+
+def _coerce_collector_result(result: Any) -> dict[str, Any]:
+    if hasattr(result, "to_dict"):
+        return result.to_dict()
+    if isinstance(result, dict):
+        return result
+    raise TypeError(f"Unsupported collector result type: {type(result)!r}")
+
+
+def _normalize_raw_jobs(raw_jobs: object) -> list[dict[str, Any]]:
+    if not isinstance(raw_jobs, list):
+        return []
+    return [item for item in raw_jobs if isinstance(item, dict)]
 
 
 def build_daily_artifact_paths(
@@ -243,6 +274,7 @@ def write_daily_report(
     jobs_relevant: int,
     location_scope_used: bool,
     keyword_scope_used: bool,
+    routing_results: list[dict[str, Any]],
 ) -> None:
     """Write a Markdown summary report."""
 
@@ -278,6 +310,12 @@ def write_daily_report(
     lines.extend(["", "## Companies Checked"])
     if companies_checked:
         lines.extend(f"- {name}" for name in companies_checked)
+    else:
+        lines.append("- None")
+
+    lines.extend(["", "## Routing Results"])
+    if routing_results:
+        lines.extend(_routing_summary_line(item) for item in routing_results)
     else:
         lines.append("- None")
 
@@ -375,6 +413,7 @@ def run_daily_workflow(
     jobs_discovered = 0
     location_scope_used = False
     keyword_scope_used = False
+    routing_results: list[dict[str, Any]] = []
 
     for company in classified_companies:
         mode = str(company.get("source_mode") or "")
@@ -404,10 +443,11 @@ def run_daily_workflow(
             continue
 
         results = collector(connection, [company])
-        for result in results:
+        for raw_result in results:
+            result = _coerce_collector_result(raw_result)
+            routing_results.append(result)
             status = str(result.get("status") or "")
-            raw_jobs = result.get("jobs", [])
-            job_items = raw_jobs if isinstance(raw_jobs, list) else []
+            job_items = _normalize_raw_jobs(result.get("jobs", []))
             jobs_discovered += int(result.get("jobs_discovered", len(job_items)) or 0)
             location_scope_used = location_scope_used or bool(
                 result.get("location_scope_used", False)
@@ -419,12 +459,12 @@ def run_daily_workflow(
                 errors.append(
                     f"{result.get('company_name')}: {result.get('error') or 'collector error'}"
                 )
-            if status == "skipped":
+            if status in {"skipped", "manual_only", "needs_url", "api_collector_not_implemented"}:
                 companies_skipped.append(
                     {
                         "company_name": str(result.get("company_name") or company["name"]),
-                        "source_mode": mode,
-                        "reason": str(result.get("reason") or "collector skipped"),
+                        "source_mode": str(result.get("source_mode") or mode),
+                        "reason": str(result.get("status") or "collector skipped"),
                     }
                 )
             for raw_job in job_items:
@@ -452,6 +492,7 @@ def run_daily_workflow(
         jobs_relevant=len(relevant_jobs),
         location_scope_used=location_scope_used,
         keyword_scope_used=keyword_scope_used,
+        routing_results=routing_results,
     )
 
     return DailyRunResult(
@@ -466,5 +507,6 @@ def run_daily_workflow(
         jobs_saved=saved_jobs,
         location_scope_used=location_scope_used,
         keyword_scope_used=keyword_scope_used,
+        routing_results=routing_results,
         artifacts=artifacts,
     )

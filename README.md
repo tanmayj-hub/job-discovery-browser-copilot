@@ -19,6 +19,8 @@ Job searching across dozens of company career pages is repetitive, fragmented, a
 
 The app also distinguishes between detected source type and allowed operating mode. It can identify ATS families such as Greenhouse, Lever, Ashby, SmartRecruiters, Workday, SuccessFactors, Oracle HCM, ICIMS, and Phenom, then map them into the current local safety modes without adding collectors prematurely.
 
+The current routing layer also makes source handling explicit: browser-safe sources use the visible browser collector, manual-only sources are never automated, and API-friendly ATS types are reported as not yet implemented unless an explicit browser fallback is enabled.
+
 ## Safety And Compliance Note
 
 This project is intentionally limited to safe, visible, human-in-the-loop discovery.
@@ -151,4 +153,5 @@ Suggested filenames:
 - [Source Types](docs/source-types.md)
 - [Compliance](docs/compliance.md)
 - [Browser Workflow](docs/browser-workflow.md)
+- [Collector Routing](docs/collector-routing.md)
 - [Demo Script](docs/demo-script.md)

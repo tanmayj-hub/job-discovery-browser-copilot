@@ -8,3 +8,6 @@ source_scope:
 
 keyword_fallback:
   enabled: false
+
+routing:
+  api_fallback_to_browser: false
