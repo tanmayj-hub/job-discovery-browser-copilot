@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -107,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
             headless=False,
         )
         for result in results:
-            print(result)
+            print(json.dumps(result, ensure_ascii=True))
         return 0
 
     if args.command == "daily-run":

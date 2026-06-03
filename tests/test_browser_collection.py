@@ -11,7 +11,11 @@ from browser.interventions import (
     BARRIER_SIGNAL_UNCLEAR,
     detect_browser_barriers,
 )
-from collectors.browser_collector import collect_browser_jobs, collect_company_jobs
+from collectors.browser_collector import (
+    _normalize_keywords,
+    collect_browser_jobs,
+    collect_company_jobs,
+)
 from storage.db import get_interventions, initialize_database, upsert_companies
 
 
@@ -67,6 +71,54 @@ def test_detect_browser_barriers_marks_unclear_page_when_no_signals() -> None:
     assert signals == [BARRIER_SIGNAL_UNCLEAR]
 
 
+def test_detect_browser_barriers_ignores_nav_sign_in_and_invisible_recaptcha() -> None:
+    signals = detect_browser_barriers(
+        page_text=(
+            "Sign in Jobs Search jobs Cloud Engineer Toronto, Ontario, Canada "
+            "Posted 2 days ago"
+        ),
+        page_html=(
+            '<iframe aria-hidden="true" src="https://www.google.com/recaptcha/api2/'
+            'anchor?size=invisible"></iframe>'
+            '<textarea class="g-recaptcha-response" style="display: none;"></textarea>'
+        ),
+        extracted_count=3,
+        has_search_input=True,
+    )
+
+    assert signals == []
+
+
+def test_detect_browser_barriers_flags_bot_protection_captcha_page() -> None:
+    signals = detect_browser_barriers(
+        page_text=(
+            "Your activity and behavior on this site made us think that you are a bot. "
+            "Please solve this CAPTCHA to request unblock to the website."
+        ),
+        page_html="<main>Radware Captcha Page</main>",
+        extracted_count=0,
+        has_search_input=False,
+    )
+
+    assert BARRIER_SIGNAL_CAPTCHA in signals
+
+
+def test_detect_browser_barriers_does_not_flag_search_location_filter() -> None:
+    signals = detect_browser_barriers(
+        page_text=(
+            "Search jobs at Accenture 184 Results Search locations Location Filter Results"
+        ),
+        page_html=(
+            '<input type="search" aria-label="Search locations" />'
+            '<div class="filters">Location</div>'
+        ),
+        extracted_count=2,
+        has_search_input=True,
+    )
+
+    assert BARRIER_SIGNAL_LOCATION not in signals
+
+
 def test_extract_location_returns_known_location_line() -> None:
     description = "Cloud Engineer Toronto, Ontario, Canada AWS Kubernetes Terraform"
 
@@ -104,3 +156,9 @@ def test_collect_company_jobs_skips_when_source_is_not_browser_allowed(tmp_path:
     assert result["status"] == "skipped"
     assert "needs_url" in result["reason"]
     assert get_interventions(connection) == []
+
+
+def test_normalize_keywords_accepts_sqlite_json_strings() -> None:
+    keywords = _normalize_keywords('["cloud", "devops", "platform"]')
+
+    assert keywords == ["cloud", "devops", "platform"]

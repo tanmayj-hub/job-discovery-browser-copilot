@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,7 +10,13 @@ from typing import Any
 
 from playwright.sync_api import Error as PlaywrightError
 
-from browser.extraction import extract_visible_job_cards, find_search_input, search_with_keywords
+from browser.extraction import (
+    dismiss_cookie_banner,
+    extract_visible_job_cards,
+    find_search_input,
+    navigate_to_job_search_page,
+    search_with_keywords,
+)
 from browser.interventions import (
     BARRIER_SIGNAL_EXTRACTION_FAILED,
     build_intervention_result,
@@ -110,7 +117,7 @@ def collect_company_jobs(
     company_name = str(company["name"])
     source_name = str(company.get("website_category") or company_name)
     careers_url = str(company.get("careers_url") or "").strip()
-    keywords = list(company.get("keywords") or [])
+    keywords = _normalize_keywords(company.get("keywords"))
 
     classification = classify_source(
         {
@@ -149,6 +156,16 @@ def collect_company_jobs(
     try:
         page.goto(careers_url, wait_until="load")
         page.wait_for_timeout(1_000)
+        dismissed_cookie_steps: list[str] = []
+        initial_cookie = dismiss_cookie_banner(page)
+        if initial_cookie:
+            dismissed_cookie_steps.append(initial_cookie)
+        navigated_url = navigate_to_job_search_page(page)
+        if navigated_url:
+            navigated_cookie = dismiss_cookie_banner(page)
+            if navigated_cookie:
+                dismissed_cookie_steps.append(navigated_cookie)
+        dismissed_cookie = " -> ".join(dismissed_cookie_steps) or None
 
         initial_html = page.content()
         initial_text = page.locator("body").inner_text(timeout=3_000)
@@ -165,7 +182,7 @@ def collect_company_jobs(
                 company_name=company_name,
                 source_name=source_name,
                 signals=early_barriers,
-                source_url=careers_url,
+                source_url=page.url or careers_url,
             )
             finish_daily_run(
                 connection,
@@ -186,6 +203,10 @@ def collect_company_jobs(
             )
 
         query = search_with_keywords(page, keywords)
+        post_search_cookie = dismiss_cookie_banner(page)
+        if post_search_cookie:
+            dismissed_cookie_steps.append(post_search_cookie)
+            dismissed_cookie = " -> ".join(dismissed_cookie_steps)
         current_html = page.content()
         current_text = page.locator("body").inner_text(timeout=3_000)
         extracted_jobs = extract_visible_job_cards(
@@ -206,8 +227,12 @@ def collect_company_jobs(
                 company_name=company_name,
                 source_name=source_name,
                 signals=late_barriers,
-                source_url=careers_url,
-                notes=f"Paused after page inspection. Query={query or 'n/a'}",
+                source_url=page.url or careers_url,
+                notes=(
+                    f"Paused after page inspection. Query={query or 'n/a'}; "
+                    f"navigated_url={navigated_url or 'none'}; "
+                    f"cookie_dismissed={dismissed_cookie or 'none'}"
+                ),
             )
             finish_daily_run(
                 connection,
@@ -262,6 +287,8 @@ def collect_company_jobs(
             "jobs_seen": len(extracted_jobs),
             "jobs_new": jobs_new,
             "query": query,
+            "navigated_url": navigated_url,
+            "cookie_dismissed": dismissed_cookie,
             "jobs": extracted_jobs,
         }
     except PlaywrightError as exc:
@@ -312,3 +339,20 @@ def collect_company_jobs(
             "error": str(exc),
             "jobs": [],
         }
+
+
+def _normalize_keywords(value: object) -> list[str]:
+    """Normalize company keyword config from YAML lists or SQLite JSON strings."""
+
+    if value is None:
+        return []
+    if isinstance(value, str):
+        try:
+            decoded = json.loads(value)
+        except json.JSONDecodeError:
+            cleaned = value.strip()
+            return [cleaned] if cleaned else []
+        return _normalize_keywords(decoded)
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return []

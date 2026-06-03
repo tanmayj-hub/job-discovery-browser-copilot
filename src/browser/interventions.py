@@ -15,6 +15,52 @@ BARRIER_SIGNAL_UNCLEAR = "unclear_layout"
 BARRIER_SIGNAL_EXTRACTION_FAILED = "extraction_failed"
 
 
+def _has_captcha_challenge(text: str, html: str) -> bool:
+    """Detect an actual CAPTCHA challenge instead of a sitewide hidden widget."""
+
+    explicit_text_markers = (
+        "captcha",
+        "i'm not a robot",
+        "verify you are human",
+        "made us think that you are a bot",
+        "please solve this captcha",
+        "security check",
+    )
+    if any(marker in text for marker in explicit_text_markers):
+        return True
+
+    has_captcha_widget = "g-recaptcha" in html or "hcaptcha" in html
+    hidden_widget_markers = (
+        "size=invisible",
+        'display: none',
+        'aria-hidden="true"',
+    )
+    return has_captcha_widget and not all(marker in html for marker in hidden_widget_markers)
+
+
+def _has_login_gate(text: str, html: str) -> bool:
+    """Detect a real login gate without flagging a harmless navigation link."""
+
+    gate_phrases = (
+        "sign in to continue",
+        "log in to continue",
+        "please sign in",
+        "please log in",
+        "login required",
+        "sign in required",
+        "create an account to continue",
+        "sign in or create an account",
+    )
+    if any(phrase in text for phrase in gate_phrases):
+        return True
+
+    has_password_field = 'type="password"' in html
+    has_auth_copy = (
+        "password" in text and "email" in text
+    ) or "username" in text or "forgot password" in text
+    return has_password_field or has_auth_copy
+
+
 def detect_browser_barriers(
     *,
     page_text: str,
@@ -28,20 +74,10 @@ def detect_browser_barriers(
     html = page_html.lower()
     signals: list[str] = []
 
-    if (
-        "captcha" in text
-        or "i'm not a robot" in text
-        or "g-recaptcha" in html
-        or "hcaptcha" in html
-    ):
+    if _has_captcha_challenge(text, html):
         signals.append(BARRIER_SIGNAL_CAPTCHA)
 
-    if (
-        "sign in" in text
-        or "log in" in text
-        or 'type="password"' in html
-        or "password" in text and "email" in text
-    ):
+    if _has_login_gate(text, html):
         signals.append(BARRIER_SIGNAL_LOGIN)
 
     if "cookie" in text and (
@@ -54,9 +90,8 @@ def detect_browser_barriers(
     if (
         "select location" in text
         or "choose location" in text
-        or ("location" in text and "<select" in html)
-        or 'name="location"' in html
-        or 'id="location"' in html
+        or "location required" in text
+        or "please select a location" in text
     ):
         signals.append(BARRIER_SIGNAL_LOCATION)
 
