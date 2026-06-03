@@ -2,13 +2,37 @@
 
 ## Purpose
 
-Source modes control what the system is allowed to do with a company careers source.
+The app tracks two related but different ideas:
+
+- `ats_type`: what kind of career board or ATS the source appears to use
+- `source_mode`: what the app is allowed to do with that source right now
+
+Task 2 adds deterministic ATS detection only. It does not add API collectors or a collector router yet.
+
+## ATS Types
+
+`ats_type` is a lightweight detector result inferred from the careers URL, `ats_hint`, or `website_category`.
+
+Currently recognized ATS and source types include:
+
+- `greenhouse`
+- `lever`
+- `ashby`
+- `smartrecruiters`
+- `workday`
+- `successfactors`
+- `oracle_hcm`
+- `icims`
+- `phenom`
+- `restricted_board`
+
+When the source does not match a known ATS, `ats_type` remains empty and the app falls back to public-browser handling rules.
 
 ## Modes
 
 ### `api_allowed`
 
-Use this for public ATS platforms that are usually structured and safer to automate in controlled ways.
+Use this for ATS types that are API-friendly in principle. Task 2 only classifies them; collectors will come later.
 
 Typical hints:
 
@@ -35,7 +59,9 @@ Typical hints:
 
 - Workday
 - SuccessFactors
-- Oracle Cloud
+- Oracle HCM
+- ICIMS
+- Phenom
 - UltiPro
 
 ### `manual_only`
@@ -46,6 +72,7 @@ Typical cases:
 
 - LinkedIn
 - Indeed
+- Glassdoor
 - sites that require login
 - sources that repeatedly present CAPTCHA or unclear barriers
 
@@ -79,3 +106,13 @@ Collection should pause and create an intervention when the browser encounters:
 - `location_selection_required`
 - `unclear_layout`
 - `extraction_failed`
+
+## Current Classification Rules
+
+- Greenhouse, Lever, Ashby, and SmartRecruiters classify as `api_allowed`
+- Workday, SuccessFactors, Oracle HCM, ICIMS, and Phenom classify as `human_in_loop`
+- LinkedIn, Indeed, and Glassdoor classify as `manual_only`
+- Missing or invalid careers URLs classify as `needs_url`
+- Unknown public career pages classify as `browser_allowed`
+
+This keeps detection small and local-first while leaving collector routing for a later task.

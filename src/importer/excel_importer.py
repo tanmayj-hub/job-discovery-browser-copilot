@@ -15,12 +15,14 @@ from openpyxl import load_workbook
 from pydantic import BaseModel, ConfigDict, Field
 
 try:
+    from classifier.ats_detector import normalize_ats_hint
     from classifier.source_classifier import classify_source
 except ModuleNotFoundError:  # pragma: no cover
     # Support running the importer as `python -m src.importer.excel_importer`.
     PROJECT_ROOT = Path(__file__).resolve().parents[2]
     if str(PROJECT_ROOT) not in sys.path:
         sys.path.insert(0, str(PROJECT_ROOT))
+    normalize_ats_hint = import_module("src.classifier.ats_detector").normalize_ats_hint
     classify_source = import_module("src.classifier.source_classifier").classify_source
 
 ALLOWED_CATEGORY = "Bank/Market"
@@ -42,6 +44,10 @@ ATS_HINTS = (
     "workday",
     "successfactors",
     "oraclecloud",
+    "oracle_hcm",
+    "oracle",
+    "icims",
+    "phenom",
     "ultipro",
 )
 
@@ -110,7 +116,7 @@ def extract_ats_hint(website_category: str | None) -> str | None:
     lower_text = website_category.lower()
     for hint in ATS_HINTS:
         if hint in lower_text:
-            return hint
+            return normalize_ats_hint(hint)
     return None
 
 

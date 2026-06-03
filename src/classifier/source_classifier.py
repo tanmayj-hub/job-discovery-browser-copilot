@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from functools import lru_cache
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlparse
 
-import yaml
 from pydantic import BaseModel, ConfigDict
+
+from .ats_detector import detect_ats_type, select_source_mode
 
 DEFAULT_POLICIES_PATH = Path("config/policies.yaml")
 
@@ -22,45 +21,10 @@ class SourceClassificationResult(BaseModel):
     source_name: str | None = None
     careers_url: str | None = None
     ats_hint: str | None = None
+    ats_type: str | None = None
     source_mode: str
+    classification_reason: str | None = None
     reasons: list[str]
-
-
-def _read_yaml(path: Path) -> dict[str, Any]:
-    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-    if not isinstance(data, dict):
-        raise ValueError(f"Expected a mapping in {path}")
-    return data
-
-
-@lru_cache(maxsize=1)
-def load_policies_config(path: str = str(DEFAULT_POLICIES_PATH)) -> dict[str, Any]:
-    """Load source policy configuration from YAML."""
-
-    return _read_yaml(Path(path))
-
-
-def _normalize_text(value: object) -> str:
-    if value is None:
-        return ""
-    return str(value).strip().lower()
-
-
-def _is_valid_public_url(value: object) -> bool:
-    text = str(value).strip() if value is not None else ""
-    if not text:
-        return False
-    parsed = urlparse(text)
-    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
-
-
-def _contains_any(text: str, terms: list[str]) -> str | None:
-    for term in terms:
-        normalized = term.strip().lower()
-        if normalized and normalized in text:
-            return term
-    return None
-
 
 def classify_source(
     source: dict[str, Any],
@@ -69,68 +33,42 @@ def classify_source(
 ) -> SourceClassificationResult:
     """Classify a source into one of the configured policy modes."""
 
-    policies = load_policies_config(str(policies_path))
     careers_url = source.get("careers_url")
-    source_name_text = _normalize_text(source.get("source_name") or source.get("website_category"))
-    url_text = _normalize_text(careers_url)
-    ats_hint_text = _normalize_text(source.get("ats_hint"))
-    combined_text = " ".join(part for part in (source_name_text, url_text, ats_hint_text) if part)
+    ats_hint = source.get("ats_hint")
+    website_category = source.get("website_category")
+    current_source_mode = source.get("source_mode")
+    ats_type = detect_ats_type(careers_url, ats_hint=ats_hint, website_category=website_category)
+    source_mode = select_source_mode(
+        careers_url,
+        ats_type,
+        current_source_mode=current_source_mode,
+    )
 
-    reasons: list[str] = []
+    if source_mode == "needs_url":
+        reasons = ["missing or invalid careers URL"]
+    elif (
+        source_mode == "manual_only"
+        and str(current_source_mode or "").strip() in {"manual_only", "avoid"}
+    ):
+        reasons = [f"preserving explicit safety mode: {current_source_mode}"]
+    elif source_mode == "manual_only":
+        reasons = ["restricted job board detected; manual-only handling required"]
+    elif source_mode == "api_allowed":
+        reasons = [f"detected API-friendly ATS: {ats_type}"]
+    elif source_mode == "human_in_loop":
+        reasons = [f"detected complex ATS requiring visible/manual support: {ats_type}"]
+    elif source_mode == "avoid":
+        reasons = ["preserving explicit safety mode: avoid"]
+    else:
+        reasons = ["public careers URL with no known ATS restrictions"]
 
-    if not _is_valid_public_url(careers_url):
-        reasons.append("missing or invalid careers URL")
-        return SourceClassificationResult(
-            company_name=source.get("name") or source.get("company_name"),
-            source_name=source.get("source_name") or source.get("website_category"),
-            careers_url=careers_url,
-            ats_hint=source.get("ats_hint"),
-            source_mode="needs_url",
-            reasons=reasons,
-        )
-
-    restricted_match = _contains_any(combined_text, policies.get("restricted_portals", []))
-    if restricted_match:
-        reasons.append(f"restricted portal detected: {restricted_match}")
-        return SourceClassificationResult(
-            company_name=source.get("name") or source.get("company_name"),
-            source_name=source.get("source_name") or source.get("website_category"),
-            careers_url=careers_url,
-            ats_hint=source.get("ats_hint"),
-            source_mode="manual_only",
-            reasons=reasons,
-        )
-
-    api_match = _contains_any(ats_hint_text, policies.get("api_allowed_ats", []))
-    if api_match:
-        reasons.append(f"ATS supports API-friendly collection: {api_match}")
-        return SourceClassificationResult(
-            company_name=source.get("name") or source.get("company_name"),
-            source_name=source.get("source_name") or source.get("website_category"),
-            careers_url=careers_url,
-            ats_hint=source.get("ats_hint"),
-            source_mode="api_allowed",
-            reasons=reasons,
-        )
-
-    human_match = _contains_any(ats_hint_text, policies.get("human_in_loop_ats", []))
-    if human_match:
-        reasons.append(f"ATS requires human-in-the-loop workflow: {human_match}")
-        return SourceClassificationResult(
-            company_name=source.get("name") or source.get("company_name"),
-            source_name=source.get("source_name") or source.get("website_category"),
-            careers_url=careers_url,
-            ats_hint=source.get("ats_hint"),
-            source_mode="human_in_loop",
-            reasons=reasons,
-        )
-
-    reasons.append("public careers URL with no known ATS restrictions")
     return SourceClassificationResult(
         company_name=source.get("name") or source.get("company_name"),
         source_name=source.get("source_name") or source.get("website_category"),
         careers_url=careers_url,
-        ats_hint=source.get("ats_hint"),
-        source_mode="browser_allowed",
+        ats_hint=ats_hint,
+        ats_type=ats_type,
+        source_mode=source_mode,
+        classification_reason=reasons[0],
         reasons=reasons,
     )

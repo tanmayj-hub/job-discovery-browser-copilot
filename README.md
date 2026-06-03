@@ -17,6 +17,8 @@ Job searching across dozens of company career pages is repetitive, fragmented, a
 - queueing human interventions when a site needs manual review
 - exporting a daily summary and CSV for follow-up
 
+The app also distinguishes between detected source type and allowed operating mode. It can identify ATS families such as Greenhouse, Lever, Ashby, SmartRecruiters, Workday, SuccessFactors, Oracle HCM, ICIMS, and Phenom, then map them into the current local safety modes without adding collectors prematurely.
+
 ## Safety And Compliance Note
 
 This project is intentionally limited to safe, visible, human-in-the-loop discovery.
