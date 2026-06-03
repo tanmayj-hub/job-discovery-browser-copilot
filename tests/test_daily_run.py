@@ -177,12 +177,20 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
         "Missing URL Co",
         "Avoid Co",
     }
+    assert result.jobs_discovered == 5
+    assert result.jobs_scored == 3
+    assert result.jobs_relevant == 3
     assert len(result.jobs_saved) == 3
+    assert result.keyword_scope_used is False
     assert result.artifacts.report_path.exists()
     assert result.artifacts.csv_path.exists()
 
     report_text = result.artifacts.report_path.read_text(encoding="utf-8")
     assert "Run Summary" in report_text
+    assert "Jobs discovered before scoring: 5" in report_text
+    assert "Jobs scored: 3" in report_text
+    assert "Jobs relevant: 3" in report_text
+    assert "Keyword scope used: False" in report_text
     assert "Top Matched Jobs" in report_text
     assert "Companies Skipped" in report_text
 

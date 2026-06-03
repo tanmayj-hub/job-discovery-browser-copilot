@@ -12,9 +12,9 @@ from browser.interventions import (
     detect_browser_barriers,
 )
 from collectors.browser_collector import (
-    _normalize_keywords,
     collect_browser_jobs,
     collect_company_jobs,
+    load_source_scope_locations,
 )
 from storage.db import get_interventions, initialize_database, upsert_companies
 
@@ -158,7 +158,17 @@ def test_collect_company_jobs_skips_when_source_is_not_browser_allowed(tmp_path:
     assert get_interventions(connection) == []
 
 
-def test_normalize_keywords_accepts_sqlite_json_strings() -> None:
-    keywords = _normalize_keywords('["cloud", "devops", "platform"]')
+def test_load_source_scope_locations_uses_location_only_config(tmp_path: Path) -> None:
+    config_path = tmp_path / "discovery.yaml"
+    config_path.write_text(
+        """
+source_scope:
+  locations:
+    - Canada
+    - Toronto
+    - Remote
+""",
+        encoding="utf-8",
+    )
 
-    assert keywords == ["cloud", "devops", "platform"]
+    assert load_source_scope_locations(config_path) == ("Canada", "Toronto", "Remote")

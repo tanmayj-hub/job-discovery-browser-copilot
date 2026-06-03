@@ -46,7 +46,12 @@ class DailyRunResult:
     companies_skipped: list[dict[str, str]]
     interventions_needed: list[dict[str, Any]]
     errors: list[str]
+    jobs_discovered: int
+    jobs_scored: int
+    jobs_relevant: int
     jobs_saved: list[dict[str, Any]]
+    location_scope_used: bool
+    keyword_scope_used: bool
     artifacts: DailyRunArtifacts
 
 
@@ -108,7 +113,7 @@ def classify_company_sources(
 def normalize_job(raw_job: dict[str, Any], company: dict[str, Any]) -> dict[str, Any]:
     """Normalize a raw collector job object into the storage shape."""
 
-    normalized = {
+    return {
         "company_name": str(raw_job.get("company_name") or company["name"]).strip(),
         "title": str(raw_job.get("title") or "").strip(),
         "location": str(raw_job.get("location") or "").strip() or None,
@@ -124,11 +129,32 @@ def normalize_job(raw_job: dict[str, Any], company: dict[str, Any]) -> dict[str,
         "date_posted": raw_job.get("date_posted"),
         "status": str(raw_job.get("status") or "new").strip(),
     }
-    score_result = score_job(normalized)
-    normalized["match_score"] = score_result.match_score
-    normalized["match_reasons"] = score_result.match_reasons
-    normalized["risk_flags"] = score_result.risk_flags
-    return normalized
+
+
+def score_normalized_job(job: dict[str, Any]) -> dict[str, Any]:
+    """Apply deterministic relevance scoring after collection and dedupe."""
+
+    scored = dict(job)
+    score_result = score_job(scored)
+    scored["match_score"] = score_result.match_score
+    scored["match_reasons"] = score_result.match_reasons
+    scored["risk_flags"] = score_result.risk_flags
+    return scored
+
+
+def is_relevant_scored_job(job: dict[str, Any]) -> bool:
+    """Return True when a scored job has more than location-only relevance."""
+
+    if int(job.get("match_score", 0)) <= 0:
+        return False
+    reasons = [str(reason).lower() for reason in job.get("match_reasons", [])]
+    return any(
+        reason.startswith("title matches")
+        or reason.startswith("description mentions")
+        or reason.startswith("matched skills")
+        or reason.startswith("support/ops signals")
+        for reason in reasons
+    )
 
 
 def deduplicate_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -212,6 +238,11 @@ def write_daily_report(
     interventions_needed: list[dict[str, Any]],
     errors: list[str],
     jobs: list[dict[str, Any]],
+    jobs_discovered: int,
+    jobs_scored: int,
+    jobs_relevant: int,
+    location_scope_used: bool,
+    keyword_scope_used: bool,
 ) -> None:
     """Write a Markdown summary report."""
 
@@ -223,7 +254,12 @@ def write_daily_report(
         "## Run Summary",
         f"- Companies checked: {len(companies_checked)}",
         f"- Companies skipped: {len(companies_skipped)}",
+        f"- Jobs discovered before scoring: {jobs_discovered}",
+        f"- Jobs scored: {jobs_scored}",
+        f"- Jobs relevant: {jobs_relevant}",
         f"- Jobs saved: {len(jobs)}",
+        f"- Location scope used: {location_scope_used}",
+        f"- Keyword scope used: {keyword_scope_used}",
         f"- Interventions needed: {len(interventions_needed)}",
         f"- Errors: {len(errors)}",
         "",
@@ -336,6 +372,9 @@ def run_daily_workflow(
     companies_skipped: list[dict[str, str]] = []
     errors: list[str] = []
     normalized_jobs: list[dict[str, Any]] = []
+    jobs_discovered = 0
+    location_scope_used = False
+    keyword_scope_used = False
 
     for company in classified_companies:
         mode = str(company.get("source_mode") or "")
@@ -367,6 +406,15 @@ def run_daily_workflow(
         results = collector(connection, [company])
         for result in results:
             status = str(result.get("status") or "")
+            raw_jobs = result.get("jobs", [])
+            job_items = raw_jobs if isinstance(raw_jobs, list) else []
+            jobs_discovered += int(result.get("jobs_discovered", len(job_items)) or 0)
+            location_scope_used = location_scope_used or bool(
+                result.get("location_scope_used", False)
+            )
+            keyword_scope_used = keyword_scope_used or bool(
+                result.get("keyword_scope_used", False)
+            )
             if status == "error":
                 errors.append(
                     f"{result.get('company_name')}: {result.get('error') or 'collector error'}"
@@ -379,14 +427,16 @@ def run_daily_workflow(
                         "reason": str(result.get("reason") or "collector skipped"),
                     }
                 )
-            for raw_job in result.get("jobs", []):
+            for raw_job in job_items:
                 company_key = str(raw_job.get("company_name") or company["name"])
                 normalized_jobs.append(
                     normalize_job(raw_job, by_name[company_key])
                 )
 
     deduped_jobs = deduplicate_jobs(normalized_jobs)
-    saved_jobs = save_jobs(connection, deduped_jobs)
+    scored_jobs = [score_normalized_job(job) for job in deduped_jobs]
+    relevant_jobs = [job for job in scored_jobs if is_relevant_scored_job(job)]
+    saved_jobs = save_jobs(connection, relevant_jobs)
     artifacts = build_daily_artifact_paths(exports_dir, run_date=effective_date)
     write_jobs_csv(artifacts.csv_path, saved_jobs)
     write_daily_report(
@@ -397,6 +447,11 @@ def run_daily_workflow(
         interventions_needed=get_intervention_queue(connection),
         errors=errors,
         jobs=saved_jobs,
+        jobs_discovered=jobs_discovered,
+        jobs_scored=len(scored_jobs),
+        jobs_relevant=len(relevant_jobs),
+        location_scope_used=location_scope_used,
+        keyword_scope_used=keyword_scope_used,
     )
 
     return DailyRunResult(
@@ -405,6 +460,11 @@ def run_daily_workflow(
         companies_skipped=companies_skipped,
         interventions_needed=get_intervention_queue(connection),
         errors=errors,
+        jobs_discovered=jobs_discovered,
+        jobs_scored=len(scored_jobs),
+        jobs_relevant=len(relevant_jobs),
         jobs_saved=saved_jobs,
+        location_scope_used=location_scope_used,
+        keyword_scope_used=keyword_scope_used,
         artifacts=artifacts,
     )

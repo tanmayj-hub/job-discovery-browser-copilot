@@ -11,8 +11,6 @@ from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 from playwright.sync_api import Locator, Page
 
-from processing.score import score_job
-
 SEARCH_INPUT_SELECTORS = (
     "input[type='search']",
     "input[placeholder*='Search' i]",
@@ -21,19 +19,6 @@ SEARCH_INPUT_SELECTORS = (
     "input[name*='search' i]",
     "input[name*='keyword' i]",
     "[role='searchbox']",
-)
-JOB_ROLE_HINTS = (
-    "engineer",
-    "devops",
-    "cloud",
-    "platform",
-    "administrator",
-    "admin",
-    "analyst",
-    "support",
-    "reliability",
-    "systems",
-    "ops",
 )
 JOB_CONTAINER_SELECTORS = (
     "article",
@@ -125,6 +110,23 @@ EMPTY_RESULTS_HINTS = (
     "no matching jobs",
     "try modifying search/filters",
 )
+FORBIDDEN_PRE_EXTRACTION_TERMS = (
+    "cloud",
+    "devops",
+    "aws",
+    "azure",
+    "terraform",
+    "kubernetes",
+    "docker",
+    "linux",
+    "sre",
+    "platform",
+    "infrastructure",
+    "support",
+    "administrator",
+    "engineer",
+    "analyst",
+)
 
 
 def _is_search_results_style_page(page: Page) -> bool:
@@ -144,19 +146,25 @@ def find_search_input(page: Page) -> Locator | None:
     return None
 
 
-def search_with_keywords(page: Page, keywords: list[str]) -> str | None:
-    """Fill a detected search input with configured keywords."""
+def _contains_forbidden_pre_extraction_term(query: str) -> bool:
+    normalized = query.lower()
+    return any(
+        re.search(rf"\b{re.escape(term)}\b", normalized)
+        for term in FORBIDDEN_PRE_EXTRACTION_TERMS
+    )
+
+
+def search_with_location_term(page: Page, location_term: str) -> str | None:
+    """Fill a detected search input with one location-only discovery term."""
 
     search_input = find_search_input(page)
+    query = _clean_text(location_term)
     if (
         search_input is None
-        or not keywords
+        or not query
+        or _contains_forbidden_pre_extraction_term(query)
         or (has_interactive_job_cards(page) and not _is_search_results_style_page(page))
     ):
-        return None
-
-    query = " ".join(keywords[:3]).strip()
-    if not query:
         return None
 
     starting_url = page.url
@@ -373,8 +381,6 @@ def _is_noise_candidate(title: str, href: str, context: str) -> bool:
         return True
     if title.lower().startswith("showing search results"):
         return True
-    if any(term in normalized_title for term in ("adjoint", "administratif", "commis")):
-        return True
     if "/apply" in normalized_href:
         return True
     if (
@@ -388,17 +394,6 @@ def _is_noise_candidate(title: str, href: str, context: str) -> bool:
 def _looks_like_empty_results_page(text: str) -> bool:
     normalized = text.lower()
     return any(hint in normalized for hint in EMPTY_RESULTS_HINTS)
-
-
-def _has_non_location_match_reasons(job: dict[str, Any]) -> bool:
-    reasons = [str(reason).lower() for reason in job.get("match_reasons", [])]
-    return any(
-        reason.startswith("title matches")
-        or reason.startswith("description mentions")
-        or reason.startswith("matched skills")
-        or reason.startswith("support/ops signals")
-        for reason in reasons
-    )
 
 
 def _best_title_from_container(container: BeautifulSoup) -> str:
@@ -431,15 +426,17 @@ def _has_job_posting_signal(
     normalized_title = title.lower()
     normalized_href = href.lower()
     normalized_description = description.lower()
-    has_role_hint = any(hint in normalized_title for hint in JOB_ROLE_HINTS)
     has_job_url_hint = any(hint in normalized_href for hint in JOB_URL_HINTS)
     has_posting_text = any(
         marker in normalized_description
         for marker in ("posted", "apply", "job id", "job req", "requisition", "req id")
     )
     has_location = bool(_clean_text(location))
-    return (has_role_hint and (has_job_url_hint or has_posting_text or has_location)) or (
-        has_posting_text and has_location
+    has_meaningful_title = len(normalized_title) >= 4
+    return has_meaningful_title and (
+        has_job_url_hint
+        or has_posting_text
+        or (has_location and any(marker in normalized_description for marker in ("job", "role")))
     )
 
 
@@ -491,28 +488,7 @@ def _build_job_record(
         "date_posted": date_posted,
         "status": "new",
     }
-    score_result = score_job(job)
-    job["match_score"] = score_result.match_score
-    job["match_reasons"] = score_result.match_reasons
-    job["risk_flags"] = score_result.risk_flags
-    if not _is_relevant_job(job):
-        return None
     return job
-
-
-def _is_relevant_job(job: dict[str, Any]) -> bool:
-    if int(job.get("match_score", 0)) <= 0:
-        return False
-    if not _has_non_location_match_reasons(job):
-        return False
-    reasons = [str(reason).lower() for reason in job.get("match_reasons", [])]
-    return any(
-        reason.startswith("title matches")
-        or reason.startswith("description mentions")
-        or reason.startswith("matched skills")
-        or reason.startswith("location signals")
-        for reason in reasons
-    )
 
 
 def _dedupe_jobs(jobs: Iterable[dict[str, Any]], *, max_cards: int) -> list[dict[str, Any]]:
@@ -553,7 +529,7 @@ def _extract_from_job_links(
         href = str(link.get("href") or "").strip()
         title = _clean_text(link.get_text(" ", strip=True))
         context = _clean_text(link.find_parent(["article", "li", "tr", "section", "div"]) or "")
-        if not title or not any(hint in title.lower() for hint in JOB_ROLE_HINTS):
+        if not title:
             continue
         job = _build_job_record(
             company_name=company_name,
@@ -584,7 +560,7 @@ def _extract_from_list_items(
         title = _best_title_from_container(item)
         href = _best_link_from_container(item, base_url)
         text = _clean_text(item.get_text(" ", strip=True))
-        if not title or not any(hint in text.lower() for hint in JOB_ROLE_HINTS):
+        if not title:
             continue
         job = _build_job_record(
             company_name=company_name,
@@ -619,7 +595,7 @@ def _extract_from_cards(
             text = _clean_text(container.get_text(" ", strip=True))
             if _is_page_shell_container(container, text):
                 continue
-            if not title or not any(hint in text.lower() for hint in JOB_ROLE_HINTS):
+            if not title:
                 continue
             job = _build_job_record(
                 company_name=company_name,
@@ -748,7 +724,7 @@ def _extract_from_tables(
             href = str(first_link.get("href") or "").strip()
         location = _clean_text(cells[1].get_text(" ", strip=True))
         description = _clean_text(row.get_text(" ", strip=True))
-        if not title or not any(hint in description.lower() for hint in JOB_ROLE_HINTS):
+        if not title:
             continue
         job = _build_job_record(
             company_name=company_name,
@@ -981,7 +957,7 @@ def extract_jobs_from_html(
     base_url: str,
     max_cards: int = 20,
 ) -> list[dict[str, Any]]:
-    """Extract relevant job records from one HTML document."""
+    """Extract plausible job records from one HTML document."""
 
     soup = BeautifulSoup(html, "html.parser")
     page_text = _clean_text(soup.get_text(" ", strip=True))
@@ -1231,7 +1207,7 @@ def extract_visible_job_cards(
     max_cards: int = 20,
     max_pages: int = 2,
 ) -> list[dict[str, Any]]:
-    """Extract relevant jobs from one page and up to one safe pagination step."""
+    """Extract plausible jobs from one page and up to one safe pagination step."""
 
     if _is_restricted_url(page.url):
         return []

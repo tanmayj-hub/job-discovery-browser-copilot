@@ -122,7 +122,12 @@ def main(argv: list[str] | None = None) -> int:
                 "run_date": result.run_date,
                 "companies_checked": len(result.companies_checked),
                 "companies_skipped": len(result.companies_skipped),
+                "jobs_discovered": result.jobs_discovered,
+                "jobs_scored": result.jobs_scored,
+                "jobs_relevant": result.jobs_relevant,
                 "jobs_saved": len(result.jobs_saved),
+                "location_scope_used": result.location_scope_used,
+                "keyword_scope_used": result.keyword_scope_used,
                 "report_path": str(result.artifacts.report_path),
                 "csv_path": str(result.artifacts.csv_path),
             }

@@ -7,7 +7,9 @@ from browser.extraction import (
     extract_visible_job_cards,
     has_interactive_job_cards,
     navigate_to_job_search_page,
+    search_with_location_term,
 )
+from processing.score import score_job
 
 FIXTURES_DIR = Path("tests/fixtures/browser")
 
@@ -40,6 +42,10 @@ class FakeLocatorItem:
 class FakeLocatorCollection:
     def __init__(self, items: list[FakeLocatorItem]) -> None:
         self.items = items
+
+    @property
+    def first(self) -> FakeLocatorItem:
+        return self.items[0]
 
     def count(self) -> int:
         return len(self.items)
@@ -185,6 +191,42 @@ class FakeExternalNavigationPage(FakeNavigationPage):
         ]
 
 
+class FakeSearchInput(FakeLocatorItem):
+    def __init__(self, page) -> None:
+        super().__init__(page, "")
+
+    def fill(self, value: str) -> None:
+        self.page.search_terms.append(value)
+
+    def press(self, key: str) -> None:
+        self.page.pressed_keys.append(key)
+
+
+class FakeSearchPage:
+    def __init__(self) -> None:
+        self._url = "https://careers.example.com/search-results"
+        self.search_terms: list[str] = []
+        self.pressed_keys: list[str] = []
+        self.search_input = FakeSearchInput(self)
+
+    @property
+    def url(self) -> str:
+        return self._url
+
+    def locator(self, selector: str):
+        if selector == "body":
+            return FakeBodyLocator("25 jobs found in Canada")
+        if selector == "input[type='search']":
+            return FakeLocatorCollection([self.search_input])
+        return FakeLocatorCollection([])
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def evaluate(self, _script: str):
+        return 0
+
+
 def test_extract_jobs_from_html_uses_anchor_and_card_strategies() -> None:
     html = (FIXTURES_DIR / "anchors_cards.html").read_text(encoding="utf-8")
 
@@ -200,7 +242,7 @@ def test_extract_jobs_from_html_uses_anchor_and_card_strategies() -> None:
 
     assert "Cloud Engineer" in titles
     assert "Platform DevOps Engineer" in titles
-    assert all(job["match_score"] > 0 for job in jobs)
+    assert all("match_score" not in job for job in jobs)
     assert all("privacy" not in job["job_url"].lower() for job in jobs)
 
 
@@ -229,7 +271,7 @@ def test_extract_visible_job_cards_uses_jsonld_table_and_safe_pagination() -> No
     assert "Linux Administrator" in titles
     assert "Site Reliability Engineer" in titles
     assert len(jobs) == 3
-    assert all(job["match_score"] > 0 for job in jobs)
+    assert all("match_score" not in job for job in jobs)
 
 
 def test_extract_visible_job_cards_uses_interactive_job_cards() -> None:
@@ -245,7 +287,24 @@ def test_extract_visible_job_cards_uses_interactive_job_cards() -> None:
     assert len(jobs) == 1
     assert jobs[0]["title"] == "Support Analyst"
     assert jobs[0]["job_url"] == "https://careers.example.com/careers/job/123"
-    assert jobs[0]["match_score"] > 0
+    assert "match_score" not in jobs[0]
+
+
+def test_search_with_location_term_does_not_use_role_or_skill_terms() -> None:
+    page = FakeSearchPage()
+
+    assert search_with_location_term(page, "cloud devops platform") is None
+    assert page.search_terms == []
+
+
+def test_search_with_location_term_uses_single_location_scope_term() -> None:
+    page = FakeSearchPage()
+
+    query = search_with_location_term(page, "Toronto")
+
+    assert query == "Toronto"
+    assert page.search_terms == ["Toronto"]
+    assert page.pressed_keys == ["Enter"]
 
 
 def test_has_interactive_job_cards_detects_live_view_job_elements() -> None:
@@ -469,7 +528,38 @@ def test_extract_jobs_from_html_supports_njoyn_tables_without_page_shell_noise()
         base_url="https://cgi.njoyn.com/CORP/xweb/xweb.asp?page=joblisting",
     )
 
-    assert len(jobs) == 1
-    assert jobs[0]["title"] == "Application Support Consultant"
-    assert jobs[0]["location"] == "St. John's, Canada"
-    assert "JobDetails" in jobs[0]["job_url"]
+    titles = {job["title"] for job in jobs}
+
+    assert "Application Support Consultant" in titles
+    assert "Business Analyst" in titles
+    assert "Adjoint(e) administratif(ve)" in titles
+    assert all("JobDetails" in job["job_url"] for job in jobs)
+
+
+def test_extraction_keeps_infrastructure_and_production_support_before_scoring() -> None:
+    html = """
+    <main>
+      <article>
+        <a href="/job/infra-123">Infrastructure Analyst</a>
+        <p>Posted yesterday Toronto, Ontario, Canada</p>
+      </article>
+      <article>
+        <a href="/job/prod-456">Production Support Analyst</a>
+        <p>Posted yesterday Remote Canada</p>
+      </article>
+    </main>
+    """
+
+    jobs = extract_jobs_from_html(
+        html,
+        company_name="Example Co",
+        source_name="company-careers",
+        source_mode="browser_allowed",
+        base_url="https://careers.example.com",
+    )
+    scored_jobs = [score_job(job) for job in jobs]
+    titles = {job["title"] for job in jobs}
+
+    assert "Infrastructure Analyst" in titles
+    assert "Production Support Analyst" in titles
+    assert all(score.match_score > 0 for score in scored_jobs)

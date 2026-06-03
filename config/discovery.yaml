@@ -1,0 +1,10 @@
+source_scope:
+  locations:
+    - Canada
+    - Toronto
+    - Ontario
+    - Remote Canada
+    - Remote
+
+keyword_fallback:
+  enabled: false

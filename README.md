@@ -28,10 +28,32 @@ This project is intentionally limited to safe, visible, human-in-the-loop discov
 - No LinkedIn or Indeed automation
 - Restricted or ambiguous sources should be handled in manual-only mode
 
+## Discovery Policy
+
+The MVP uses a collect-first, score-later strategy for company career pages.
+
+- Use company career pages as the source of truth.
+- Discover visible job listings broadly before relevance scoring.
+- Use location scope only when a career board needs a search/filter to reveal jobs.
+- Avoid role, title, or skill keyword searches on company boards by default.
+- Score collected jobs locally for Cloud, DevOps, Admin, Platform, and Support relevance.
+- Keep LinkedIn and Indeed manual-only.
+- Pause for CAPTCHA, login, or unclear manual-intervention cases.
+
+Default pre-collection location scope is configured in `config/discovery.yaml`:
+
+- Canada
+- Toronto
+- Ontario
+- Remote Canada
+- Remote
+
+Role and skill terms such as Cloud, DevOps, AWS, Azure, Terraform, Kubernetes, Linux, SRE, Platform, Support, Admin, Engineer, and Analyst are used after collection by the deterministic scoring layer. Keyword fallback is disabled by default. JobSeek was reviewed only as a read-only architecture reference for the collect-first principle; its files and larger architecture are not copied into this MVP.
+
 ## Repository Layout
 
 ```text
-config/                   YAML configuration for companies, keywords, scoring, and policies
+config/                   YAML configuration for companies, discovery scope, keywords, scoring, and policies
 data/input/               Local input files such as company spreadsheets
 data/exports/             Generated CSV and Markdown exports
 docs/                     Project documentation

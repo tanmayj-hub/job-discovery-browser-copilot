@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import json
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+import yaml
 from playwright.sync_api import Error as PlaywrightError
 
 from browser.extraction import (
@@ -15,7 +15,7 @@ from browser.extraction import (
     extract_visible_job_cards,
     find_search_input,
     navigate_to_job_search_page,
-    search_with_keywords,
+    search_with_location_term,
 )
 from browser.interventions import (
     BARRIER_SIGNAL_EXTRACTION_FAILED,
@@ -25,6 +25,7 @@ from browser.interventions import (
 )
 from browser.session import BrowserSessionConfig, open_browser_session
 from classifier.source_classifier import classify_source
+from processing.score import score_job
 from storage.db import (
     create_daily_run,
     finish_daily_run,
@@ -33,6 +34,10 @@ from storage.db import (
     update_company_source,
     upsert_job,
 )
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_DISCOVERY_CONFIG_PATH = PROJECT_ROOT / "config" / "discovery.yaml"
+DEFAULT_LOCATION_SCOPE = ("Canada", "Toronto", "Ontario", "Remote Canada", "Remote")
 
 
 @dataclass(slots=True)
@@ -44,6 +49,7 @@ class BrowserCollectionConfig:
     timeout_ms: int = 15_000
     slow_mo_ms: int = 0
     db_path: Path | None = None
+    location_scope: tuple[str, ...] = DEFAULT_LOCATION_SCOPE
 
 
 def collect_browser_jobs(
@@ -117,7 +123,7 @@ def collect_company_jobs(
     company_name = str(company["name"])
     source_name = str(company.get("website_category") or company_name)
     careers_url = str(company.get("careers_url") or "").strip()
-    keywords = _normalize_keywords(company.get("keywords"))
+    location_scope = load_source_scope_locations()
 
     classification = classify_source(
         {
@@ -144,6 +150,12 @@ def collect_company_jobs(
             "reason": f"source mode is {classification.source_mode}",
             "jobs_seen": 0,
             "jobs_new": 0,
+            "jobs_discovered": 0,
+            "jobs_scored": 0,
+            "jobs_relevant": 0,
+            "jobs_saved": 0,
+            "location_scope_used": False,
+            "keyword_scope_used": False,
             "jobs": [],
         }
 
@@ -202,19 +214,38 @@ def collect_company_jobs(
                 intervention_id=intervention_id,
             )
 
-        query = search_with_keywords(page, keywords)
-        post_search_cookie = dismiss_cookie_banner(page)
-        if post_search_cookie:
-            dismissed_cookie_steps.append(post_search_cookie)
-            dismissed_cookie = " -> ".join(dismissed_cookie_steps)
-        current_html = page.content()
-        current_text = page.locator("body").inner_text(timeout=3_000)
         extracted_jobs = extract_visible_job_cards(
             page,
             company_name=company_name,
             source_name=source_name,
             source_mode=classification.source_mode,
         )
+        location_queries: list[str] = []
+        location_scope_used = False
+        keyword_scope_used = False
+        if not extracted_jobs and find_search_input(page) is not None:
+            for location_term in location_scope:
+                query = search_with_location_term(page, location_term)
+                if query is None:
+                    continue
+                location_scope_used = True
+                location_queries.append(query)
+                extracted_jobs.extend(
+                    extract_visible_job_cards(
+                        page,
+                        company_name=company_name,
+                        source_name=source_name,
+                        source_mode=classification.source_mode,
+                    )
+                )
+            extracted_jobs = _dedupe_collected_jobs(extracted_jobs)
+
+        post_search_cookie = dismiss_cookie_banner(page)
+        if post_search_cookie:
+            dismissed_cookie_steps.append(post_search_cookie)
+            dismissed_cookie = " -> ".join(dismissed_cookie_steps)
+        current_html = page.content()
+        current_text = page.locator("body").inner_text(timeout=3_000)
         late_barriers = detect_browser_barriers(
             page_text=current_text,
             page_html=current_html,
@@ -229,7 +260,9 @@ def collect_company_jobs(
                 signals=late_barriers,
                 source_url=page.url or careers_url,
                 notes=(
-                    f"Paused after page inspection. Query={query or 'n/a'}; "
+                    "Paused after page inspection. "
+                    f"location_queries={location_queries or 'none'}; "
+                    f"keyword_scope_used={keyword_scope_used}; "
                     f"navigated_url={navigated_url or 'none'}; "
                     f"cookie_dismissed={dismissed_cookie or 'none'}"
                 ),
@@ -255,8 +288,10 @@ def collect_company_jobs(
             )
 
         jobs_new = 0
+        scored_jobs = [_score_collected_job(job) for job in extracted_jobs]
+        relevant_jobs = [job for job in scored_jobs if _is_relevant_scored_job(job)]
         if save_jobs:
-            for job in extracted_jobs:
+            for job in relevant_jobs:
                 existing = None
                 if job.get("job_url"):
                     existing = connection.execute(
@@ -273,7 +308,11 @@ def collect_company_jobs(
             status="completed",
             jobs_seen=len(extracted_jobs),
             jobs_new=jobs_new,
-            notes=f"browser collection completed; query={query or 'none'}",
+            notes=(
+                "browser collection completed; "
+                f"location_queries={location_queries or 'none'}; "
+                f"keyword_scope_used={keyword_scope_used}"
+            ),
         )
         mark_source_checked(
             connection,
@@ -286,10 +325,18 @@ def collect_company_jobs(
             "status": "completed",
             "jobs_seen": len(extracted_jobs),
             "jobs_new": jobs_new,
-            "query": query,
+            "jobs_discovered": len(extracted_jobs),
+            "jobs_scored": len(scored_jobs) if save_jobs else 0,
+            "jobs_relevant": len(relevant_jobs) if save_jobs else 0,
+            "jobs_saved": jobs_new,
+            "location_scope_used": location_scope_used,
+            "location_scope": list(location_scope),
+            "location_queries": location_queries,
+            "keyword_scope_used": keyword_scope_used,
+            "query": None,
             "navigated_url": navigated_url,
             "cookie_dismissed": dismissed_cookie,
-            "jobs": extracted_jobs,
+            "jobs": scored_jobs if save_jobs else extracted_jobs,
         }
     except PlaywrightError as exc:
         create_browser_intervention(
@@ -312,6 +359,12 @@ def collect_company_jobs(
             "status": "error",
             "jobs_seen": 0,
             "jobs_new": 0,
+            "jobs_discovered": 0,
+            "jobs_scored": 0,
+            "jobs_relevant": 0,
+            "jobs_saved": 0,
+            "location_scope_used": False,
+            "keyword_scope_used": False,
             "error": str(exc),
             "jobs": [],
         }
@@ -336,23 +389,70 @@ def collect_company_jobs(
             "status": "error",
             "jobs_seen": 0,
             "jobs_new": 0,
+            "jobs_discovered": 0,
+            "jobs_scored": 0,
+            "jobs_relevant": 0,
+            "jobs_saved": 0,
+            "location_scope_used": False,
+            "keyword_scope_used": False,
             "error": str(exc),
             "jobs": [],
         }
 
 
-def _normalize_keywords(value: object) -> list[str]:
-    """Normalize company keyword config from YAML lists or SQLite JSON strings."""
+def load_source_scope_locations(
+    path: Path = DEFAULT_DISCOVERY_CONFIG_PATH,
+) -> tuple[str, ...]:
+    """Load location-only source scope terms for pre-extraction discovery."""
 
-    if value is None:
-        return []
-    if isinstance(value, str):
-        try:
-            decoded = json.loads(value)
-        except json.JSONDecodeError:
-            cleaned = value.strip()
-            return [cleaned] if cleaned else []
-        return _normalize_keywords(decoded)
-    if isinstance(value, list):
-        return [str(item).strip() for item in value if str(item).strip()]
-    return []
+    if not path.exists():
+        return DEFAULT_LOCATION_SCOPE
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    source_scope = payload.get("source_scope", {})
+    locations = source_scope.get("locations", []) if isinstance(source_scope, dict) else []
+    normalized = tuple(str(location).strip() for location in locations if str(location).strip())
+    return normalized or DEFAULT_LOCATION_SCOPE
+
+
+def _score_collected_job(job: dict[str, Any]) -> dict[str, Any]:
+    scored = dict(job)
+    score_result = score_job(scored)
+    scored["match_score"] = score_result.match_score
+    scored["match_reasons"] = score_result.match_reasons
+    scored["risk_flags"] = score_result.risk_flags
+    return scored
+
+
+def _is_relevant_scored_job(job: dict[str, Any]) -> bool:
+    if int(job.get("match_score", 0)) <= 0:
+        return False
+    reasons = [str(reason).lower() for reason in job.get("match_reasons", [])]
+    return any(
+        reason.startswith("title matches")
+        or reason.startswith("description mentions")
+        or reason.startswith("matched skills")
+        or reason.startswith("support/ops signals")
+        for reason in reasons
+    )
+
+
+def _dedupe_collected_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    deduped: list[dict[str, Any]] = []
+    seen_urls: set[str] = set()
+    seen_fallbacks: set[tuple[str, str, str]] = set()
+    for job in jobs:
+        job_url = str(job.get("job_url") or "").strip()
+        title = str(job.get("title") or "").strip()
+        company = str(job.get("company_name") or "").strip()
+        location = str(job.get("location") or "").strip()
+        if job_url:
+            if job_url in seen_urls:
+                continue
+            seen_urls.add(job_url)
+        else:
+            fallback = (company, title, location)
+            if fallback in seen_fallbacks:
+                continue
+            seen_fallbacks.add(fallback)
+        deduped.append(job)
+    return deduped

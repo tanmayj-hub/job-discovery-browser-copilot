@@ -1,6 +1,6 @@
 """Browser-assisted discovery package."""
 
-from .extraction import extract_visible_job_cards, find_search_input, search_with_keywords
+from .extraction import extract_visible_job_cards, find_search_input, search_with_location_term
 from .interventions import create_browser_intervention, detect_browser_barriers
 from .session import BrowserSessionConfig, open_browser_session
 
@@ -11,5 +11,5 @@ __all__ = [
     "extract_visible_job_cards",
     "find_search_input",
     "open_browser_session",
-    "search_with_keywords",
+    "search_with_location_term",
 ]
