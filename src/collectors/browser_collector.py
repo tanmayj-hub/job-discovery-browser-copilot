@@ -14,6 +14,7 @@ from browser.extraction import (
     dismiss_cookie_banner,
     extract_visible_job_cards,
     find_search_input,
+    is_probable_job_listing,
     navigate_to_job_search_page,
     search_with_location_term,
 )
@@ -31,6 +32,7 @@ from storage.db import (
     finish_daily_run,
     get_companies_by_source_mode,
     mark_source_checked,
+    resolve_pending_interventions_for_company,
     update_company_source,
     upsert_job,
 )
@@ -50,6 +52,21 @@ class BrowserCollectionConfig:
     slow_mo_ms: int = 0
     db_path: Path | None = None
     location_scope: tuple[str, ...] = DEFAULT_LOCATION_SCOPE
+
+
+def _source_navigation_timeout_ms(
+    company_name: str,
+    careers_url: str,
+    *,
+    default_timeout_ms: int = 15_000,
+) -> int:
+    """Allow a small source-specific timeout bump for known slow public pages."""
+
+    normalized_name = company_name.lower()
+    normalized_url = careers_url.lower()
+    if "tech mahindra" in normalized_name or "techmahindra" in normalized_url:
+        return max(default_timeout_ms, 30_000)
+    return default_timeout_ms
 
 
 def collect_browser_jobs(
@@ -166,7 +183,11 @@ def collect_company_jobs(
     )
 
     try:
-        page.goto(careers_url, wait_until="load")
+        page.goto(
+            careers_url,
+            wait_until="domcontentloaded",
+            timeout=_source_navigation_timeout_ms(company_name, careers_url),
+        )
         page.wait_for_timeout(1_000)
         dismissed_cookie_steps: list[str] = []
         initial_cookie = dismiss_cookie_banner(page)
@@ -289,7 +310,11 @@ def collect_company_jobs(
 
         jobs_new = 0
         scored_jobs = [_score_collected_job(job) for job in extracted_jobs]
-        relevant_jobs = [job for job in scored_jobs if _is_relevant_scored_job(job)]
+        relevant_jobs = [
+            job
+            for job in scored_jobs
+            if is_probable_job_listing(job, base_url=careers_url) and _is_relevant_scored_job(job)
+        ]
         if save_jobs:
             for job in relevant_jobs:
                 existing = None
@@ -319,6 +344,7 @@ def collect_company_jobs(
             company_name=company_name,
             source_name=source_name,
         )
+        resolve_pending_interventions_for_company(connection, company_name=company_name)
         return {
             "company_name": company_name,
             "source_name": source_name,

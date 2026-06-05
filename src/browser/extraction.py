@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
@@ -90,6 +90,75 @@ JOB_URL_HINTS = (
     "posting",
     "vacancy",
     "opening",
+)
+ALLOWED_EXTERNAL_JOB_HOST_HINTS = (
+    "workdayjobs.com",
+    "myworkdayjobs.com",
+    "greenhouse.io",
+    "jobs.lever.co",
+    "ashbyhq.com",
+    "smartrecruiters.com",
+    "njoyn.com",
+    "ultipro.com",
+    "ukg.com",
+    "successfactors.com",
+    "oraclecloud.com",
+    "icims.com",
+    "phenompeople.com",
+)
+JOB_TITLE_HINTS = (
+    "engineer",
+    "developer",
+    "analyst",
+    "administrator",
+    "admin",
+    "consultant",
+    "specialist",
+    "architect",
+    "coordinator",
+    "technician",
+    "representative",
+    "associate",
+    "manager",
+    "lead",
+    "support",
+    "operations",
+    "operator",
+    "platform",
+    "infrastructure",
+    "cloud",
+    "devops",
+    "reliability",
+    "systems",
+)
+MARKETING_TITLE_PREFIXES = (
+    "why work at",
+    "working at",
+    "life at",
+    "helping ",
+    "our culture",
+    "benefits",
+    "meet ",
+    "students and graduates",
+    "students and grads",
+    "join our talent community",
+)
+MARKETING_TITLE_EXACT_HINTS = (
+    "living wage employers",
+    "always-open job posting",
+)
+FACET_COUNT_TITLE_HINTS = (
+    "hybrid",
+    "remote",
+    "on-site",
+    "onsite",
+    "career areas",
+    "job families",
+    "locations",
+    "categories",
+    "departments",
+    "full-time",
+    "part-time",
 )
 JOB_SEARCH_ENTRY_HINTS = (
     "job search",
@@ -391,6 +460,62 @@ def _is_noise_candidate(title: str, href: str, context: str) -> bool:
     return False
 
 
+def _registrable_domain(hostname: str) -> str:
+    parts = [part for part in hostname.lower().split(".") if part]
+    if len(parts) >= 2:
+        return ".".join(parts[-2:])
+    return hostname.lower()
+
+
+def _is_usable_job_url(job_url: str) -> bool:
+    parsed = urlparse(job_url)
+    return parsed.scheme in {"", "http", "https"}
+
+
+def _is_allowed_external_job_link(job_url: str, base_url: str | None) -> bool:
+    job_host = urlparse(job_url).netloc.lower()
+    if not job_host:
+        return True
+    if _is_restricted_url(job_url):
+        return False
+    if not base_url:
+        return True
+    base_host = urlparse(base_url).netloc.lower()
+    if not base_host:
+        return True
+    if job_host == base_host:
+        return True
+    if _registrable_domain(job_host) == _registrable_domain(base_host):
+        return True
+    normalized = f"{job_host}{urlparse(job_url).path}".lower()
+    return any(hint in normalized for hint in ALLOWED_EXTERNAL_JOB_HOST_HINTS)
+
+
+def _looks_like_marketing_title(title: str) -> bool:
+    normalized = title.lower()
+    return (
+        normalized.startswith(MARKETING_TITLE_PREFIXES)
+        or normalized in MARKETING_TITLE_EXACT_HINTS
+        or normalized.endswith(" careers")
+        or normalized.endswith("?")
+    )
+
+
+def _looks_like_facet_count_title(title: str) -> bool:
+    normalized = title.lower()
+    if not re.fullmatch(r"[a-z0-9/&,\- ]+\(\d+\)", normalized):
+        return False
+    return any(hint in normalized for hint in FACET_COUNT_TITLE_HINTS)
+
+
+def _has_job_title_hint(title: str) -> bool:
+    normalized = title.lower()
+    return any(
+        re.search(rf"\b{re.escape(hint)}\b", normalized)
+        for hint in JOB_TITLE_HINTS
+    )
+
+
 def _looks_like_empty_results_page(text: str) -> bool:
     normalized = text.lower()
     return any(hint in normalized for hint in EMPTY_RESULTS_HINTS)
@@ -436,8 +561,59 @@ def _has_job_posting_signal(
     return has_meaningful_title and (
         has_job_url_hint
         or has_posting_text
-        or (has_location and any(marker in normalized_description for marker in ("job", "role")))
+        or (has_location and _has_job_title_hint(title))
     )
+
+
+def is_probable_job_listing(
+    job: Mapping[str, Any],
+    *,
+    base_url: str | None = None,
+) -> bool:
+    """Return True when a discovered record looks actionable enough to keep."""
+
+    title = _normalize_job_title_text(job.get("title"))
+    description = _clean_text(job.get("description"))
+    location = _clean_text(job.get("location")) or None
+    job_url = str(job.get("job_url") or "").strip()
+    apply_url = str(job.get("apply_url") or "").strip()
+    external_job_id = _clean_text(job.get("external_job_id"))
+    ats_type = _clean_text(job.get("ats_type"))
+    board_slug = _clean_text(job.get("board_slug"))
+    has_external_identity = bool(external_job_id and (ats_type or board_slug))
+
+    if not title:
+        return False
+    if _looks_like_marketing_title(title) or _looks_like_facet_count_title(title):
+        return False
+    if job_url and not _is_usable_job_url(job_url):
+        return False
+    if job_url and not _is_allowed_external_job_link(job_url, base_url):
+        return False
+    if _is_noise_candidate(title, job_url, description):
+        return False
+
+    has_job_signal = _has_job_posting_signal(
+        title=title,
+        href=" ".join(part for part in (job_url, apply_url) if part),
+        description=description,
+        location=location,
+    )
+    has_job_title = _has_job_title_hint(title)
+    has_context_signal = bool(location) or any(
+        marker in description.lower()
+        for marker in ("posted", "full-time", "part-time", "contract", "requisition", "job")
+    )
+    has_jobish_url = any(
+        hint in " ".join(part for part in (job_url, apply_url) if part).lower()
+        for hint in JOB_URL_HINTS
+    )
+
+    if not job_url and not has_external_identity:
+        return False
+    if has_external_identity or has_jobish_url:
+        return True
+    return has_job_title and (has_job_signal or has_context_signal)
 
 
 def _build_job_record(
@@ -463,16 +639,20 @@ def _build_job_record(
         else (base_url if allow_base_url_fallback else None)
     )
     cleaned_location = _clean_text(location) or extract_location(cleaned_description) or None
-    resolved_href_text = resolved_href or ""
     if not cleaned_title or (resolved_href and _is_restricted_url(resolved_href)):
         return None
-    if _is_noise_candidate(cleaned_title, resolved_href_text, cleaned_description):
-        return None
-    if not structured_source and not _has_job_posting_signal(
-        title=cleaned_title,
-        href=resolved_href_text,
-        description=cleaned_description,
-        location=cleaned_location,
+    if not is_probable_job_listing(
+        {
+            "title": cleaned_title,
+            "location": cleaned_location,
+            "job_url": resolved_href,
+            "apply_url": apply_url,
+            "description": cleaned_description,
+            "external_job_id": None,
+            "ats_type": "structured" if structured_source else None,
+            "board_slug": urlparse(base_url).netloc.lower() if structured_source else None,
+        },
+        base_url=base_url,
     ):
         return None
 

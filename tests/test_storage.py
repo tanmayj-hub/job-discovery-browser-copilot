@@ -15,6 +15,7 @@ from storage.db import (
     get_source_status_rows,
     initialize_database,
     record_source_observation,
+    resolve_pending_interventions_for_company,
     update_intervention_status,
     update_job_status,
     upsert_companies,
@@ -611,6 +612,40 @@ def test_intervention_status_updates_and_notes(tmp_path: Path) -> None:
     assert record["resolved_at"] is not None
     assert "Initial note." in record["notes"]
     assert "Follow-up note." in record["notes"]
+
+
+def test_resolve_pending_interventions_for_company_marks_rows_resolved(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    other_company = _sample_company().copy()
+    other_company["name"] = "Other Co"
+    other_company["careers_url"] = "https://other.example.com"
+    upsert_companies(
+        connection,
+        [_sample_company(), other_company],
+    )
+
+    pending_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        reason="cookie_blocked",
+    )
+    create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Other Co",
+        reason="login_required",
+    )
+
+    resolved_count = resolve_pending_interventions_for_company(
+        connection,
+        company_name="Example Co",
+    )
+    record = next(item for item in get_interventions(connection) if item["id"] == pending_id)
+
+    assert resolved_count == 1
+    assert record["status"] == "resolved"
+    assert record["resolved_at"] is not None
 
 
 def test_record_source_observation_persists_latest_status(tmp_path: Path) -> None:

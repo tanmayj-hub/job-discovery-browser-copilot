@@ -6,6 +6,7 @@ from browser.extraction import (
     extract_jobs_from_html,
     extract_visible_job_cards,
     has_interactive_job_cards,
+    is_probable_job_listing,
     navigate_to_job_search_page,
     search_with_location_term,
 )
@@ -563,3 +564,119 @@ def test_extraction_keeps_infrastructure_and_production_support_before_scoring()
     assert "Infrastructure Analyst" in titles
     assert "Production Support Analyst" in titles
     assert all(score.match_score > 0 for score in scored_jobs)
+
+
+def test_is_probable_job_listing_rejects_marketing_and_facet_noise() -> None:
+    assert is_probable_job_listing(
+        {
+            "title": "Helping drive equality for every future",
+            "job_url": "https://www.womenofinfluence.ca/2026/04/27/katy-waugh",
+            "description": (
+                "We know that inclusion fuels innovation and drives better outcomes for everyone."
+            ),
+        },
+        base_url="https://www.scotiabank.com/careers/en/careers.html",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Why work at Desjardins?",
+            "job_url": "https://www.desjardins.com/en/careers/working-at-desjardins.html",
+            "description": "Benefits that help you succeed and support your growth.",
+        },
+        base_url="https://www.desjardins.com/en/careers.html",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Hybrid (2671)",
+            "job_url": "https://www.ibm.com/careers/search",
+            "description": "Hybrid and Remote jobs Hybrid (2671) Remote only (20).",
+        },
+        base_url="https://www.ibm.com/careers/search",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Living Wage employers",
+            "job_url": "https://www.vancity.com/careers/living-wage",
+            "description": "We are one of Canada's largest private-sector Living Wage employers.",
+        },
+        base_url="https://www.vancity.com/careers",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "always-open job posting",
+            "job_url": (
+                "https://recruiting.ultipro.com/VAN5000VCSCU/JobBoard/"
+                "a46cbdaa-ca2c-49b6-8d2b-e0ceaafa0e25/OpportunityDetail"
+                "?opportunityId=8fde6fbc-383c-41e5-b89b-aded260bc527"
+            ),
+            "description": "Expanding opportunities for Indigenous, Black and Transgender people.",
+        },
+        base_url="https://www.vancity.com/careers",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Demanding more values.",
+            "job_url": "https://www.vancity.com/careers/living-wage",
+            "description": (
+                "Putting people and planet first. We are one of Canada's largest "
+                "private-sector Living Wage employers."
+            ),
+            "location": "Canada",
+        },
+        base_url="https://www.vancity.com/careers",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "TD Careers",
+            "job_url": "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers",
+            "description": "Explore opportunities across TD.",
+        },
+        base_url="https://careers.td.com/",
+    ) is False
+
+
+def test_is_probable_job_listing_requires_actionable_identity() -> None:
+    assert is_probable_job_listing(
+        {
+            "title": (
+                "Infrastructure & Capital Projects - "
+                "Construction Technical Support Coordinator, COM"
+            ),
+            "description": "Toronto Full-time Expand job details",
+            "job_url": None,
+        },
+        base_url="https://www.accenture.com/ca-en/careers/jobsearch",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Cloud Engineer",
+            "job_url": None,
+            "external_job_id": "job-123",
+            "ats_type": "greenhouse",
+            "board_slug": "example",
+            "description": "Remote Canada",
+        },
+        base_url="https://boards.greenhouse.io/example",
+    ) is True
+
+
+def test_is_probable_job_listing_rejects_marketing_support_pages_and_js_links() -> None:
+    assert is_probable_job_listing(
+        {
+            "title": (
+                "IBM Cloud platform Access subject matter experts and content "
+                "to address questions and issues about IBM Cloud"
+            ),
+            "job_url": "https://www.ibm.com/products/cloud/support?lnk=flathl",
+            "description": "Access subject matter experts and content.",
+        },
+        base_url="https://www.ibm.com/careers/search",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Enterprise Operations (415)",
+            "job_url": "javascript:void(0)",
+            "description": "Enterprise Operations jobs and categories.",
+        },
+        base_url="https://www.ibm.com/careers/search",
+    ) is False

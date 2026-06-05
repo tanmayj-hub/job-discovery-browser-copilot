@@ -5,8 +5,15 @@ from pathlib import Path
 
 import yaml
 
-from reports.daily_run import run_daily_workflow
-from storage.db import get_companies, get_jobs, get_source_status_rows, initialize_database
+from reports.daily_run import is_actionable_job, run_daily_workflow
+from storage.db import (
+    get_companies,
+    get_jobs,
+    get_source_status_rows,
+    initialize_database,
+    upsert_companies,
+    upsert_job_record,
+)
 
 
 def _write_companies_yaml(path: Path) -> None:
@@ -112,6 +119,7 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
                     "status": "completed",
                     "jobs_seen": 1,
                     "jobs_new": 0,
+                    "location_scope_used": True,
                     "jobs": [
                         {
                             "company_name": "Human Co",
@@ -183,6 +191,7 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert result.jobs_unchanged == 0
     assert result.duplicates_skipped == 2
     assert len(result.jobs_saved) == 3
+    assert result.location_scope_used is True
     assert result.keyword_scope_used is False
     assert result.artifacts.report_path.exists()
     assert result.artifacts.csv_path.exists()
@@ -203,6 +212,7 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert "## Source Outcomes" in report_text
     assert "| Browser Co | company-careers | browser_allowed | - |" in report_text
     assert "| API Co | greenhouse | api_allowed | - |" in report_text
+    assert "Location scope used: True" in report_text
     assert "Keyword scope used: False" in report_text
     assert "Top Matched Jobs" in report_text
     assert "Companies Skipped" in report_text
@@ -467,3 +477,174 @@ def test_daily_run_surfaces_manual_only_and_api_not_implemented_sources(
     assert source_rows["Manual Co"]["readiness_label"] == "manual_only"
     assert source_rows["API NI Co"]["status"] == "api_collector_not_implemented"
     assert source_rows["API NI Co"]["readiness_label"] == "api_not_implemented"
+
+
+def test_is_actionable_job_rejects_url_less_browser_rows_but_keeps_external_identity() -> None:
+    assert is_actionable_job(
+        {
+            "company_name": "Accenture",
+            "title": "Technical Support Coordinator",
+            "location": "Toronto",
+            "job_url": None,
+            "description": "Technical Support Coordinator Toronto Full-time",
+            "source_mode": "browser_allowed",
+        }
+    ) is False
+    assert is_actionable_job(
+        {
+            "company_name": "API Co",
+            "title": "Cloud Engineer",
+            "location": "Remote Canada",
+            "job_url": None,
+            "description": "Remote job",
+            "source_mode": "api_allowed",
+            "external_job_id": "12345",
+            "ats_type": "greenhouse",
+            "board_slug": "example",
+        }
+    ) is True
+
+
+def test_daily_run_prefers_non_empty_yaml_careers_url_over_stale_db_value(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "companies.yaml"
+    db_path = tmp_path / "job_discovery.db"
+    exports_dir = tmp_path / "exports"
+    _write_companies_yaml(config_path)
+
+    connection = initialize_database(db_path)
+    upsert_companies(
+        connection,
+        [
+            {
+                "name": "Browser Co",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+                "careers_url": "https://stale.browser.example.com",
+                "website_category": "company-careers",
+                "ats_hint": "",
+                "canada_hubs_notes": "Toronto",
+                "role_families": ["Cloud", "DevOps"],
+                "keywords": ["cloud", "terraform"],
+                "priority": "High",
+                "monitoring_hint": "Manual check",
+                "status": "Watching",
+                "source_mode": "browser_allowed",
+            }
+        ],
+    )
+
+    def sample_collector(
+        _connection,
+        companies: list[dict[str, object]],
+    ) -> list[dict[str, object]]:
+        company = companies[0]
+        return [
+            {
+                "company_name": str(company["name"]),
+                "source_name": str(company.get("website_category") or company["name"]),
+                "status": "completed",
+                "jobs": [],
+            }
+        ]
+
+    run_daily_workflow(
+        config_path=config_path,
+        db_path=db_path,
+        exports_dir=exports_dir,
+        run_date=date(2026, 6, 5),
+        collectors={
+            "api_allowed": sample_collector,
+            "browser_allowed": sample_collector,
+            "human_in_loop": sample_collector,
+        },
+    )
+
+    refreshed = initialize_database(db_path)
+    companies = {company["name"]: company for company in get_companies(refreshed)}
+
+    assert companies["Browser Co"]["careers_url"] == "https://careers.browser.example.com"
+
+
+def test_daily_run_rejects_existing_non_actionable_new_jobs(tmp_path: Path) -> None:
+    config_path = tmp_path / "companies.yaml"
+    db_path = tmp_path / "job_discovery.db"
+    exports_dir = tmp_path / "exports"
+    _write_companies_yaml(config_path)
+
+    connection = initialize_database(db_path)
+    upsert_companies(
+        connection,
+        [
+            {
+                "name": "Scotiabank",
+                "sector": "Banking & Capital Markets",
+                "category": "Bank/Market",
+                "careers_url": "https://www.scotiabank.com/careers/en/careers.html",
+                "website_category": "jobs.",
+                "ats_hint": "",
+                "canada_hubs_notes": "Canada",
+                "role_families": ["Cloud"],
+                "keywords": ["cloud"],
+                "priority": "High",
+                "monitoring_hint": "Manual check",
+                "status": "Watching",
+                "source_mode": "browser_allowed",
+            }
+        ],
+    )
+    upsert_job_record(
+        connection,
+        {
+            "company_name": "Scotiabank",
+            "title": "Helping drive equality for every future",
+            "location": "Canada",
+            "job_url": "https://www.womenofinfluence.ca/2026/04/27/katy-waugh",
+            "apply_url": None,
+            "source_name": "jobs.",
+            "source_mode": "browser_allowed",
+            "description": "Inclusion fuels innovation and drives better outcomes.",
+            "date_posted": None,
+            "match_score": 16,
+            "match_reasons": ["support/ops signals: support"],
+            "risk_flags": [],
+            "status": "new",
+        },
+    )
+
+    def sample_collector(
+        _connection,
+        companies: list[dict[str, object]],
+    ) -> list[dict[str, object]]:
+        company = companies[0]
+        return [
+            {
+                "company_name": str(company["name"]),
+                "source_name": str(company.get("website_category") or company["name"]),
+                "status": "completed",
+                "jobs": [],
+            }
+        ]
+
+    run_daily_workflow(
+        config_path=config_path,
+        db_path=db_path,
+        exports_dir=exports_dir,
+        run_date=date(2026, 6, 5),
+        collectors={
+            "api_allowed": sample_collector,
+            "browser_allowed": sample_collector,
+            "human_in_loop": sample_collector,
+        },
+    )
+
+    refreshed = initialize_database(db_path)
+    stored_jobs = [
+        job
+        for job in get_jobs(refreshed)
+        if job["title"] == "Helping drive equality for every future"
+    ]
+
+    assert len(stored_jobs) == 1
+    assert stored_jobs[0]["status"] == "rejected"

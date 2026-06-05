@@ -1002,10 +1002,7 @@ def get_source_status_rows(connection: sqlite3.Connection) -> list[dict[str, Any
         record["collector"] = record.get("last_collector")
         record["error"] = record.get("last_error")
         record["source_url"] = record.get("source_url")
-        record["readiness_label"] = (
-            str(record.get("readiness_label") or "").strip()
-            or compute_source_readiness(record)
-        )
+        record["readiness_label"] = compute_source_readiness(record)
         source_rows.append(record)
     return source_rows
 
@@ -1219,6 +1216,27 @@ def update_intervention_status(
             (status, intervention_id),
         )
     connection.commit()
+
+
+def resolve_pending_interventions_for_company(
+    connection: sqlite3.Connection,
+    *,
+    company_name: str,
+) -> int:
+    """Resolve pending interventions for a company after a successful rerun."""
+
+    cursor = connection.execute(
+        """
+        UPDATE interventions
+        SET status = 'resolved',
+            resolved_at = CURRENT_TIMESTAMP
+        WHERE company_name = ?
+          AND COALESCE(status, 'pending') = 'pending'
+        """,
+        (company_name,),
+    )
+    connection.commit()
+    return int(cursor.rowcount or 0)
 
 
 def append_intervention_notes(

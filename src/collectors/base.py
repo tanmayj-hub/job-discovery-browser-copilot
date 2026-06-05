@@ -46,6 +46,8 @@ class CollectorResult:
     error: str | None = None
     fallback_used: bool = False
     intervention_required: bool = False
+    location_scope_used: bool = False
+    keyword_scope_used: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

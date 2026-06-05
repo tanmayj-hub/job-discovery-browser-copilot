@@ -12,6 +12,7 @@ from typing import Any
 
 import yaml
 
+from browser.extraction import is_probable_job_listing
 from classifier.source_classifier import classify_source
 from collectors.router import collect_companies_routed
 from processing.score import score_job
@@ -25,8 +26,10 @@ from storage.db import (
     get_companies,
     get_intervention_queue,
     get_job_by_id,
+    get_jobs,
     initialize_database,
     record_source_observation,
+    update_job_status,
     upsert_companies,
     upsert_job_record,
 )
@@ -94,7 +97,7 @@ def classify_company_sources(
         merged = dict(company)
         existing = existing_companies.get(str(company["name"]))
         if existing:
-            if existing.get("careers_url"):
+            if not merged.get("careers_url") and existing.get("careers_url"):
                 merged["careers_url"] = existing["careers_url"]
             if existing.get("source_mode") in {"manual_only", "avoid"}:
                 merged["source_mode"] = existing["source_mode"]
@@ -175,6 +178,12 @@ def is_relevant_scored_job(job: dict[str, Any]) -> bool:
     )
 
 
+def is_actionable_job(job: dict[str, Any]) -> bool:
+    """Reject non-job or non-actionable records before persistence."""
+
+    return is_probable_job_listing(job, base_url=job.get("job_url") or None)
+
+
 def deduplicate_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Deduplicate normalized jobs in memory before persistence."""
 
@@ -225,6 +234,20 @@ def save_jobs(connection, jobs: list[dict[str, Any]]) -> dict[str, Any]:
         "jobs_unchanged": jobs_unchanged,
         "source_actions": source_actions,
     }
+
+
+def reject_non_actionable_new_jobs(connection) -> int:
+    """Mark previously saved non-actionable rows as rejected."""
+
+    rejected = 0
+    for job in get_jobs(connection):
+        if str(job.get("status") or "new") != "new":
+            continue
+        if is_actionable_job(job):
+            continue
+        update_job_status(connection, int(job["id"]), "rejected")
+        rejected += 1
+    return rejected
 
 
 def default_collectors() -> dict[str, CollectorFunc]:
@@ -675,7 +698,9 @@ def run_daily_workflow(
     deduped_jobs = deduplicate_jobs(normalized_jobs)
     duplicates_skipped = max(0, len(normalized_jobs) - len(deduped_jobs))
     scored_jobs = [score_normalized_job(job) for job in deduped_jobs]
-    relevant_jobs = [job for job in scored_jobs if is_relevant_scored_job(job)]
+    relevant_jobs = [
+        job for job in scored_jobs if is_actionable_job(job) and is_relevant_scored_job(job)
+    ]
     save_summary = save_jobs(connection, relevant_jobs)
     saved_jobs = save_summary["jobs"]
     raw_count_by_source = Counter(
@@ -749,6 +774,7 @@ def run_daily_workflow(
                 duplicates_skipped=int(item.get("duplicates_skipped", 0) or 0),
             )
 
+    reject_non_actionable_new_jobs(connection)
     source_metrics = summarize_source_metrics(routing_results)
     artifacts = build_daily_artifact_paths(exports_dir, run_date=effective_date)
     write_jobs_csv(artifacts.csv_path, saved_jobs)

@@ -12,6 +12,7 @@ from browser.interventions import (
     detect_browser_barriers,
 )
 from collectors.browser_collector import (
+    _source_navigation_timeout_ms,
     collect_browser_jobs,
     collect_company_jobs,
     load_source_scope_locations,
@@ -172,3 +173,20 @@ source_scope:
     )
 
     assert load_source_scope_locations(config_path) == ("Canada", "Toronto", "Remote")
+
+
+def test_source_navigation_timeout_extends_for_tech_mahindra() -> None:
+    assert (
+        _source_navigation_timeout_ms(
+            "Tech Mahindra",
+            "https://careers.techmahindra.com/",
+        )
+        == 30_000
+    )
+    assert (
+        _source_navigation_timeout_ms(
+            "Example Browser Co",
+            "https://careers.example.com",
+        )
+        == 15_000
+    )

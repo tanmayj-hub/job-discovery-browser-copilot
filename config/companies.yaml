@@ -277,7 +277,7 @@ companies:
   status: Watching
   source_mode: human_in_loop
   ats_hint: ultipro
-  careers_url: https://jobs.vancity.com/
+  careers_url: https://www.vancity.com/careers
 - name: TMX Group
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -697,7 +697,7 @@ companies:
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://careers.dxc.com/global/en/home
+  careers_url: https://careers.dxc.com/job-search-results/
 - name: Genpact
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI

@@ -100,6 +100,8 @@ def _as_collector_result(
         error=result.get("error"),
         fallback_used=fallback_used,
         intervention_required=intervention_required,
+        location_scope_used=bool(result.get("location_scope_used", False)),
+        keyword_scope_used=bool(result.get("keyword_scope_used", False)),
     )
 
 

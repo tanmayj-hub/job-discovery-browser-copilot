@@ -557,6 +557,7 @@ def test_router_result_includes_core_fields(
                 "jobs_scored": 1,
                 "jobs_relevant": 1,
                 "jobs_saved": 1,
+                "location_scope_used": True,
                 "jobs": [],
             }
         ]
@@ -586,4 +587,6 @@ def test_router_result_includes_core_fields(
     assert payload["jobs_discovered"] == 1
     assert payload["jobs_saved"] == 1
     assert payload["fallback_used"] is True
+    assert payload["location_scope_used"] is True
+    assert payload["keyword_scope_used"] is False
     assert "Static JSON-LD precheck failed" in str(payload["error"])

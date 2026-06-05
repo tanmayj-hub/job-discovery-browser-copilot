@@ -31,6 +31,17 @@ def test_compute_source_readiness_maps_expected_states() -> None:
     )
     assert (
         compute_source_readiness(
+            {
+                "source_mode": "human_in_loop",
+                "status": "completed",
+                "collector": "browser",
+                "intervention_required": False,
+            }
+        )
+        == "ready_browser"
+    )
+    assert (
+        compute_source_readiness(
             {"source_mode": "manual_only", "status": "manual_only"}
         )
         == "manual_only"

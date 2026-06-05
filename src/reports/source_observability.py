@@ -53,10 +53,12 @@ def compute_source_readiness(source: Mapping[str, Any]) -> str:
         return "needs_url"
     if status == "manual_only" or source_mode == "manual_only":
         return "manual_only"
-    if status == "paused" or intervention_required or source_mode == "human_in_loop":
+    if status == "paused" or intervention_required:
         return "needs_human"
     if collector == "static_jsonld" and is_success_status(status):
         return "ready_static_jsonld"
+    if collector in BROWSER_COLLECTORS and is_success_status(status):
+        return "ready_browser"
     if source_mode == "api_allowed":
         return "ready_api"
     if source_mode == "browser_allowed":
