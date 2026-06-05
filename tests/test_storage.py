@@ -363,6 +363,43 @@ def test_lever_external_identity_prevents_duplicate_rows(tmp_path: Path) -> None
     assert count == 1
 
 
+def test_api_jobs_with_same_title_and_location_keep_distinct_external_ids(
+    tmp_path: Path,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    first_id = upsert_job(
+        connection,
+        _sample_job(
+            title="DevOps Engineer",
+            location="Canada - Toronto",
+            source_name="lever",
+            job_url="https://jobs.lever.co/example/abc123",
+            external_job_id="abc123",
+            ats_type="lever",
+            board_slug="example",
+        ),
+    )
+    second_id = upsert_job(
+        connection,
+        _sample_job(
+            title="DevOps Engineer",
+            location="Canada - Toronto",
+            source_name="lever",
+            job_url="https://jobs.lever.co/example/xyz789",
+            external_job_id="xyz789",
+            ats_type="lever",
+            board_slug="example",
+        ),
+    )
+
+    count = connection.execute("SELECT COUNT(*) AS count FROM jobs").fetchone()["count"]
+
+    assert second_id != first_id
+    assert count == 2
+
+
 def test_build_job_identity_prioritizes_company_ats_board_and_external_id() -> None:
     identity = build_job_identity(
         _sample_job(

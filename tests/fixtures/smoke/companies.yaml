@@ -1,0 +1,147 @@
+companies:
+- name: Stripe Smoke
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  website_category: greenhouse
+  careers_url: https://boards.greenhouse.io/stripe
+  ats_hint: greenhouse
+  canada_hubs_notes: Controlled smoke test API source
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  keywords:
+  - cloud
+  - terraform
+  priority: High
+  monitoring_hint: Smoke test
+  status: Watching
+  source_mode: api_allowed
+- name: Veeva Smoke
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  website_category: lever
+  careers_url: https://jobs.lever.co/veeva
+  ats_hint: lever
+  canada_hubs_notes: Controlled smoke test API source
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  keywords:
+  - cloud
+  - linux
+  priority: High
+  monitoring_hint: Smoke test
+  status: Watching
+  source_mode: api_allowed
+- name: Notion Smoke
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  website_category: ashby
+  careers_url: https://jobs.ashbyhq.com/notion
+  ats_hint: ashby
+  canada_hubs_notes: Controlled smoke test API source
+  role_families:
+  - Cloud
+  - DevOps
+  - Platform
+  keywords:
+  - cloud
+  - platform
+  priority: High
+  monitoring_hint: Smoke test
+  status: Watching
+  source_mode: api_allowed
+- name: Static JSONLD Smoke
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  website_category: company-careers
+  careers_url: http://127.0.0.1:8765/jsonld_table_page1.html
+  canada_hubs_notes: Controlled smoke test local fixture
+  role_families:
+  - Cloud
+  - Support
+  keywords:
+  - cloud
+  - linux
+  priority: High
+  monitoring_hint: Smoke test
+  status: Watching
+  source_mode: browser_allowed
+- name: Browser Fallback Smoke
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  website_category: company-careers
+  careers_url: http://127.0.0.1:8765/anchors_cards.html
+  canada_hubs_notes: Controlled smoke test local fixture
+  role_families:
+  - Cloud
+  - DevOps
+  keywords:
+  - cloud
+  - devops
+  priority: High
+  monitoring_hint: Smoke test
+  status: Watching
+  source_mode: browser_allowed
+- name: Human In Loop Smoke
+  sector: Banking & Capital Markets
+  category: Bank/Market
+  website_category: workday
+  careers_url: http://127.0.0.1:8765/human_in_loop_location_gate.html
+  ats_hint: workday
+  canada_hubs_notes: Controlled smoke test local barrier page
+  role_families:
+  - Cloud
+  - DevOps
+  keywords:
+  - cloud
+  - support
+  priority: High
+  monitoring_hint: Smoke test
+  status: Watching
+  source_mode: human_in_loop
+- name: Manual Only Smoke
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  website_category: LinkedIn
+  careers_url: https://www.linkedin.com/jobs/view/example
+  canada_hubs_notes: Controlled smoke test restricted board
+  role_families:
+  - Cloud
+  keywords:
+  - cloud
+  priority: Medium
+  monitoring_hint: Smoke test
+  status: Watching
+  source_mode: browser_allowed
+- name: Needs URL Smoke
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  website_category: company-careers
+  careers_url:
+  canada_hubs_notes: Controlled smoke test missing URL
+  role_families:
+  - Cloud
+  keywords:
+  - cloud
+  priority: Medium
+  monitoring_hint: Smoke test
+  status: Watching
+  source_mode: browser_allowed
+- name: SmartRecruiters Smoke
+  sector: IT Consulting & Systems Integrators
+  category: Consulting/SI
+  website_category: smartrecruiters
+  careers_url: https://jobs.smartrecruiters.com/Example/example
+  ats_hint: smartrecruiters
+  canada_hubs_notes: Controlled smoke test not implemented ATS
+  role_families:
+  - Cloud
+  keywords:
+  - cloud
+  priority: Medium
+  monitoring_hint: Smoke test
+  status: Watching
+  source_mode: browser_allowed

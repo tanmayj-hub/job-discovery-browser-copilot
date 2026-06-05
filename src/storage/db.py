@@ -489,7 +489,7 @@ def _build_identity_candidates(job: Mapping[str, Any]) -> list[tuple[str, ...]]:
     if strongest[0] != "job_url" and normalized_url:
         candidates.append(("job_url", normalized_url))
     fallback = ("company_title_location_source", company_name, title, location, source_name)
-    if strongest[0] != "company_title_location_source":
+    if strongest[0] in {"job_url", "company_title_location_source"}:
         candidates.append(fallback)
 
     seen: set[tuple[str, ...]] = set()
