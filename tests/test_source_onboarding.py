@@ -9,6 +9,7 @@ from openpyxl import Workbook
 from onboarding.live_discovery import FetchedPage
 from onboarding.source_onboarding import (
     apply_approved_candidates,
+    audit_large_company_list,
     generate_candidates,
     generate_candidates_from_input,
     load_candidate_file,
@@ -61,6 +62,54 @@ def _write_reference_workbook(path: Path, rows: list[list[object]]) -> None:
     )
     for row in rows:
         sheet.append(row)
+    workbook.save(path)
+
+
+def _write_large_list_workbook(
+    path: Path,
+    rows: list[dict[str, object]],
+) -> None:
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Companies"
+    headers = [
+        "Company",
+        "Careers page URL (fill in)",
+        "website category",
+        "Sector",
+        "Category",
+        "Canada hubs / notes",
+        "Role families",
+        "Suggested search keywords",
+        "Early-career pipeline",
+        "Priority",
+        "Monitoring hint",
+        "Status",
+        "Last checked",
+        "Notes",
+    ]
+    sheet.append(headers)
+    for row_index, row in enumerate(rows, start=2):
+        values = [
+            row.get("company_name"),
+            row.get("career_display_text"),
+            row.get("website_category"),
+            row.get("sector"),
+            row.get("category"),
+            row.get("canada_hubs_notes"),
+            row.get("role_families"),
+            row.get("keywords"),
+            row.get("early_career_pipeline"),
+            row.get("priority"),
+            row.get("monitoring_hint"),
+            row.get("status"),
+            row.get("last_checked"),
+            row.get("notes"),
+        ]
+        sheet.append(values)
+        hyperlink = row.get("career_hyperlink")
+        if hyperlink:
+            sheet.cell(row=row_index, column=2).hyperlink = str(hyperlink)
     workbook.save(path)
 
 
@@ -1065,6 +1114,284 @@ def test_live_discovery_ignores_numeric_job_detail_links(tmp_path: Path) -> None
     }
     assert "https://www.detailco.com/careers" in live_urls
     assert "https://www.detailco.com/careers/12345" not in live_urls
+
+
+def test_readiness_audit_identifies_already_configured_company(tmp_path: Path) -> None:
+    workbook_path = tmp_path / "large-list.xlsx"
+    companies_path = tmp_path / "companies.yaml"
+    starter_path = tmp_path / "starter.yaml"
+    _write_large_list_workbook(
+        workbook_path,
+        [
+            {
+                "company_name": "EQ Bank",
+                "career_display_text": "EQ Careers",
+                "sector": "Banking & Capital Markets",
+                "category": "Bank/Market",
+                "priority": "High",
+                "status": "Watching",
+            }
+        ],
+    )
+    _write_companies_yaml(
+        companies_path,
+        [
+            {
+                "name": "EQ Bank (Equitable Bank)",
+                "careers_url": "https://www.eqbank.ca/careers",
+                "source_mode": "browser_allowed",
+                "ats_hint": "",
+                "status": "Watching",
+            }
+        ],
+    )
+    _write_starter_yaml(starter_path, [])
+
+    result = audit_large_company_list(
+        input_path=workbook_path,
+        companies_path=companies_path,
+        starter_path=starter_path,
+        readiness_output_path=tmp_path / "readiness.csv",
+        candidates_output_path=tmp_path / "candidates.yaml",
+        report_output_path=tmp_path / "report.md",
+        needs_website_output_path=tmp_path / "needs-website.csv",
+        inspected_input_paths=(workbook_path,),
+    )
+
+    row = result["rows"][0]
+    assert row.existing_config_match is True
+    assert row.existing_config_url == "https://www.eqbank.ca/careers"
+    assert row.readiness_status == "already_configured"
+
+
+def test_readiness_audit_extracts_spreadsheet_hyperlink_url(tmp_path: Path) -> None:
+    workbook_path = tmp_path / "large-list.xlsx"
+    _write_large_list_workbook(
+        workbook_path,
+        [
+            {
+                "company_name": "Hyperlink Co",
+                "career_display_text": "Open roles",
+                "career_hyperlink": "https://jobs.lever.co/hyperlink-co",
+                "website_category": "lever",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+                "priority": "High",
+                "status": "Watching",
+            }
+        ],
+    )
+    _write_companies_yaml(tmp_path / "companies.yaml", [])
+    _write_starter_yaml(tmp_path / "starter.yaml", [])
+
+    result = audit_large_company_list(
+        input_path=workbook_path,
+        companies_path=tmp_path / "companies.yaml",
+        starter_path=tmp_path / "starter.yaml",
+        readiness_output_path=tmp_path / "readiness.csv",
+        candidates_output_path=tmp_path / "candidates.yaml",
+        report_output_path=tmp_path / "report.md",
+        needs_website_output_path=tmp_path / "needs-website.csv",
+        inspected_input_paths=(workbook_path,),
+    )
+
+    row = result["rows"][0]
+    assert row.spreadsheet_career_url_or_hyperlink == "https://jobs.lever.co/hyperlink-co"
+    assert row.detected_ats_type == "lever"
+    assert row.suggested_source_mode == "api_allowed"
+
+
+def test_readiness_audit_distinguishes_display_text_from_hyperlink_target(tmp_path: Path) -> None:
+    workbook_path = tmp_path / "large-list.xlsx"
+    _write_large_list_workbook(
+        workbook_path,
+        [
+            {
+                "company_name": "Display Co",
+                "career_display_text": "Display label only",
+                "career_hyperlink": "https://boards.greenhouse.io/displayco",
+                "website_category": "greenhouse",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+            }
+        ],
+    )
+    _write_companies_yaml(tmp_path / "companies.yaml", [])
+    _write_starter_yaml(tmp_path / "starter.yaml", [])
+
+    result = audit_large_company_list(
+        input_path=workbook_path,
+        companies_path=tmp_path / "companies.yaml",
+        starter_path=tmp_path / "starter.yaml",
+        readiness_output_path=tmp_path / "readiness.csv",
+        candidates_output_path=tmp_path / "candidates.yaml",
+        report_output_path=tmp_path / "report.md",
+        needs_website_output_path=tmp_path / "needs-website.csv",
+        inspected_input_paths=(workbook_path,),
+    )
+
+    row = result["rows"][0]
+    assert row.spreadsheet_career_display_text == "Display label only"
+    assert (
+        row.spreadsheet_career_url_or_hyperlink
+        == "https://boards.greenhouse.io/displayco"
+    )
+
+
+def test_readiness_audit_marks_missing_urls_for_manual_or_website_follow_up(
+    tmp_path: Path,
+) -> None:
+    workbook_path = tmp_path / "large-list.xlsx"
+    _write_large_list_workbook(
+        workbook_path,
+        [
+            {
+                "company_name": "Manual Co",
+                "career_display_text": "Careers page coming soon",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+            },
+            {
+                "company_name": "Website Co",
+                "career_display_text": "",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+            },
+        ],
+    )
+    _write_companies_yaml(tmp_path / "companies.yaml", [])
+    _write_starter_yaml(tmp_path / "starter.yaml", [])
+
+    result = audit_large_company_list(
+        input_path=workbook_path,
+        companies_path=tmp_path / "companies.yaml",
+        starter_path=tmp_path / "starter.yaml",
+        readiness_output_path=tmp_path / "readiness.csv",
+        candidates_output_path=tmp_path / "candidates.yaml",
+        report_output_path=tmp_path / "report.md",
+        needs_website_output_path=tmp_path / "needs-website.csv",
+        inspected_input_paths=(workbook_path,),
+    )
+
+    manual_row = next(row for row in result["rows"] if row.company_name == "Manual Co")
+    website_row = next(row for row in result["rows"] if row.company_name == "Website Co")
+    assert manual_row.readiness_status == "needs_manual_career_url"
+    assert website_row.readiness_status == "needs_website_url"
+
+
+def test_readiness_audit_does_not_auto_apply_candidates(tmp_path: Path) -> None:
+    workbook_path = tmp_path / "large-list.xlsx"
+    companies_path = tmp_path / "companies.yaml"
+    starter_path = tmp_path / "starter.yaml"
+    _write_large_list_workbook(
+        workbook_path,
+        [
+            {
+                "company_name": "Candidate Co",
+                "career_display_text": "Roles",
+                "career_hyperlink": "https://candidate.example.com/careers",
+                "website_category": "company-careers",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+            }
+        ],
+    )
+    _write_companies_yaml(companies_path, [])
+    _write_starter_yaml(starter_path, [])
+    before = companies_path.read_text(encoding="utf-8")
+
+    result = audit_large_company_list(
+        input_path=workbook_path,
+        companies_path=companies_path,
+        starter_path=starter_path,
+        readiness_output_path=tmp_path / "readiness.csv",
+        candidates_output_path=tmp_path / "candidates.yaml",
+        report_output_path=tmp_path / "report.md",
+        needs_website_output_path=tmp_path / "needs-website.csv",
+        inspected_input_paths=(workbook_path,),
+    )
+    after = companies_path.read_text(encoding="utf-8")
+
+    assert len(result["candidates"]) == 1
+    assert before == after
+
+
+def test_large_list_candidate_output_defaults_approved_false(tmp_path: Path) -> None:
+    workbook_path = tmp_path / "large-list.xlsx"
+    candidates_path = tmp_path / "candidates.yaml"
+    _write_large_list_workbook(
+        workbook_path,
+        [
+            {
+                "company_name": "Starter Candidate Co",
+                "career_display_text": "",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+            }
+        ],
+    )
+    _write_companies_yaml(tmp_path / "companies.yaml", [])
+    _write_starter_yaml(
+        tmp_path / "starter.yaml",
+        [
+            {
+                "name": "Starter Candidate Co",
+                "careers_url": "https://starter.example.com/careers",
+                "confidence": "medium",
+                "notes": "starter",
+            }
+        ],
+    )
+
+    audit_large_company_list(
+        input_path=workbook_path,
+        companies_path=tmp_path / "companies.yaml",
+        starter_path=tmp_path / "starter.yaml",
+        readiness_output_path=tmp_path / "readiness.csv",
+        candidates_output_path=candidates_path,
+        report_output_path=tmp_path / "report.md",
+        needs_website_output_path=tmp_path / "needs-website.csv",
+        inspected_input_paths=(workbook_path,),
+    )
+    payload = yaml.safe_load(candidates_path.read_text(encoding="utf-8"))
+
+    assert payload["candidates"][0]["approved"] is False
+
+
+def test_restricted_large_list_candidate_is_manual_only(tmp_path: Path) -> None:
+    workbook_path = tmp_path / "large-list.xlsx"
+    _write_large_list_workbook(
+        workbook_path,
+        [
+            {
+                "company_name": "Restricted Large Co",
+                "career_display_text": "LinkedIn jobs",
+                "career_hyperlink": "https://www.linkedin.com/jobs/view/123",
+                "website_category": "LinkedIn",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+            }
+        ],
+    )
+    _write_companies_yaml(tmp_path / "companies.yaml", [])
+    _write_starter_yaml(tmp_path / "starter.yaml", [])
+
+    result = audit_large_company_list(
+        input_path=workbook_path,
+        companies_path=tmp_path / "companies.yaml",
+        starter_path=tmp_path / "starter.yaml",
+        readiness_output_path=tmp_path / "readiness.csv",
+        candidates_output_path=tmp_path / "candidates.yaml",
+        report_output_path=tmp_path / "report.md",
+        needs_website_output_path=tmp_path / "needs-website.csv",
+        inspected_input_paths=(workbook_path,),
+    )
+
+    row = result["rows"][0]
+    candidate = result["candidates"][0]
+    assert row.readiness_status == "restricted_manual_only"
+    assert candidate.suggested_source_mode == "manual_only"
+    assert candidate.approved is False
 
 
 def test_problem_source_refresh_discovers_replacement_candidate(tmp_path: Path) -> None:

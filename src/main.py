@@ -43,12 +43,14 @@ def get_onboarding_api():
 
     from onboarding.source_onboarding import (
         apply_approved_candidates,
+        audit_large_company_list,
         generate_candidates_from_input,
         refresh_sources,
         weekly_source_check,
     )
 
     return {
+        "audit_large_company_list": audit_large_company_list,
         "apply_approved_candidates": apply_approved_candidates,
         "generate_candidates_from_input": generate_candidates_from_input,
         "refresh_sources": refresh_sources,
@@ -231,6 +233,41 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Allow approved candidates to update existing companies.",
     )
+
+    onboarding_audit = onboarding_subparsers.add_parser(
+        "audit-large-list",
+        help="Audit the 150-company spreadsheet for readiness without changing config",
+    )
+    onboarding_audit.add_argument(
+        "--input",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "input" / "Rishi canada companies list (1).xlsx",
+        help="Spreadsheet path to audit.",
+    )
+    onboarding_audit.add_argument(
+        "--readiness-output",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "exports" / "company-input-readiness.csv",
+        help="CSV output for readiness rows.",
+    )
+    onboarding_audit.add_argument(
+        "--candidates-output",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "exports" / "large-list-source-candidates.yaml",
+        help="YAML output for reviewable source candidates.",
+    )
+    onboarding_audit.add_argument(
+        "--report-output",
+        type=Path,
+        default=PROJECT_ROOT / "docs" / "large-company-list-readiness-report.md",
+        help="Markdown output for the readiness report.",
+    )
+    onboarding_audit.add_argument(
+        "--needs-website-output",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "exports" / "large-list-needs-website-input.csv",
+        help="Optional CSV output for companies that still need a website URL.",
+    )
     return parser
 
 
@@ -347,6 +384,32 @@ def main(argv: list[str] | None = None) -> int:
             update_existing=args.update_existing,
         )
         print(summary)
+        return 0
+
+    if args.command == "onboard" and args.onboarding_command == "audit-large-list":
+        result = onboarding_api["audit_large_company_list"](
+            input_path=args.input,
+            companies_path=COMPANIES_CONFIG_PATH,
+            starter_path=PROJECT_ROOT / "config" / "starter_career_urls.yaml",
+            readiness_output_path=args.readiness_output,
+            candidates_output_path=args.candidates_output,
+            report_output_path=args.report_output,
+            needs_website_output_path=args.needs_website_output,
+        )
+        print(
+            {
+                "total_companies": result["summary"]["total_companies"],
+                "already_configured_count": result["summary"]["already_configured_count"],
+                "usable_url_count": result["summary"]["usable_url_count"],
+                "missing_url_count": result["summary"]["missing_url_count"],
+                "spreadsheet_hyperlink_count": result["summary"]["spreadsheet_hyperlink_count"],
+                "starter_url_match_count": result["summary"]["starter_url_match_count"],
+                "candidate_count": result["summary"]["candidate_count"],
+                "readiness_output_path": str(args.readiness_output),
+                "candidates_output_path": str(args.candidates_output),
+                "report_output_path": str(args.report_output),
+            }
+        )
         return 0
 
     raise ValueError(f"Unsupported command: {args.command}")

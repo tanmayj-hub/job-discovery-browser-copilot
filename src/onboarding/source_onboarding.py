@@ -5,8 +5,10 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import shutil
 import sys
+from collections import Counter
 from datetime import UTC, datetime
 from importlib import import_module
 from pathlib import Path
@@ -55,8 +57,23 @@ except ModuleNotFoundError:  # pragma: no cover
     initialize_database = storage_module.initialize_database
 
 DEFAULT_INPUT_PATH = PROJECT_ROOT / "data" / "input" / "companies.txt"
+DEFAULT_LARGE_LIST_INPUT_PATH = (
+    PROJECT_ROOT / "data" / "input" / "Rishi canada companies list (1).xlsx"
+)
 DEFAULT_OUTPUT_PATH = (
     PROJECT_ROOT / "data" / "exports" / "source-onboarding-candidates.yaml"
+)
+DEFAULT_READINESS_OUTPUT_PATH = (
+    PROJECT_ROOT / "data" / "exports" / "company-input-readiness.csv"
+)
+DEFAULT_LARGE_LIST_CANDIDATES_OUTPUT_PATH = (
+    PROJECT_ROOT / "data" / "exports" / "large-list-source-candidates.yaml"
+)
+DEFAULT_NEEDS_WEBSITE_OUTPUT_PATH = (
+    PROJECT_ROOT / "data" / "exports" / "large-list-needs-website-input.csv"
+)
+DEFAULT_LARGE_LIST_REPORT_PATH = (
+    PROJECT_ROOT / "docs" / "large-company-list-readiness-report.md"
 )
 DEFAULT_REFRESH_OUTPUT_PATH = (
     PROJECT_ROOT / "data" / "exports" / "source-refresh-candidates.yaml"
@@ -129,6 +146,54 @@ class OnboardingCandidate(BaseModel):
     current_ats_type: str | None = None
     current_status_or_last_error: str | None = None
     suggested_action: str | None = None
+
+
+class SpreadsheetCompanyRecord(BaseModel):
+    """One large-list spreadsheet row with hyperlink-aware fields."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    company_name: str
+    spreadsheet_career_display_text: str | None = None
+    spreadsheet_career_url_or_hyperlink: str | None = None
+    website_category: str | None = None
+    sector: str | None = None
+    category: str | None = None
+    canada_hubs_notes: str | None = None
+    role_families: list[str] = Field(default_factory=list)
+    keywords: list[str] = Field(default_factory=list)
+    early_career_pipeline: str | None = None
+    priority: str | None = None
+    monitoring_hint: str | None = None
+    status: str | None = None
+    notes: str | None = None
+
+
+class ReadinessAuditRow(BaseModel):
+    """Spreadsheet readiness audit row."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    company_name: str
+    sector: str | None = None
+    category: str | None = None
+    priority: str | None = None
+    status: str | None = None
+    existing_config_match: bool = False
+    existing_config_url: str | None = None
+    spreadsheet_career_display_text: str | None = None
+    spreadsheet_career_url_or_hyperlink: str | None = None
+    starter_url_match: bool = False
+    starter_url: str | None = None
+    usable_url_available: bool = False
+    detected_ats_type: str | None = None
+    suggested_source_mode: str | None = None
+    readiness_status: str
+    recommended_next_action: str
+    notes: str | None = None
+    existing_source_mode: str | None = None
+    existing_ats_hint: str | None = None
+    existing_status: str | None = None
 
 
 def _normalize_company_name(value: str | None) -> str:
@@ -587,6 +652,471 @@ def load_company_names(input_path: Path) -> list[str]:
     return [item.company_name for item in load_company_inputs(input_path)]
 
 
+def _normalize_match_key(value: str | None) -> str:
+    text = str(value or "").strip().lower().replace("&", " and ")
+    cleaned = re.sub(r"[^a-z0-9]+", " ", text)
+    return " ".join(cleaned.split())
+
+
+def _company_match_keys(value: str | None) -> list[str]:
+    raw = str(value or "").strip()
+    if not raw:
+        return []
+    keys: list[str] = []
+
+    def add(text: str) -> None:
+        normalized = _normalize_match_key(text)
+        if normalized and normalized not in keys:
+            keys.append(normalized)
+
+    add(raw)
+    collapsed = re.sub(r"\([^)]*\)", "", raw).strip()
+    if collapsed and collapsed != raw:
+        add(collapsed)
+    for alias in re.findall(r"\(([^)]*)\)", raw):
+        add(alias)
+    for part in re.split(r"/", raw):
+        stripped = part.strip()
+        if stripped and stripped != raw:
+            add(stripped)
+    return keys
+
+
+def _build_match_index(companies: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    index: dict[str, list[dict[str, Any]]] = {}
+    for company in companies:
+        if not isinstance(company, dict):
+            continue
+        for key in _company_match_keys(company.get("name")):
+            index.setdefault(key, []).append(company)
+    return index
+
+
+def _resolve_index_match(
+    index: dict[str, list[dict[str, Any]]],
+    company_name: str,
+) -> tuple[dict[str, Any] | None, bool]:
+    exact_key = _normalize_match_key(company_name)
+    exact_matches = {
+        str(item.get("name") or ""): item
+        for item in index.get(exact_key, [])
+    }
+    if len(exact_matches) == 1:
+        return next(iter(exact_matches.values())), False
+    if len(exact_matches) > 1:
+        return None, True
+
+    matches: dict[str, dict[str, Any]] = {}
+    for key in _company_match_keys(company_name):
+        for item in index.get(key, []):
+            matches[str(item.get("name") or "")] = item
+    if len(matches) == 1:
+        return next(iter(matches.values())), False
+    if len(matches) > 1:
+        return None, True
+    return None, False
+
+
+def _parse_multivalue_text(value: str | None) -> list[str]:
+    text = clean_text(value)
+    if not text:
+        return []
+    parts = re.split(r"[\n,;|]+", text)
+    return [part.strip() for part in parts if part and part.strip()]
+
+
+def _read_hyperlink_target(cell: Any) -> str | None:
+    if cell is None or cell.hyperlink is None:
+        return None
+    target = clean_text(getattr(cell.hyperlink, "target", None))
+    return target or None
+
+
+def load_spreadsheet_company_records(input_path: Path) -> list[SpreadsheetCompanyRecord]:
+    """Load the large-list spreadsheet with hyperlink-aware careers URL handling."""
+
+    workbook = load_workbook(input_path, read_only=False, data_only=False)
+    if "Companies" in workbook.sheetnames:
+        sheet = workbook["Companies"]
+    else:
+        sheet = workbook[workbook.sheetnames[0]]
+    headers = [clean_text(cell.value) or "" for cell in sheet[1]]
+    header_lookup = {header: index for index, header in enumerate(headers)}
+    required_header = "Company"
+    if required_header not in header_lookup:
+        raise ValueError("Spreadsheet must include a Company column.")
+
+    def index_for(*candidates: str) -> int | None:
+        return next((header_lookup[item] for item in candidates if item in header_lookup), None)
+
+    company_index = header_lookup[required_header]
+    careers_index = index_for("Careers page URL (fill in)")
+    website_category_index = index_for("website category")
+    sector_index = index_for("Sector")
+    category_index = index_for("Category")
+    hubs_index = index_for("Canada hubs / notes")
+    role_families_index = index_for("Role families")
+    keywords_index = index_for("Suggested search keywords")
+    early_pipeline_index = index_for("Early-career pipeline")
+    priority_index = index_for("Priority")
+    monitoring_index = index_for("Monitoring hint")
+    status_index = index_for("Status")
+    notes_index = index_for("Notes")
+
+    records: list[SpreadsheetCompanyRecord] = []
+    for row in sheet.iter_rows(min_row=2):
+        company_name = clean_text(row[company_index].value)
+        if not company_name:
+            continue
+
+        careers_cell = row[careers_index] if careers_index is not None else None
+        display_text = clean_text(careers_cell.value if careers_cell is not None else None)
+        hyperlink_target = _read_hyperlink_target(careers_cell)
+        spreadsheet_url = hyperlink_target if is_real_url(hyperlink_target) else None
+
+        records.append(
+            SpreadsheetCompanyRecord(
+                company_name=company_name,
+                spreadsheet_career_display_text=display_text,
+                spreadsheet_career_url_or_hyperlink=spreadsheet_url,
+                website_category=clean_text(
+                    row[website_category_index].value
+                    if website_category_index is not None
+                    else None
+                ),
+                sector=clean_text(
+                    row[sector_index].value if sector_index is not None else None
+                ),
+                category=clean_text(
+                    row[category_index].value if category_index is not None else None
+                ),
+                canada_hubs_notes=clean_text(
+                    row[hubs_index].value if hubs_index is not None else None
+                ),
+                role_families=_parse_multivalue_text(
+                    row[role_families_index].value if role_families_index is not None else None
+                ),
+                keywords=_parse_multivalue_text(
+                    row[keywords_index].value if keywords_index is not None else None
+                ),
+                early_career_pipeline=clean_text(
+                    row[early_pipeline_index].value if early_pipeline_index is not None else None
+                ),
+                priority=clean_text(
+                    row[priority_index].value if priority_index is not None else None
+                ),
+                monitoring_hint=clean_text(
+                    row[monitoring_index].value if monitoring_index is not None else None
+                ),
+                status=clean_text(row[status_index].value if status_index is not None else None),
+                notes=clean_text(row[notes_index].value if notes_index is not None else None),
+            )
+        )
+    return records
+
+
+def _spreadsheet_record_to_source_record(record: SpreadsheetCompanyRecord) -> dict[str, Any]:
+    return {
+        "name": record.company_name,
+        "sector": record.sector,
+        "category": record.category,
+        "website_category": record.website_category,
+        "canada_hubs_notes": record.canada_hubs_notes,
+        "role_families": record.role_families,
+        "keywords": record.keywords,
+        "priority": record.priority,
+        "monitoring_hint": record.monitoring_hint,
+        "status": record.status,
+    }
+
+
+def _best_candidate_url(
+    *,
+    existing_company: dict[str, Any] | None,
+    spreadsheet_record: SpreadsheetCompanyRecord,
+    starter_company: dict[str, Any] | None,
+) -> tuple[str | None, str]:
+    existing_url = clean_text((existing_company or {}).get("careers_url"))
+    if is_real_url(existing_url):
+        return str(existing_url), "existing_config"
+    spreadsheet_url = spreadsheet_record.spreadsheet_career_url_or_hyperlink
+    if is_real_url(spreadsheet_url):
+        return str(spreadsheet_url), "spreadsheet_hyperlink"
+    starter_url = clean_text((starter_company or {}).get("careers_url"))
+    if is_real_url(starter_url):
+        return str(starter_url), "starter_url"
+    return None, "none"
+
+
+def _classify_readiness_status(
+    *,
+    existing_match: bool,
+    ambiguous_match: bool,
+    best_url_source: str,
+    source_mode: str | None,
+    display_text: str | None,
+) -> tuple[str, str]:
+    if ambiguous_match:
+        return "duplicate_or_alias_review", "merge_duplicate"
+    if existing_match:
+        return "already_configured", "no_action"
+    if source_mode == "manual_only":
+        return "restricted_manual_only", "skip_or_manual_tracking"
+    if best_url_source == "spreadsheet_hyperlink":
+        return "ready_with_spreadsheet_url", "review_and_apply"
+    if best_url_source == "starter_url":
+        return "ready_with_starter_url", "review_and_apply"
+    if display_text:
+        return "needs_manual_career_url", "manually_find_career_url"
+    return "needs_website_url", "add_website_for_live_discovery"
+
+
+def _write_readiness_csv(rows: list[ReadinessAuditRow], output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = [
+        "company_name",
+        "sector",
+        "category",
+        "priority",
+        "status",
+        "existing_config_match",
+        "existing_config_url",
+        "spreadsheet_career_display_text",
+        "spreadsheet_career_url_or_hyperlink",
+        "starter_url_match",
+        "starter_url",
+        "usable_url_available",
+        "detected_ats_type",
+        "suggested_source_mode",
+        "readiness_status",
+        "recommended_next_action",
+        "notes",
+    ]
+    with output_path.open("w", encoding="utf-8", newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row.model_dump(include=set(fieldnames)))
+
+
+def _write_needs_website_csv(rows: list[ReadinessAuditRow], output_path: Path) -> None:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8", newline="") as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=["company_name", "website_url", "notes"])
+        writer.writeheader()
+        for row in rows:
+            if row.readiness_status != "needs_website_url":
+                continue
+            writer.writerow(
+                {
+                    "company_name": row.company_name,
+                    "website_url": "",
+                    "notes": row.notes or "Add company website for later live discovery.",
+                }
+            )
+
+
+def _priority_is_high(priority: str | None) -> bool:
+    return str(priority or "").strip().lower() == "high"
+
+
+def _unique_company_names(rows: list[ReadinessAuditRow]) -> list[str]:
+    names: list[str] = []
+    for row in rows:
+        if row.company_name not in names:
+            names.append(row.company_name)
+    return names
+
+
+def _format_company_list(names: list[str], limit: int = 20) -> str:
+    if not names:
+        return "- None"
+    visible = names[:limit]
+    lines = [f"- {name}" for name in visible]
+    remaining = len(names) - len(visible)
+    if remaining > 0:
+        lines.append(f"- ... and {remaining} more")
+    return "\n".join(lines)
+
+
+def _build_large_list_report(
+    *,
+    inspected_inputs: tuple[Path, ...],
+    rows: list[ReadinessAuditRow],
+    candidates: list[OnboardingCandidate],
+    output_path: Path,
+) -> dict[str, Any]:
+    total_companies = len(rows)
+    already_configured_count = sum(1 for row in rows if row.existing_config_match)
+    usable_url_count = sum(1 for row in rows if row.usable_url_available)
+    missing_url_count = sum(1 for row in rows if not row.usable_url_available)
+    spreadsheet_hyperlink_count = sum(
+        1 for row in rows if row.spreadsheet_career_url_or_hyperlink
+    )
+    starter_url_match_count = sum(1 for row in rows if row.starter_url_match)
+    source_mode_distribution = Counter(
+        row.suggested_source_mode or "unknown" for row in rows
+    )
+    ats_type_distribution = Counter(row.detected_ats_type or "none" for row in rows)
+
+    high_priority_ready_now = [
+        row
+        for row in rows
+        if _priority_is_high(row.priority)
+        and row.readiness_status
+        in {"already_configured", "ready_with_spreadsheet_url", "ready_with_starter_url"}
+    ]
+    high_priority_needs_review = [
+        row
+        for row in rows
+        if _priority_is_high(row.priority)
+        and row.readiness_status
+        in {
+            "needs_website_url",
+            "needs_manual_career_url",
+            "restricted_manual_only",
+            "duplicate_or_alias_review",
+        }
+    ]
+    safe_next_batch = [
+        row
+        for row in rows
+        if not row.existing_config_match
+        and row.usable_url_available
+        and row.suggested_source_mode in {"api_allowed", "browser_allowed", "human_in_loop"}
+    ]
+    not_ready = [
+        row
+        for row in rows
+        if row.readiness_status
+        in {
+            "needs_website_url",
+            "needs_manual_career_url",
+            "restricted_manual_only",
+            "duplicate_or_alias_review",
+        }
+    ]
+
+    report = "\n".join(
+        [
+            "# Large Company List Readiness Report",
+            "",
+            "## Verdict",
+            "",
+            "The 150-company spreadsheet has been audited for MVP input readiness.",
+            "Configured companies are separated from additional reviewable source candidates,",
+            "and missing/manual-only rows are clearly marked without changing config.",
+            "",
+            "## Input Files Inspected",
+            "",
+            *[f"- `{path}`" for path in inspected_inputs],
+            "",
+            "## Total Companies In Spreadsheet",
+            "",
+            f"- {total_companies}",
+            "",
+            "## Already Configured Count",
+            "",
+            f"- {already_configured_count}",
+            "",
+            "## Usable URL Count",
+            "",
+            f"- {usable_url_count}",
+            "",
+            "## Missing URL Count",
+            "",
+            f"- {missing_url_count}",
+            "",
+            "## Spreadsheet Hyperlink Count",
+            "",
+            f"- {spreadsheet_hyperlink_count}",
+            "",
+            "## Starter URL Match Count",
+            "",
+            f"- {starter_url_match_count}",
+            "",
+            "## Source Mode Distribution",
+            "",
+            *[f"- `{mode}`: {count}" for mode, count in source_mode_distribution.most_common()],
+            "",
+            "## ATS Type Distribution",
+            "",
+            *[
+                f"- `{ats_type}`: {count}"
+                for ats_type, count in ats_type_distribution.most_common()
+            ],
+            "",
+            "## High-Priority Companies Ready Now",
+            "",
+            _format_company_list(_unique_company_names(high_priority_ready_now)),
+            "",
+            "## High-Priority Companies Needing URL/Manual Review",
+            "",
+            _format_company_list(_unique_company_names(high_priority_needs_review)),
+            "",
+            "## Companies Safe To Test In Next Batch",
+            "",
+            _format_company_list(_unique_company_names(safe_next_batch)),
+            "",
+            "## Companies Not Ready For Testing",
+            "",
+            _format_company_list(_unique_company_names(not_ready)),
+            "",
+            "## Recommended Batch Plan",
+            "",
+            (
+                f"- Batch 1: current configured 34 "
+                f"(`{already_configured_count}` rows matched config in this audit)"
+            ),
+            (
+                f"- Batch 2: additional companies with confirmed URLs "
+                f"(`{len(_unique_company_names(safe_next_batch))}` "
+                f"candidates ready for review/apply)"
+            ),
+            (
+                f"- Batch 3: companies needing website URL/live discovery/manual review "
+                f"(`{len(_unique_company_names(not_ready))}` rows)"
+            ),
+            "",
+            "## Risks And Limitations",
+            "",
+            (
+                "- Spreadsheet display text without a hyperlink is treated as "
+                "unverified and not auto-used as a URL."
+            ),
+            "- Restricted boards such as LinkedIn, Indeed, and Glassdoor remain manual-only.",
+            "- No candidates were auto-applied to `config/companies.yaml`.",
+            "- This is a readiness audit only, not a full 150-company discovery run.",
+            "- Some alias or duplicate matches may still require human review.",
+            "",
+            "## Candidate Generation Summary",
+            "",
+            f"- Reviewable candidates generated: {len(candidates)}",
+            (
+                f"- High-confidence candidates: "
+                f"{sum(1 for item in candidates if item.confidence == 'high')}"
+            ),
+            (
+                f"- Manual-only candidates: "
+                f"{sum(1 for item in candidates if item.suggested_source_mode == 'manual_only')}"
+            ),
+        ]
+    )
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(report + "\n", encoding="utf-8")
+    return {
+        "total_companies": total_companies,
+        "already_configured_count": already_configured_count,
+        "usable_url_count": usable_url_count,
+        "missing_url_count": missing_url_count,
+        "spreadsheet_hyperlink_count": spreadsheet_hyperlink_count,
+        "starter_url_match_count": starter_url_match_count,
+        "source_mode_distribution": dict(source_mode_distribution),
+        "ats_type_distribution": dict(ats_type_distribution),
+        "candidate_count": len(candidates),
+    }
+
+
 def _dedupe_candidates(
     candidates: list[OnboardingCandidate],
 ) -> list[OnboardingCandidate]:
@@ -809,6 +1339,172 @@ def generate_candidates_from_input(
     )
     write_candidates(candidates, output_path)
     return candidates
+
+
+def audit_large_company_list(
+    *,
+    input_path: Path = DEFAULT_LARGE_LIST_INPUT_PATH,
+    companies_path: Path = DEFAULT_COMPANIES_PATH,
+    starter_path: Path = DEFAULT_STARTER_PATH,
+    readiness_output_path: Path = DEFAULT_READINESS_OUTPUT_PATH,
+    candidates_output_path: Path = DEFAULT_LARGE_LIST_CANDIDATES_OUTPUT_PATH,
+    report_output_path: Path = DEFAULT_LARGE_LIST_REPORT_PATH,
+    needs_website_output_path: Path = DEFAULT_NEEDS_WEBSITE_OUTPUT_PATH,
+    inspected_input_paths: tuple[Path, ...] = DEFAULT_REFERENCE_WORKBOOKS,
+) -> dict[str, Any]:
+    """Audit the 150-company spreadsheet for readiness without changing config."""
+
+    spreadsheet_rows = load_spreadsheet_company_records(input_path)
+    config_companies = [
+        company
+        for company in load_yaml_companies(companies_path)
+        if isinstance(company, dict)
+    ]
+    starter_companies = [
+        company
+        for company in load_yaml_companies(starter_path)
+        if isinstance(company, dict)
+    ]
+    config_index = _build_match_index(config_companies)
+    starter_index = _build_match_index(starter_companies)
+
+    readiness_rows: list[ReadinessAuditRow] = []
+    generated_candidates: list[OnboardingCandidate] = []
+
+    for record in spreadsheet_rows:
+        existing_company, config_ambiguous = _resolve_index_match(
+            config_index,
+            record.company_name,
+        )
+        starter_company, starter_ambiguous = _resolve_index_match(
+            starter_index,
+            record.company_name,
+        )
+        best_url, best_url_source = _best_candidate_url(
+            existing_company=existing_company,
+            spreadsheet_record=record,
+            starter_company=starter_company,
+        )
+
+        detected_ats_type: str | None = None
+        suggested_source_mode: str | None = None
+        if best_url:
+            detected_ats_type, suggested_source_mode = _classify_candidate_source(
+                company_name=record.company_name,
+                careers_url=best_url,
+                website_category=record.website_category,
+                ats_hint=clean_text((existing_company or {}).get("ats_hint"))
+                or record.website_category,
+                current_source_mode=clean_text((existing_company or {}).get("source_mode")),
+            )
+        elif existing_company is not None:
+            detected_ats_type, suggested_source_mode = _classify_candidate_source(
+                company_name=record.company_name,
+                careers_url=clean_text(existing_company.get("careers_url")),
+                website_category=clean_text(existing_company.get("website_category")),
+                ats_hint=clean_text(existing_company.get("ats_hint")),
+                current_source_mode=clean_text(existing_company.get("source_mode")),
+            )
+
+        note_parts: list[str] = []
+        if record.notes:
+            note_parts.append(record.notes)
+        if (
+            record.spreadsheet_career_display_text
+            and not record.spreadsheet_career_url_or_hyperlink
+        ):
+            note_parts.append(
+                "spreadsheet careers cell has display text but no hyperlink target"
+            )
+        if config_ambiguous or starter_ambiguous:
+            note_parts.append("multiple possible config/starter matches detected")
+
+        readiness_status, recommended_next_action = _classify_readiness_status(
+            existing_match=existing_company is not None,
+            ambiguous_match=config_ambiguous or starter_ambiguous,
+            best_url_source=best_url_source,
+            source_mode=suggested_source_mode,
+            display_text=record.spreadsheet_career_display_text,
+        )
+        usable_url_available = bool(best_url)
+
+        readiness_row = ReadinessAuditRow(
+            company_name=record.company_name,
+            sector=record.sector,
+            category=record.category,
+            priority=record.priority,
+            status=record.status,
+            existing_config_match=existing_company is not None,
+            existing_config_url=clean_text((existing_company or {}).get("careers_url")),
+            spreadsheet_career_display_text=record.spreadsheet_career_display_text,
+            spreadsheet_career_url_or_hyperlink=record.spreadsheet_career_url_or_hyperlink,
+            starter_url_match=starter_company is not None,
+            starter_url=clean_text((starter_company or {}).get("careers_url")),
+            usable_url_available=usable_url_available,
+            detected_ats_type=detected_ats_type,
+            suggested_source_mode=suggested_source_mode or "needs_url",
+            readiness_status=readiness_status,
+            recommended_next_action=recommended_next_action,
+            notes=" | ".join(note_parts) if note_parts else None,
+            existing_source_mode=clean_text((existing_company or {}).get("source_mode")),
+            existing_ats_hint=clean_text((existing_company or {}).get("ats_hint")),
+            existing_status=clean_text((existing_company or {}).get("status")),
+        )
+        readiness_rows.append(readiness_row)
+
+        if existing_company is not None or not usable_url_available:
+            continue
+
+        evidence = [
+            f"source={best_url_source}",
+            f"company_name={record.company_name}",
+        ]
+        if record.spreadsheet_career_display_text:
+            evidence.append(
+                f"display_text={record.spreadsheet_career_display_text}"
+            )
+        if starter_company is not None and best_url_source == "starter_url":
+            evidence.append("starter_url_candidate=true")
+        candidate = _build_candidate(
+            company_name=record.company_name,
+            source_record=_spreadsheet_record_to_source_record(record),
+            careers_url=best_url,
+            confidence="medium",
+            reason=(
+                "spreadsheet_hyperlink_candidate"
+                if best_url_source == "spreadsheet_hyperlink"
+                else "starter_career_url_match"
+            ),
+            evidence=evidence,
+            suggested_action="review_and_apply",
+        )
+        generated_candidates.append(candidate)
+
+    readiness_rows = sorted(
+        readiness_rows,
+        key=lambda item: _normalize_match_key(item.company_name),
+    )
+    generated_candidates = _dedupe_candidates(generated_candidates)
+    _write_readiness_csv(readiness_rows, readiness_output_path)
+    write_candidates(generated_candidates, candidates_output_path)
+    _write_needs_website_csv(readiness_rows, needs_website_output_path)
+
+    existing_inputs = tuple(path for path in inspected_input_paths if path.exists())
+    summary = _build_large_list_report(
+        inspected_inputs=existing_inputs or (input_path,),
+        rows=readiness_rows,
+        candidates=generated_candidates,
+        output_path=report_output_path,
+    )
+    return {
+        "rows": readiness_rows,
+        "candidates": generated_candidates,
+        "summary": summary,
+        "readiness_output_path": readiness_output_path,
+        "candidates_output_path": candidates_output_path,
+        "report_output_path": report_output_path,
+        "needs_website_output_path": needs_website_output_path,
+    }
 
 
 def load_candidate_file(input_path: Path) -> list[OnboardingCandidate]:
