@@ -49,3 +49,13 @@ Task 9.2 improves actionability in two ways:
 
 1. The dashboard and reports can now show the real active blocker count instead of mixing pending and historical rows.
 2. Source readiness now includes remediation guidance so the next human action is obvious without digging through raw intervention notes.
+
+## Follow-Up Workflow
+
+Task 10.1 adds a review-first refresh path for these cases:
+
+```powershell
+python -m src.main onboard refresh-sources --only-problem-sources --min-days-between-checks 7 --output data/exports/source-refresh-candidates.yaml
+```
+
+That workflow does not update the main watchlist automatically. It generates replacement candidates for manual review and approval first.

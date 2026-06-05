@@ -116,6 +116,30 @@ Apply verified starter career URLs into the main company config:
 python -m src.importer.apply_career_urls
 ```
 
+Generate reviewable onboarding candidates from company names:
+
+```powershell
+python -m src.main onboard generate --input data/input/company-names.txt --output data/exports/source-onboarding-candidates.yaml
+```
+
+Enable opt-in live careers discovery from provided site URLs:
+
+```powershell
+python -m src.main onboard generate --input data/input/company-input.csv --output data/exports/source-onboarding-candidates.yaml --live-discovery
+```
+
+Generate reviewable refresh candidates for stale/problem sources:
+
+```powershell
+python -m src.main onboard refresh-sources --only-problem-sources --min-days-between-checks 7 --output data/exports/source-refresh-candidates.yaml
+```
+
+Apply only approved onboarding candidates:
+
+```powershell
+python -m src.main onboard apply --input data/exports/source-onboarding-candidates.yaml
+```
+
 Run tests:
 
 ```powershell
@@ -163,6 +187,7 @@ Suggested filenames:
 - [Source Types](docs/source-types.md)
 - [Compliance](docs/compliance.md)
 - [Browser Workflow](docs/browser-workflow.md)
+- [Company Onboarding](docs/company-onboarding.md)
 - [Collector Routing](docs/collector-routing.md)
 - [Reporting And Dashboard](docs/reporting-dashboard.md)
 - [Storage And Deduplication](docs/storage-deduplication.md)
