@@ -53,6 +53,25 @@ When fallback is enabled explicitly, the router may use the browser collector an
 
 This fallback is explicit, never silent.
 
+## Visibility
+
+Task 7 does not add new collectors or change routing behavior. It adds observability around the existing routing paths.
+
+The daily report and dashboard now expose per-source fields such as:
+
+- company name
+- source URL
+- source mode
+- ATS type
+- collector used
+- status
+- readiness label
+- fallback used
+- intervention required
+- jobs discovered, scored, relevant, and saved
+- jobs inserted, updated, unchanged, and duplicates skipped
+- last success time, last error, and consecutive failures when available
+
 ## Config
 
 Routing fallback is controlled in [discovery.yaml](C:/projects/job-discovery-browser-copilot/config/discovery.yaml):

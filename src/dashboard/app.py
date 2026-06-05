@@ -32,6 +32,7 @@ def get_storage_api() -> dict[str, Any]:
         get_dashboard_overview,
         get_intervention_queue,
         get_jobs,
+        get_source_status_rows,
         initialize_database,
         update_company_source,
         update_intervention_status,
@@ -46,6 +47,7 @@ def get_storage_api() -> dict[str, Any]:
         "get_dashboard_overview": get_dashboard_overview,
         "get_intervention_queue": get_intervention_queue,
         "get_jobs": get_jobs,
+        "get_source_status_rows": get_source_status_rows,
         "initialize_database": initialize_database,
         "update_company_source": update_company_source,
         "update_intervention_status": update_intervention_status,
@@ -82,8 +84,11 @@ def get_dashboard_api() -> dict[str, Any]:
     """Load dashboard-specific helpers after the src path is available."""
 
     from dashboard.manual_entry import score_and_save_manual_job
+    from dashboard.source_status import filter_source_status_items, prepare_source_status_rows
 
     return {
+        "filter_source_status_items": filter_source_status_items,
+        "prepare_source_status_rows": prepare_source_status_rows,
         "score_and_save_manual_job": score_and_save_manual_job,
     }
 
@@ -482,6 +487,101 @@ def render_company_watchlist_tab(connection: Any) -> None:
         for company in companies
     ]
     st.dataframe(rows, hide_index=True, use_container_width=True)
+
+
+def render_source_readiness_tab(connection: Any) -> None:
+    """Render source-level collector status, fallback, and readiness details."""
+
+    storage_api = get_storage_api()
+    dashboard_api = get_dashboard_api()
+    source_rows = storage_api["get_source_status_rows"](connection)
+
+    render_section_heading("Source Readiness")
+    st.caption(
+        "See which path each company source used, what happened during the latest run, "
+        "and where manual follow-up is needed."
+    )
+
+    if not source_rows:
+        st.info("No source status data is available yet.")
+        return
+
+    source_modes = ["All", *sorted({str(row.get("source_mode") or "-") for row in source_rows})]
+    ats_types = ["All", *sorted({str(row.get("ats_type") or "-") for row in source_rows})]
+    collectors = [
+        "All",
+        *sorted(
+            {
+                str(row.get("collector") or row.get("last_collector") or "-")
+                for row in source_rows
+            }
+        ),
+    ]
+    statuses = [
+        "All",
+        *sorted(
+            {
+                str(row.get("status") or row.get("last_status") or "-")
+                for row in source_rows
+            }
+        ),
+    ]
+
+    filter_col1, filter_col2, filter_col3 = st.columns(3)
+    filter_col4, filter_col5, filter_col6 = st.columns(3)
+    with filter_col1:
+        selected_source_mode = st.selectbox(
+            "Source mode",
+            source_modes,
+            key="source_status_mode_filter",
+        )
+    with filter_col2:
+        selected_ats_type = st.selectbox(
+            "ATS type",
+            ats_types,
+            key="source_status_ats_filter",
+        )
+    with filter_col3:
+        selected_collector = st.selectbox(
+            "Collector",
+            collectors,
+            key="source_status_collector_filter",
+        )
+    with filter_col4:
+        selected_status = st.selectbox(
+            "Status",
+            statuses,
+            key="source_status_status_filter",
+        )
+    with filter_col5:
+        selected_fallback = st.selectbox(
+            "Fallback used",
+            ["All", "Yes", "No"],
+            key="source_status_fallback_filter",
+        )
+    with filter_col6:
+        selected_intervention = st.selectbox(
+            "Intervention required",
+            ["All", "Yes", "No"],
+            key="source_status_intervention_filter",
+        )
+
+    filtered_sources = dashboard_api["filter_source_status_items"](
+        source_rows,
+        selected_source_mode=selected_source_mode,
+        selected_ats_type=selected_ats_type,
+        selected_collector=selected_collector,
+        selected_status=selected_status,
+        selected_fallback=selected_fallback,
+        selected_intervention=selected_intervention,
+    )
+
+    st.caption(f"{len(filtered_sources)} sources match the current filters.")
+    st.dataframe(
+        dashboard_api["prepare_source_status_rows"](filtered_sources),
+        hide_index=True,
+        use_container_width=True,
+    )
 
 
 def render_missing_urls_tab(connection: Any) -> None:
@@ -901,6 +1001,8 @@ def render_daily_summary_tab(connection: Any) -> None:
     overview = storage_api["get_dashboard_overview"](connection)
     jobs = storage_api["get_jobs"](connection)
     interventions = storage_api["get_intervention_queue"](connection)
+    source_rows = storage_api["get_source_status_rows"](connection)
+    dashboard_api = get_dashboard_api()
     export_files = get_export_files()
 
     render_section_heading("Daily Summary")
@@ -915,6 +1017,25 @@ def render_daily_summary_tab(connection: Any) -> None:
         st.metric("Jobs Found", overview["jobs_found"])
     with metric_col5:
         st.metric("Pending Interventions", overview["interventions_pending"])
+
+    source_metric_col1, source_metric_col2, source_metric_col3, source_metric_col4 = st.columns(4)
+    source_metric_col5, source_metric_col6, source_metric_col7, source_metric_col8 = st.columns(4)
+    with source_metric_col1:
+        st.metric("Total Sources Checked", overview["total_sources_checked"])
+    with source_metric_col2:
+        st.metric("Jobs Discovered", overview["jobs_discovered_latest"])
+    with source_metric_col3:
+        st.metric("Jobs Relevant", overview["jobs_relevant_latest"])
+    with source_metric_col4:
+        st.metric("Jobs Saved", overview["jobs_saved_latest"])
+    with source_metric_col5:
+        st.metric("API Sources Used", overview["api_sources_used"])
+    with source_metric_col6:
+        st.metric("Browser Fallbacks", overview["browser_fallbacks"])
+    with source_metric_col7:
+        st.metric("Interventions Required", overview["interventions_required_sources"])
+    with source_metric_col8:
+        st.metric("Errors", overview["source_errors"])
 
     top_jobs = jobs[:8]
     summary_col1, summary_col2 = st.columns([1.4, 1])
@@ -950,6 +1071,14 @@ def render_daily_summary_tab(connection: Any) -> None:
         else:
             st.caption("No report or CSV exports yet.")
 
+    if source_rows:
+        st.write("Latest source outcomes")
+        st.dataframe(
+            dashboard_api["prepare_source_status_rows"](source_rows[:8]),
+            hide_index=True,
+            use_container_width=True,
+        )
+
 
 def main() -> None:
     """Run the Streamlit app."""
@@ -972,6 +1101,7 @@ def main() -> None:
 
     sections = [
         "Daily Summary",
+        "Source Readiness",
         "Jobs Found",
         "Saved Jobs",
         "Company Watchlist",
@@ -988,6 +1118,8 @@ def main() -> None:
 
     if selected_section == "Daily Summary":
         render_daily_summary_tab(connection)
+    elif selected_section == "Source Readiness":
+        render_source_readiness_tab(connection)
     elif selected_section == "Jobs Found":
         render_jobs_tab(connection)
     elif selected_section == "Saved Jobs":

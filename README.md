@@ -23,6 +23,8 @@ The current routing layer also makes source handling explicit: browser-safe sour
 
 SQLite storage now also preserves stable ATS metadata for API-collected and static JSON-LD jobs. Greenhouse, Lever, and Ashby jobs carry `external_job_id`, `ats_type`, `board_slug`, `content_hash`, and first/last-seen timestamps so repeated runs can update the same row instead of creating duplicates.
 
+The dashboard now also surfaces source-level readiness and collector visibility. Each company source can show the latest route used, status, fallback behavior, intervention requirement, discovered/scored/relevant/saved counts, storage outcomes, and last error so manual follow-up stays clear.
+
 ## Safety And Compliance Note
 
 This project is intentionally limited to safe, visible, human-in-the-loop discovery.
@@ -133,6 +135,7 @@ Store dashboard screenshots in `docs/screenshots/`.
 Suggested filenames:
 
 - `dashboard-daily-summary.png`
+- `dashboard-source-readiness.png`
 - `dashboard-jobs-found.png`
 - `dashboard-intervention-queue.png`
 
@@ -161,5 +164,6 @@ Suggested filenames:
 - [Compliance](docs/compliance.md)
 - [Browser Workflow](docs/browser-workflow.md)
 - [Collector Routing](docs/collector-routing.md)
+- [Reporting And Dashboard](docs/reporting-dashboard.md)
 - [Storage And Deduplication](docs/storage-deduplication.md)
 - [Demo Script](docs/demo-script.md)

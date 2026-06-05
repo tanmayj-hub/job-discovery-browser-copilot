@@ -13,6 +13,13 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+from reports.source_observability import (
+    compute_source_readiness,
+    is_error_status,
+    is_success_status,
+    summarize_source_metrics,
+)
+
 JOB_STATUS_VALUES = {
     "new",
     "saved",
@@ -145,6 +152,14 @@ def _row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
     return data
 
 
+def _to_db_bool(value: object) -> int:
+    return 1 if bool(value) else 0
+
+
+def _to_python_bool(value: object) -> bool:
+    return bool(int(value)) if isinstance(value, (bool, int)) else bool(value)
+
+
 def connect_database(db_path: Path | str) -> sqlite3.Connection:
     """Create a SQLite connection with row access by column name."""
 
@@ -208,6 +223,65 @@ def migrate_database(connection: sqlite3.Connection) -> None:
         )
 
     job_columns = _table_columns(connection, "jobs")
+    source_columns = _table_columns(connection, "sources")
+
+    if source_columns and "ats_type" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN ats_type TEXT")
+    if source_columns and "last_collector" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN last_collector TEXT")
+    if source_columns and "last_status" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN last_status TEXT")
+    if source_columns and "last_error" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN last_error TEXT")
+    if source_columns and "fallback_used" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN fallback_used INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "intervention_required" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN intervention_required INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "jobs_discovered" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN jobs_discovered INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "jobs_scored" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN jobs_scored INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "jobs_relevant" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN jobs_relevant INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "jobs_saved" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN jobs_saved INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "jobs_inserted" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN jobs_inserted INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "jobs_updated" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN jobs_updated INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "jobs_unchanged" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN jobs_unchanged INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "duplicates_skipped" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN duplicates_skipped INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "last_success_at" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN last_success_at TEXT")
+    if source_columns and "consecutive_failures" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN consecutive_failures INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "readiness_label" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN readiness_label TEXT")
+
     if not job_columns:
         return
 
@@ -799,6 +873,75 @@ def get_companies_needing_url(connection: sqlite3.Connection) -> list[dict[str, 
     return [_row_to_dict(row) for row in rows]
 
 
+def get_source_status_rows(connection: sqlite3.Connection) -> list[dict[str, Any]]:
+    """Return source rows joined with company metadata for reporting and dashboard views."""
+
+    rows = connection.execute(
+        """
+        SELECT
+            sources.id,
+            sources.company_name,
+            sources.source_name,
+            sources.source_mode,
+            sources.careers_url AS source_url,
+            sources.website_category,
+            sources.ats_hint,
+            sources.ats_type,
+            sources.last_collector,
+            sources.last_status,
+            sources.last_error,
+            sources.fallback_used,
+            sources.intervention_required,
+            sources.jobs_discovered,
+            sources.jobs_scored,
+            sources.jobs_relevant,
+            sources.jobs_saved,
+            sources.jobs_inserted,
+            sources.jobs_updated,
+            sources.jobs_unchanged,
+            sources.duplicates_skipped,
+            sources.last_success_at,
+            sources.last_checked,
+            sources.consecutive_failures,
+            sources.readiness_label,
+            sources.updated_at,
+            companies.sector,
+            companies.category,
+            companies.priority,
+            companies.status AS company_status
+        FROM sources
+        LEFT JOIN companies ON companies.name = sources.company_name
+        ORDER BY
+            CASE companies.priority
+                WHEN 'High' THEN 1
+                WHEN 'Medium' THEN 2
+                WHEN 'Low' THEN 3
+                ELSE 4
+            END,
+            sources.company_name ASC,
+            sources.source_name ASC
+        """
+    ).fetchall()
+
+    source_rows: list[dict[str, Any]] = []
+    for row in rows:
+        record = _row_to_dict(row)
+        record["fallback_used"] = _to_python_bool(record.get("fallback_used", 0))
+        record["intervention_required"] = _to_python_bool(
+            record.get("intervention_required", 0)
+        )
+        record["status"] = record.get("last_status")
+        record["collector"] = record.get("last_collector")
+        record["error"] = record.get("last_error")
+        record["source_url"] = record.get("source_url")
+        record["readiness_label"] = (
+            str(record.get("readiness_label") or "").strip()
+            or compute_source_readiness(record)
+        )
+        source_rows.append(record)
+    return source_rows
+
+
 def get_dashboard_overview(connection: sqlite3.Connection) -> dict[str, int]:
     """Return top-level counts for the overview section."""
 
@@ -831,6 +974,7 @@ def get_dashboard_overview(connection: sqlite3.Connection) -> dict[str, int]:
         WHERE status = 'pending'
         """,
     ).fetchone()["count"]
+    source_metrics = summarize_source_metrics(get_source_status_rows(connection))
 
     return {
         "total_companies": int(total_companies),
@@ -838,6 +982,14 @@ def get_dashboard_overview(connection: sqlite3.Connection) -> dict[str, int]:
         "companies_missing_url": int(missing_url),
         "jobs_found": int(jobs_found),
         "interventions_pending": int(interventions_pending),
+        "total_sources_checked": int(source_metrics["sources_checked"]),
+        "jobs_discovered_latest": int(source_metrics["jobs_discovered"]),
+        "jobs_relevant_latest": int(source_metrics["jobs_relevant"]),
+        "jobs_saved_latest": int(source_metrics["jobs_saved"]),
+        "api_sources_used": int(source_metrics["api_sources_used"]),
+        "browser_fallbacks": int(source_metrics["browser_fallback_used"]),
+        "interventions_required_sources": int(source_metrics["interventions_required"]),
+        "source_errors": int(source_metrics["errors"]),
     }
 
 
@@ -1029,6 +1181,158 @@ def finish_daily_run(
         WHERE id = ?
         """,
         (status, jobs_seen, jobs_new, notes, run_id),
+    )
+    connection.commit()
+
+
+def record_source_observation(
+    connection: sqlite3.Connection,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+    careers_url: str | None = None,
+    website_category: str | None = None,
+    ats_hint: str | None = None,
+    ats_type: str | None = None,
+    collector: str | None = None,
+    status: str | None = None,
+    error: str | None = None,
+    fallback_used: bool = False,
+    intervention_required: bool = False,
+    jobs_discovered: int = 0,
+    jobs_scored: int = 0,
+    jobs_relevant: int = 0,
+    jobs_saved: int = 0,
+    jobs_inserted: int = 0,
+    jobs_updated: int = 0,
+    jobs_unchanged: int = 0,
+    duplicates_skipped: int = 0,
+) -> None:
+    """Persist the latest source-level routing and collection outcome."""
+
+    existing = connection.execute(
+        """
+        SELECT consecutive_failures, last_success_at
+        FROM sources
+        WHERE company_name = ?
+          AND source_name = ?
+        """,
+        (company_name, source_name),
+    ).fetchone()
+    timestamp = _current_timestamp()
+    normalized_status = str(status or "").strip() or None
+    normalized_error = str(error or "").strip() or None
+    readiness_label = compute_source_readiness(
+        {
+            "source_mode": source_mode,
+            "collector": collector,
+            "status": normalized_status,
+            "intervention_required": intervention_required,
+        }
+    )
+
+    previous_failures = int(existing["consecutive_failures"]) if existing is not None else 0
+    previous_success_at = existing["last_success_at"] if existing is not None else None
+
+    if is_error_status(normalized_status) or normalized_status == "paused":
+        consecutive_failures = previous_failures + 1
+    elif is_success_status(normalized_status):
+        consecutive_failures = 0
+    else:
+        consecutive_failures = 0
+
+    last_success_at = timestamp if is_success_status(normalized_status) else previous_success_at
+    last_error = (
+        normalized_error
+        if normalized_error
+        else (normalized_status if is_error_status(normalized_status) else None)
+    )
+
+    connection.execute(
+        """
+        INSERT INTO sources (
+            company_name,
+            source_name,
+            source_mode,
+            careers_url,
+            website_category,
+            ats_hint,
+            ats_type,
+            last_collector,
+            last_status,
+            last_error,
+            fallback_used,
+            intervention_required,
+            jobs_discovered,
+            jobs_scored,
+            jobs_relevant,
+            jobs_saved,
+            jobs_inserted,
+            jobs_updated,
+            jobs_unchanged,
+            duplicates_skipped,
+            last_success_at,
+            consecutive_failures,
+            readiness_label,
+            last_checked,
+            updated_at
+        )
+        VALUES (
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+        )
+        ON CONFLICT(company_name, source_name) DO UPDATE SET
+            source_mode = excluded.source_mode,
+            careers_url = excluded.careers_url,
+            website_category = COALESCE(excluded.website_category, sources.website_category),
+            ats_hint = COALESCE(excluded.ats_hint, sources.ats_hint),
+            ats_type = excluded.ats_type,
+            last_collector = excluded.last_collector,
+            last_status = excluded.last_status,
+            last_error = excluded.last_error,
+            fallback_used = excluded.fallback_used,
+            intervention_required = excluded.intervention_required,
+            jobs_discovered = excluded.jobs_discovered,
+            jobs_scored = excluded.jobs_scored,
+            jobs_relevant = excluded.jobs_relevant,
+            jobs_saved = excluded.jobs_saved,
+            jobs_inserted = excluded.jobs_inserted,
+            jobs_updated = excluded.jobs_updated,
+            jobs_unchanged = excluded.jobs_unchanged,
+            duplicates_skipped = excluded.duplicates_skipped,
+            last_success_at = excluded.last_success_at,
+            consecutive_failures = excluded.consecutive_failures,
+            readiness_label = excluded.readiness_label,
+            last_checked = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        """,
+        (
+            company_name,
+            source_name,
+            source_mode,
+            careers_url,
+            website_category,
+            ats_hint,
+            ats_type,
+            collector,
+            normalized_status,
+            last_error,
+            _to_db_bool(fallback_used),
+            _to_db_bool(intervention_required),
+            int(jobs_discovered),
+            int(jobs_scored),
+            int(jobs_relevant),
+            int(jobs_saved),
+            int(jobs_inserted),
+            int(jobs_updated),
+            int(jobs_unchanged),
+            int(duplicates_skipped),
+            last_success_at,
+            consecutive_failures,
+            readiness_label,
+        ),
     )
     connection.commit()
 

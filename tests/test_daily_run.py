@@ -6,7 +6,7 @@ from pathlib import Path
 import yaml
 
 from reports.daily_run import run_daily_workflow
-from storage.db import get_companies, get_jobs, initialize_database
+from storage.db import get_companies, get_jobs, get_source_status_rows, initialize_database
 
 
 def _write_companies_yaml(path: Path) -> None:
@@ -196,6 +196,13 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert "Jobs updated: 0" in report_text
     assert "Jobs unchanged: 0" in report_text
     assert "Duplicates skipped before scoring: 2" in report_text
+    assert "## Collection" in report_text
+    assert "## Evaluation" in report_text
+    assert "## Storage And Dedupe" in report_text
+    assert "## Routing Summary" in report_text
+    assert "## Source Outcomes" in report_text
+    assert "| Browser Co | company-careers | browser_allowed | - |" in report_text
+    assert "| API Co | greenhouse | api_allowed | - |" in report_text
     assert "Keyword scope used: False" in report_text
     assert "Top Matched Jobs" in report_text
     assert "Companies Skipped" in report_text
@@ -205,9 +212,15 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
 
     connection = initialize_database(db_path)
     companies = {company["name"]: company for company in get_companies(connection)}
+    source_rows = {row["company_name"]: row for row in get_source_status_rows(connection)}
     assert companies["API Co"]["source_mode"] == "api_allowed"
     assert companies["Human Co"]["source_mode"] == "human_in_loop"
     assert companies["Missing URL Co"]["source_mode"] == "needs_url"
+    assert source_rows["API Co"]["status"] == "completed"
+    assert source_rows["API Co"]["jobs_discovered"] == 2
+    assert source_rows["API Co"]["jobs_inserted"] == 1
+    assert source_rows["Missing URL Co"]["status"] == "needs_url"
+    assert source_rows["Missing URL Co"]["readiness_label"] == "needs_url"
 
 
 def test_daily_run_preserves_api_and_static_metadata_in_storage(tmp_path: Path) -> None:
@@ -389,3 +402,68 @@ def test_repeated_daily_run_does_not_duplicate_api_jobs(tmp_path: Path) -> None:
     assert second_run.jobs_inserted == 0
     assert second_run.jobs_unchanged == 3
     assert len(jobs) == 3
+
+
+def test_daily_run_surfaces_manual_only_and_api_not_implemented_sources(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "companies.yaml"
+    db_path = tmp_path / "job_discovery.db"
+    exports_dir = tmp_path / "exports"
+    payload = {
+        "companies": [
+            {
+                "name": "Manual Co",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+                "careers_url": "https://www.linkedin.com/jobs/view/example",
+                "website_category": "LinkedIn",
+                "ats_hint": "",
+                "canada_hubs_notes": "Toronto",
+                "role_families": ["Cloud"],
+                "keywords": ["cloud"],
+                "priority": "High",
+                "monitoring_hint": "Manual check",
+                "status": "Watching",
+                "source_mode": "manual_only",
+            },
+            {
+                "name": "API NI Co",
+                "sector": "IT Consulting & Systems Integrators",
+                "category": "Consulting/SI",
+                "careers_url": "https://jobs.smartrecruiters.com/Example/example",
+                "website_category": "smartrecruiters",
+                "ats_hint": "smartrecruiters",
+                "canada_hubs_notes": "Toronto",
+                "role_families": ["Cloud"],
+                "keywords": ["cloud"],
+                "priority": "High",
+                "monitoring_hint": "Manual check",
+                "status": "Watching",
+                "source_mode": "api_allowed",
+            },
+        ]
+    }
+    config_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    result = run_daily_workflow(
+        config_path=config_path,
+        db_path=db_path,
+        exports_dir=exports_dir,
+        run_date=date(2026, 6, 5),
+    )
+
+    report_text = result.artifacts.report_path.read_text(encoding="utf-8")
+    connection = initialize_database(db_path)
+    source_rows = {
+        row["company_name"]: row for row in get_source_status_rows(connection)
+    }
+
+    assert result.jobs_discovered == 0
+    assert "manual_only" in report_text
+    assert "api_collector_not_implemented" in report_text
+    assert result.errors == []
+    assert source_rows["Manual Co"]["status"] == "manual_only"
+    assert source_rows["Manual Co"]["readiness_label"] == "manual_only"
+    assert source_rows["API NI Co"]["status"] == "api_collector_not_implemented"
+    assert source_rows["API NI Co"]["readiness_label"] == "api_not_implemented"

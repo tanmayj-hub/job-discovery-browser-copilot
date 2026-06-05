@@ -116,3 +116,16 @@ Collection should pause and create an intervention when the browser encounters:
 - Unknown public career pages classify as `browser_allowed`
 
 Greenhouse, Lever, and Ashby public job feeds are now collected broadly first and scored locally later. Browser-safe public pages can also be collected from static JSON-LD `JobPosting` blocks before a headed browser session is opened. Stored jobs preserve `external_job_id`, `ats_type`, and `board_slug` when available so local dedupe prefers stable ATS identity before falling back to URL or title/location matching. SmartRecruiters still remains unimplemented in the router by default, which keeps the routing small and local-first without expanding into unsupported collectors.
+
+## Readiness Labels
+
+The dashboard uses lightweight reporting labels to make source state easier to scan. These labels are visibility-only and do not change routing behavior.
+
+- `ready_api`: API-allowed source with a successful API route
+- `ready_browser`: browser-allowed source ready through the browser path
+- `ready_static_jsonld`: browser-allowed source that most recently succeeded through static JSON-LD
+- `needs_human`: human-in-loop source, paused source, or source requiring intervention
+- `manual_only`: restricted source that should not be automated
+- `needs_url`: watchlist entry still missing a valid careers URL
+- `api_not_implemented`: API-friendly source type without an implemented public collector
+- `error`: latest source attempt failed

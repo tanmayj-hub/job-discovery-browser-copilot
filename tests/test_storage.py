@@ -12,7 +12,9 @@ from storage.db import (
     get_interventions,
     get_job_by_id,
     get_new_jobs,
+    get_source_status_rows,
     initialize_database,
+    record_source_observation,
     update_intervention_status,
     update_job_status,
     upsert_companies,
@@ -88,6 +90,33 @@ def test_initialize_database_adds_new_job_metadata_columns(tmp_path: Path) -> No
         "first_seen_at",
         "last_seen_at",
         "last_updated_at",
+    }.issubset(columns)
+
+
+def test_initialize_database_adds_source_observability_columns(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    columns = {
+        row["name"] for row in connection.execute("PRAGMA table_info(sources)").fetchall()
+    }
+
+    assert {
+        "ats_type",
+        "last_collector",
+        "last_status",
+        "last_error",
+        "fallback_used",
+        "intervention_required",
+        "jobs_discovered",
+        "jobs_scored",
+        "jobs_relevant",
+        "jobs_saved",
+        "jobs_inserted",
+        "jobs_updated",
+        "jobs_unchanged",
+        "duplicates_skipped",
+        "last_success_at",
+        "consecutive_failures",
+        "readiness_label",
     }.issubset(columns)
 
 
@@ -433,3 +462,68 @@ def test_intervention_status_updates_and_notes(tmp_path: Path) -> None:
     assert record["resolved_at"] is not None
     assert "Initial note." in record["notes"]
     assert "Follow-up note." in record["notes"]
+
+
+def test_record_source_observation_persists_latest_status(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    record_source_observation(
+        connection,
+        company_name="Example Co",
+        source_name="greenhouse",
+        source_mode="api_allowed",
+        careers_url="https://careers.example.com",
+        website_category="greenhouse",
+        ats_hint="greenhouse",
+        ats_type="greenhouse",
+        collector="greenhouse_api",
+        status="success",
+        jobs_discovered=2,
+        jobs_scored=2,
+        jobs_relevant=1,
+        jobs_saved=1,
+        jobs_inserted=1,
+        duplicates_skipped=1,
+    )
+
+    source = get_source_status_rows(connection)[0]
+
+    assert source["collector"] == "greenhouse_api"
+    assert source["status"] == "success"
+    assert source["ats_type"] == "greenhouse"
+    assert source["jobs_discovered"] == 2
+    assert source["jobs_saved"] == 1
+    assert source["duplicates_skipped"] == 1
+    assert source["readiness_label"] == "ready_api"
+    assert source["last_success_at"] is not None
+
+
+def test_record_source_observation_tracks_failures(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    record_source_observation(
+        connection,
+        company_name="Example Co",
+        source_name="greenhouse",
+        source_mode="api_allowed",
+        collector="greenhouse_api",
+        status="error",
+        error="API timeout",
+    )
+    record_source_observation(
+        connection,
+        company_name="Example Co",
+        source_name="greenhouse",
+        source_mode="api_allowed",
+        collector="greenhouse_api",
+        status="error",
+        error="API timeout",
+    )
+
+    source = get_source_status_rows(connection)[0]
+
+    assert source["consecutive_failures"] == 2
+    assert source["error"] == "API timeout"
+    assert source["readiness_label"] == "error"
