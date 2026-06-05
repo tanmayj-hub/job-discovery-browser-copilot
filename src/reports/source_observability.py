@@ -18,6 +18,36 @@ SKIPPED_STATUSES = {
 API_COLLECTORS = {"greenhouse_api", "lever_api", "ashby_api"}
 BROWSER_COLLECTORS = {"browser", "browser_after_jsonld", "browser_fallback"}
 
+REMEDIATION_BY_REASON = {
+    "login_required": (
+        "login_required",
+        "Open the public careers URL manually and confirm whether sign-in is mandatory. "
+        "If login is required for job listings, keep the source manual-only.",
+    ),
+    "captcha_detected": (
+        "captcha_pause",
+        "Do not bypass CAPTCHA. Review the source manually and either mark it resolved "
+        "after the public page is usable or keep it manual-only.",
+    ),
+    "cookie_blocked": (
+        "cookie_banner",
+        "Open the source, clear or accept the blocking cookie banner, then rerun the source.",
+    ),
+    "location_selection_required": (
+        "location_gate",
+        "Select the Canada or local region manually, then rerun the source.",
+    ),
+    "unclear_layout": (
+        "layout_review",
+        "Open the source manually and identify the public careers results page before another run.",
+    ),
+    "extraction_failed": (
+        "extraction_review",
+        "Review the page manually to confirm whether selectors need updating or the source "
+        "should stay manual-only.",
+    ),
+}
+
 
 def is_success_status(status: object) -> bool:
     """Return True when a source outcome represents a successful check."""
@@ -64,6 +94,76 @@ def compute_source_readiness(source: Mapping[str, Any]) -> str:
     if source_mode == "browser_allowed":
         return "ready_browser"
     return "needs_human" if source_mode == "human_in_loop" else "ready_browser"
+
+
+def build_source_remediation(source: Mapping[str, Any]) -> dict[str, str]:
+    """Return a stable remediation label and suggested action for a source or intervention."""
+
+    reason = str(
+        source.get("latest_pending_reason")
+        or source.get("reason")
+        or source.get("intervention_reason")
+        or ""
+    ).strip()
+    status = str(source.get("status") or source.get("last_status") or "").strip()
+    source_mode = str(source.get("source_mode") or "").strip()
+    readiness = str(
+        source.get("readiness_label") or compute_source_readiness(source)
+    ).strip()
+
+    if reason in REMEDIATION_BY_REASON:
+        label, action = REMEDIATION_BY_REASON[reason]
+        return {"remediation_label": label, "suggested_action": action}
+
+    if readiness == "needs_url" or status == "needs_url" or source_mode == "needs_url":
+        return {
+            "remediation_label": "source_url_review",
+            "suggested_action": (
+                "Add or correct the public careers URL, then reclassify the source."
+            ),
+        }
+    if readiness == "manual_only" or status == "manual_only" or source_mode == "manual_only":
+        return {
+            "remediation_label": "manual_tracking",
+            "suggested_action": (
+                "Keep this source in manual-only mode and use manual job entry when relevant "
+                "roles appear."
+            ),
+        }
+    if readiness == "api_not_implemented" or status == "api_collector_not_implemented":
+        return {
+            "remediation_label": "api_pending",
+            "suggested_action": (
+                "Keep this source paused for now or use a safe public browser path only after "
+                "manual review."
+            ),
+        }
+    if readiness == "error" or is_error_status(status):
+        return {
+            "remediation_label": "source_error",
+            "suggested_action": (
+                "Review the latest source error and rerun only after the public page is reachable."
+            ),
+        }
+    if readiness == "needs_human" or status == "paused":
+        return {
+            "remediation_label": "human_review",
+            "suggested_action": (
+                "Open the source manually, resolve the blocker, and rerun when the "
+                "public flow is clear."
+            ),
+        }
+    if is_success_status(status):
+        return {
+            "remediation_label": "monitor_only",
+            "suggested_action": (
+                "No remediation needed. Keep the source in the normal monitoring cycle."
+            ),
+        }
+    return {
+        "remediation_label": "review_needed",
+        "suggested_action": "Review this source manually before the next run.",
+    }
 
 
 def summarize_source_metrics(sources: Iterable[Mapping[str, Any]]) -> dict[str, int]:

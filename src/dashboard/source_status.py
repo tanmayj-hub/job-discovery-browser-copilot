@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from reports.source_observability import compute_source_readiness
+from reports.source_observability import build_source_remediation, compute_source_readiness
 
 
 def prepare_source_status_rows(sources: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -13,6 +13,7 @@ def prepare_source_status_rows(sources: Iterable[dict[str, Any]]) -> list[dict[s
 
     rows: list[dict[str, Any]] = []
     for source in sources:
+        remediation = build_source_remediation(source)
         rows.append(
             {
                 "Company": source.get("company_name") or "-",
@@ -22,6 +23,13 @@ def prepare_source_status_rows(sources: Iterable[dict[str, Any]]) -> list[dict[s
                 "Collector": source.get("collector") or source.get("last_collector") or "-",
                 "Status": source.get("status") or source.get("last_status") or "-",
                 "Readiness": source.get("readiness_label") or compute_source_readiness(source),
+                "Pending Interventions": int(source.get("pending_intervention_count", 0) or 0),
+                "Resolved History": int(source.get("resolved_history_count", 0) or 0),
+                "Latest Pending Reason": source.get("latest_pending_reason") or "-",
+                "Remediation": source.get("remediation_label")
+                or remediation["remediation_label"],
+                "Suggested Action": source.get("suggested_action")
+                or remediation["suggested_action"],
                 "Fallback Used": bool(source.get("fallback_used", False)),
                 "Intervention Required": bool(source.get("intervention_required", False)),
                 "Jobs Discovered": int(source.get("jobs_discovered", 0) or 0),

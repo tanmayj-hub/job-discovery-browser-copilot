@@ -210,6 +210,8 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert "## Storage And Dedupe" in report_text
     assert "## Routing Summary" in report_text
     assert "## Source Outcomes" in report_text
+    assert "## Active Pending Interventions" in report_text
+    assert "## Resolved Intervention History" in report_text
     assert "| Browser Co | company-careers | browser_allowed | - |" in report_text
     assert "| API Co | greenhouse | api_allowed | - |" in report_text
     assert "Location scope used: True" in report_text

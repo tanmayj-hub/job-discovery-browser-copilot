@@ -108,6 +108,7 @@ CREATE TABLE IF NOT EXISTS interventions (
     source_url TEXT,
     action_required TEXT,
     status TEXT NOT NULL DEFAULT 'pending',
+    occurrence_count INTEGER NOT NULL DEFAULT 1,
     notes TEXT,
     detected_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,

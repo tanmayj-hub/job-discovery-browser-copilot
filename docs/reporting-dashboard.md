@@ -19,6 +19,11 @@ For each source it can show:
 - collector used
 - status
 - readiness label
+- pending intervention count
+- resolved intervention history count
+- latest pending reason
+- remediation label
+- suggested action
 - fallback used
 - intervention required
 - jobs discovered
@@ -50,6 +55,8 @@ The daily Markdown report now separates the run into clearer sections:
 - `Storage And Dedupe`
 - `Routing Summary`
 - `Source Outcomes`
+- `Active Pending Interventions`
+- `Resolved Intervention History`
 
 This makes it easier to distinguish:
 
@@ -64,6 +71,11 @@ And also:
 - `jobs updated`: existing rows whose content changed
 - `jobs unchanged`: existing rows seen again without content change
 - `duplicates skipped`: duplicates removed before scoring/persistence
+
+Interventions are now split into:
+
+- active pending items that still block progress
+- resolved/manual-only/skipped history that remains available for audit
 
 ## Status Interpretation
 

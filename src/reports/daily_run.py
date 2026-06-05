@@ -24,6 +24,7 @@ from reports.source_observability import (
 from storage.db import (
     build_job_identity,
     get_companies,
+    get_intervention_history,
     get_intervention_queue,
     get_job_by_id,
     get_jobs,
@@ -56,6 +57,7 @@ class DailyRunResult:
     companies_checked: list[str]
     companies_skipped: list[dict[str, str]]
     interventions_needed: list[dict[str, Any]]
+    intervention_history: list[dict[str, Any]]
     errors: list[str]
     jobs_discovered: int
     jobs_scored: int
@@ -398,6 +400,7 @@ def write_daily_report(
     companies_checked: list[str],
     companies_skipped: list[dict[str, str]],
     interventions_needed: list[dict[str, Any]],
+    intervention_history: list[dict[str, Any]],
     errors: list[str],
     jobs: list[dict[str, Any]],
     jobs_discovered: int,
@@ -433,6 +436,7 @@ def write_daily_report(
         f"- Location scope used: {location_scope_used}",
         f"- Keyword scope used: {keyword_scope_used}",
         f"- Interventions needed: {len(interventions_needed)}",
+        f"- Resolved intervention history: {len(intervention_history)}",
         f"- Errors: {len(errors)}",
         "",
         "## Collection",
@@ -524,12 +528,23 @@ def write_daily_report(
     else:
         lines.append("- None")
 
-    lines.extend(["", "## Interventions Needed"])
+    lines.extend(["", "## Active Pending Interventions"])
     if interventions_needed:
         lines.extend(
             f"- {item.get('company_name') or '-'} | {item.get('reason') or '-'} | "
-            f"{item.get('action_required') or '-'} | {item.get('status') or '-'}"
+            f"{item.get('remediation_label') or '-'} | {item.get('action_required') or '-'} | "
+            f"occurrences={int(item.get('occurrence_count', 1) or 1)}"
             for item in interventions_needed
+        )
+    else:
+        lines.append("- None")
+
+    lines.extend(["", "## Resolved Intervention History"])
+    if intervention_history:
+        lines.extend(
+            f"- {item.get('company_name') or '-'} | {item.get('reason') or '-'} | "
+            f"{item.get('status') or '-'} | {item.get('resolved_at') or '-'}"
+            for item in intervention_history[:20]
         )
     else:
         lines.append("- None")
@@ -778,12 +793,15 @@ def run_daily_workflow(
     source_metrics = summarize_source_metrics(routing_results)
     artifacts = build_daily_artifact_paths(exports_dir, run_date=effective_date)
     write_jobs_csv(artifacts.csv_path, saved_jobs)
+    interventions_needed = get_intervention_queue(connection)
+    intervention_history = get_intervention_history(connection)
     write_daily_report(
         artifacts.report_path,
         run_date=effective_date.isoformat(),
         companies_checked=companies_checked,
         companies_skipped=companies_skipped,
-        interventions_needed=get_intervention_queue(connection),
+        interventions_needed=interventions_needed,
+        intervention_history=intervention_history,
         errors=errors,
         jobs=saved_jobs,
         jobs_discovered=jobs_discovered,
@@ -802,7 +820,8 @@ def run_daily_workflow(
         run_date=effective_date.isoformat(),
         companies_checked=companies_checked,
         companies_skipped=companies_skipped,
-        interventions_needed=get_intervention_queue(connection),
+        interventions_needed=interventions_needed,
+        intervention_history=intervention_history,
         errors=errors,
         jobs_discovered=jobs_discovered,
         jobs_scored=len(scored_jobs),

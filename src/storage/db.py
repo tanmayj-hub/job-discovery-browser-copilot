@@ -14,6 +14,7 @@ from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from reports.source_observability import (
+    build_source_remediation,
     compute_source_readiness,
     is_error_status,
     is_success_status,
@@ -212,6 +213,17 @@ def migrate_database(connection: sqlite3.Connection) -> None:
         connection.execute(
             "UPDATE interventions SET status = 'pending' WHERE status IS NULL OR status = ''",
         )
+    if intervention_columns and "occurrence_count" not in intervention_columns:
+        connection.execute(
+            "ALTER TABLE interventions ADD COLUMN occurrence_count INTEGER NOT NULL DEFAULT 1"
+        )
+        connection.execute(
+            """
+            UPDATE interventions
+            SET occurrence_count = 1
+            WHERE occurrence_count IS NULL OR occurrence_count <= 0
+            """,
+        )
     if intervention_columns and "detected_at" not in intervention_columns:
         connection.execute("ALTER TABLE interventions ADD COLUMN detected_at TEXT")
         connection.execute(
@@ -368,6 +380,95 @@ def _merge_intervention_notes(existing_notes: str | None, new_notes: str | None)
     return f"{existing}\n\n{incoming}"
 
 
+def _intervention_identity_key(record: Mapping[str, Any]) -> tuple[str, str]:
+    company_key = _normalize_intervention_company(record.get("company_name"))
+    source_url_key = _normalize_intervention_source_url(record.get("source_url"))
+    return (company_key, source_url_key or company_key)
+
+
+def _intervention_sort_key(record: Mapping[str, Any]) -> tuple[str, int]:
+    detected = str(record.get("detected_at") or record.get("created_at") or "")
+    return (detected, int(record.get("id") or 0))
+
+
+def _pending_reason_history_note(existing: Mapping[str, Any], new_reason: str | None) -> str | None:
+    previous_reason = str(existing.get("reason") or existing.get("intervention_type") or "").strip()
+    latest_reason = str(new_reason or "").strip()
+    if not previous_reason or not latest_reason or previous_reason == latest_reason:
+        return None
+    return f"Previous reason: {previous_reason}"
+
+
+def _collapse_intervention_records(
+    records: Iterable[Mapping[str, Any]],
+) -> list[dict[str, Any]]:
+    grouped: dict[tuple[str, str], list[dict[str, Any]]] = {}
+    for record in records:
+        key = _intervention_identity_key(record)
+        grouped.setdefault(key, []).append(dict(record))
+
+    collapsed: list[dict[str, Any]] = []
+    for items in grouped.values():
+        ordered = sorted(items, key=_intervention_sort_key, reverse=True)
+        latest = dict(ordered[0])
+        latest["occurrence_count"] = sum(
+            max(1, int(item.get("occurrence_count", 1) or 1)) for item in ordered
+        )
+        latest["active_row_count"] = len(ordered)
+        latest["reason_history"] = [
+            reason
+            for reason in dict.fromkeys(
+                str(item.get("reason") or item.get("intervention_type") or "").strip()
+                for item in ordered
+            )
+            if reason
+        ]
+        latest["previous_reasons"] = latest["reason_history"][1:]
+        collapsed.append(latest)
+
+    return sorted(collapsed, key=_intervention_sort_key, reverse=True)
+
+
+def _intervention_summary_by_source(
+    records: Iterable[Mapping[str, Any]],
+) -> dict[tuple[str, str], dict[str, Any]]:
+    summary: dict[tuple[str, str], dict[str, Any]] = {}
+    for record in records:
+        key = _intervention_identity_key(record)
+        existing = summary.get(key)
+        if existing is None:
+            summary[key] = {
+                "count": 1,
+                "latest": dict(record),
+            }
+            continue
+        existing["count"] += 1
+        if _intervention_sort_key(record) > _intervention_sort_key(existing["latest"]):
+            existing["latest"] = dict(record)
+    return summary
+
+
+def _match_intervention_summary(
+    summary: Mapping[tuple[str, str], dict[str, Any]],
+    *,
+    company_name: str | None,
+    source_url: str | None,
+) -> dict[str, Any] | None:
+    company_key = _normalize_intervention_company(company_name)
+    source_url_key = _normalize_intervention_source_url(source_url)
+    exact_key = (company_key, source_url_key or company_key)
+    exact_match = summary.get(exact_key)
+    if exact_match is not None:
+        return exact_match
+
+    company_matches = [
+        value for key, value in summary.items() if key[0] == company_key
+    ]
+    if len(company_matches) == 1:
+        return company_matches[0]
+    return None
+
+
 def find_open_intervention(
     connection: sqlite3.Connection,
     *,
@@ -376,11 +477,10 @@ def find_open_intervention(
     intervention_type: str,
     reason: str | None = None,
 ) -> dict[str, Any] | None:
-    """Return an existing unresolved intervention for the same logical issue."""
+    """Return an existing unresolved intervention for the same active source."""
 
     company_key = _normalize_intervention_company(company_name)
     source_url_key = _normalize_intervention_source_url(source_url)
-    reason_key = _normalize_intervention_reason(reason, intervention_type)
 
     rows = connection.execute(
         """
@@ -396,14 +496,6 @@ def find_open_intervention(
     for row in rows:
         record = _row_to_dict(row)
         if _normalize_intervention_source_url(record.get("source_url")) != source_url_key:
-            continue
-        if (
-            _normalize_intervention_reason(
-                record.get("reason"),
-                record.get("intervention_type"),
-            )
-            != reason_key
-        ):
             continue
         return record
     return None
@@ -991,6 +1083,8 @@ def get_source_status_rows(connection: sqlite3.Connection) -> list[dict[str, Any
         """
     ).fetchall()
 
+    pending_summary = _intervention_summary_by_source(get_intervention_queue(connection))
+    history_summary = _intervention_summary_by_source(get_intervention_history(connection))
     source_rows: list[dict[str, Any]] = []
     for row in rows:
         record = _row_to_dict(row)
@@ -1003,6 +1097,29 @@ def get_source_status_rows(connection: sqlite3.Connection) -> list[dict[str, Any
         record["error"] = record.get("last_error")
         record["source_url"] = record.get("source_url")
         record["readiness_label"] = compute_source_readiness(record)
+        pending = _match_intervention_summary(
+            pending_summary,
+            company_name=record.get("company_name"),
+            source_url=record.get("source_url"),
+        )
+        history = _match_intervention_summary(
+            history_summary,
+            company_name=record.get("company_name"),
+            source_url=record.get("source_url"),
+        )
+        record["pending_intervention_count"] = int(pending["count"]) if pending else 0
+        record["resolved_history_count"] = int(history["count"]) if history else 0
+        record["latest_pending_reason"] = (
+            pending["latest"].get("reason") if pending else None
+        )
+        record["latest_pending_detected_at"] = (
+            pending["latest"].get("detected_at") if pending else None
+        )
+        record["latest_pending_action_required"] = (
+            pending["latest"].get("action_required") if pending else None
+        )
+        remediation = build_source_remediation(record)
+        record.update(remediation)
         source_rows.append(record)
     return source_rows
 
@@ -1032,13 +1149,8 @@ def get_dashboard_overview(connection: sqlite3.Connection) -> dict[str, int]:
     jobs_found = connection.execute(
         "SELECT COUNT(*) AS count FROM jobs",
     ).fetchone()["count"]
-    interventions_pending = connection.execute(
-        """
-        SELECT COUNT(*) AS count
-        FROM interventions
-        WHERE status = 'pending'
-        """,
-    ).fetchone()["count"]
+    interventions_pending = len(get_intervention_queue(connection))
+    interventions_resolved = len(get_intervention_history(connection))
     source_metrics = summarize_source_metrics(get_source_status_rows(connection))
 
     return {
@@ -1047,6 +1159,7 @@ def get_dashboard_overview(connection: sqlite3.Connection) -> dict[str, int]:
         "companies_missing_url": int(missing_url),
         "jobs_found": int(jobs_found),
         "interventions_pending": int(interventions_pending),
+        "interventions_resolved_history": int(interventions_resolved),
         "total_sources_checked": int(source_metrics["sources_checked"]),
         "jobs_discovered_latest": int(source_metrics["jobs_discovered"]),
         "jobs_relevant_latest": int(source_metrics["jobs_relevant"]),
@@ -1068,7 +1181,7 @@ def get_interventions(connection: sqlite3.Connection) -> list[dict[str, Any]]:
 
 
 def get_intervention_queue(connection: sqlite3.Connection) -> list[dict[str, Any]]:
-    """Return dashboard-friendly intervention queue rows."""
+    """Return active pending interventions collapsed to one row per source."""
 
     rows = connection.execute(
         """
@@ -1080,23 +1193,52 @@ def get_intervention_queue(connection: sqlite3.Connection) -> list[dict[str, Any
             COALESCE(interventions.detected_at, interventions.created_at) AS detected_at,
             COALESCE(interventions.action_required, '') AS action_required,
             COALESCE(interventions.status, 'pending') AS status,
+            COALESCE(interventions.occurrence_count, 1) AS occurrence_count,
             COALESCE(interventions.notes, '') AS notes,
             interventions.resolved_at
         FROM interventions
         LEFT JOIN companies ON companies.name = interventions.company_name
+        WHERE COALESCE(interventions.status, 'pending') = 'pending'
         ORDER BY
-            CASE COALESCE(interventions.status, 'pending')
-                WHEN 'pending' THEN 1
-                WHEN 'manual_only' THEN 2
-                WHEN 'skipped' THEN 3
-                WHEN 'resolved' THEN 4
-                ELSE 5
-            END,
             COALESCE(interventions.detected_at, interventions.created_at) DESC,
             interventions.id DESC
         """,
     ).fetchall()
-    return [_row_to_dict(row) for row in rows]
+    queue = _collapse_intervention_records(_row_to_dict(row) for row in rows)
+    for item in queue:
+        item.update(build_source_remediation(item))
+    return queue
+
+
+def get_intervention_history(connection: sqlite3.Connection) -> list[dict[str, Any]]:
+    """Return resolved/manual-only/skipped intervention history rows."""
+
+    rows = connection.execute(
+        """
+        SELECT
+            interventions.id,
+            interventions.company_name,
+            COALESCE(interventions.source_url, companies.careers_url) AS source_url,
+            COALESCE(interventions.reason, interventions.intervention_type) AS reason,
+            COALESCE(interventions.detected_at, interventions.created_at) AS detected_at,
+            COALESCE(interventions.action_required, '') AS action_required,
+            COALESCE(interventions.status, 'pending') AS status,
+            COALESCE(interventions.occurrence_count, 1) AS occurrence_count,
+            COALESCE(interventions.notes, '') AS notes,
+            interventions.resolved_at
+        FROM interventions
+        LEFT JOIN companies ON companies.name = interventions.company_name
+        WHERE COALESCE(interventions.status, 'pending') <> 'pending'
+        ORDER BY
+            COALESCE(interventions.resolved_at, interventions.detected_at, interventions.created_at)
+                DESC,
+            interventions.id DESC
+        """,
+    ).fetchall()
+    history = [_row_to_dict(row) for row in rows]
+    for item in history:
+        item.update(build_source_remediation(item))
+    return history
 
 
 def create_intervention(
@@ -1129,14 +1271,20 @@ def create_intervention(
             reason=normalized_reason,
         )
     if open_intervention is not None:
-        merged_notes = _merge_intervention_notes(open_intervention.get("notes"), notes)
+        merged_notes = _merge_intervention_notes(
+            open_intervention.get("notes"),
+            _pending_reason_history_note(open_intervention, normalized_reason),
+        )
+        merged_notes = _merge_intervention_notes(merged_notes, notes)
         connection.execute(
             """
             UPDATE interventions
-            SET job_id = COALESCE(job_id, ?),
+            SET job_id = COALESCE(?, job_id),
+                intervention_type = COALESCE(?, intervention_type),
                 reason = COALESCE(?, reason),
                 source_url = COALESCE(?, source_url),
                 action_required = COALESCE(?, action_required),
+                occurrence_count = COALESCE(occurrence_count, 1) + 1,
                 notes = ?,
                 status = 'pending',
                 detected_at = CURRENT_TIMESTAMP,
@@ -1145,6 +1293,7 @@ def create_intervention(
             """,
             (
                 job_id,
+                intervention_type,
                 normalized_reason,
                 normalized_source_url,
                 resolved_action_required,

@@ -462,3 +462,26 @@ Observed summary from the final rerun on June 5, 2026:
 **Substantially complete.**
 
 The targeted bug-fix pass removed the specific false positives that triggered this work, stopped URL-less browser saves, made YAML source corrections take effect, recovered Vancity from a dead URL, normalized DXC to a non-error completed state, and downgraded Tech Mahindra from a hard failure to a paused/manual issue.
+
+## Task 9.2 Operational Hardening
+
+Task 9.2 addressed the remaining intervention-queue usability gap without changing collectors or routing policy.
+
+Results:
+
+- active pending blockers are now separated from resolved/manual history
+- repeated same-source pending issues collapse into one active queue item with an `occurrence_count`
+- source readiness now surfaces:
+  - pending intervention count
+  - resolved history count
+  - latest pending reason
+  - remediation label
+  - suggested action
+
+Current post-hardening local snapshot:
+
+- active pending source blockers: `4`
+- resolved/manual history rows: `15`
+- Tech Mahindra now appears as one active pending source instead of two separate rows
+
+See [docs/source-remediation-report.md](/C:/projects/job-discovery-browser-copilot/docs/source-remediation-report.md) for the current remediation summary.

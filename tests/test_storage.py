@@ -8,6 +8,7 @@ from storage.db import (
     build_job_identity,
     compute_content_hash,
     create_intervention,
+    get_intervention_history,
     get_intervention_queue,
     get_interventions,
     get_job_by_id,
@@ -475,6 +476,8 @@ def test_intervention_storage_and_queue_fields(tmp_path: Path) -> None:
     assert queue[0]["source_url"] == "https://careers.example.com/"
     assert queue[0]["reason"] == "captcha_detected"
     assert queue[0]["status"] == "pending"
+    assert queue[0]["occurrence_count"] == 1
+    assert queue[0]["remediation_label"] == "captcha_pause"
     assert queue[0]["action_required"] == "Review manually. Do not continue automatically."
 
 
@@ -510,6 +513,7 @@ def test_rerecording_same_pending_intervention_reuses_existing_row(tmp_path: Pat
     assert second_id == intervention_id
     assert len(interventions) == 1
     assert interventions[0]["status"] == "pending"
+    assert interventions[0]["occurrence_count"] == 2
     assert interventions[0]["detected_at"] != "2026-06-01 00:00:00"
     assert "Initial pause." in interventions[0]["notes"]
     assert "Repeated pause." in interventions[0]["notes"]
@@ -567,7 +571,7 @@ def test_different_pending_intervention_source_creates_separate_row(tmp_path: Pa
     assert len(get_interventions(connection)) == 2
 
 
-def test_different_pending_intervention_reason_creates_separate_row(tmp_path: Path) -> None:
+def test_different_pending_intervention_reason_reuses_same_source_row(tmp_path: Path) -> None:
     connection = initialize_database(tmp_path / "job_discovery.db")
     upsert_companies(connection, [_sample_company()])
 
@@ -586,8 +590,115 @@ def test_different_pending_intervention_reason_creates_separate_row(tmp_path: Pa
         reason="cookie_blocked",
     )
 
-    assert second_id != first_id
-    assert len(get_interventions(connection)) == 2
+    interventions = get_interventions(connection)
+    queue = get_intervention_queue(connection)
+
+    assert second_id == first_id
+    assert len(interventions) == 1
+    assert len(queue) == 1
+    assert queue[0]["reason"] == "cookie_blocked"
+    assert queue[0]["occurrence_count"] == 2
+    assert "Previous reason: location_selection_required" in interventions[0]["notes"]
+
+
+def test_intervention_history_excludes_pending_rows(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    pending_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/jobs",
+        reason="login_required",
+    )
+    resolved_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/archive",
+        reason="cookie_blocked",
+    )
+    update_intervention_status(connection, resolved_id, "resolved")
+
+    queue = get_intervention_queue(connection)
+    history = get_intervention_history(connection)
+
+    assert [item["id"] for item in queue] == [pending_id]
+    assert [item["id"] for item in history] == [resolved_id]
+    assert history[0]["status"] == "resolved"
+
+
+def test_source_status_rows_include_intervention_counts_and_remediation(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+    record_source_observation(
+        connection,
+        company_name="Example Co",
+        source_name="greenhouse",
+        source_mode="api_allowed",
+        careers_url="https://careers.example.com",
+        website_category="greenhouse",
+        ats_hint="greenhouse",
+        ats_type="greenhouse",
+        collector="greenhouse_api",
+        status="paused",
+        intervention_required=True,
+    )
+    create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com",
+        reason="login_required",
+    )
+    resolved_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/archive",
+        reason="cookie_blocked",
+    )
+    update_intervention_status(connection, resolved_id, "resolved")
+
+    source = get_source_status_rows(connection)[0]
+
+    assert source["pending_intervention_count"] == 1
+    assert source["resolved_history_count"] == 1
+    assert source["latest_pending_reason"] == "login_required"
+    assert source["remediation_label"] == "login_required"
+    assert "sign-in is mandatory" in source["suggested_action"]
+
+
+def test_source_status_rows_match_pending_interventions_by_company_when_urls_differ(
+    tmp_path: Path,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+    record_source_observation(
+        connection,
+        company_name="Example Co",
+        source_name="greenhouse",
+        source_mode="browser_allowed",
+        careers_url="https://www.example.com/careers",
+        website_category="company-careers",
+        collector="browser_after_jsonld",
+        status="paused",
+        intervention_required=True,
+    )
+    create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/jobs",
+        reason="cookie_blocked",
+    )
+
+    source = get_source_status_rows(connection)[0]
+
+    assert source["pending_intervention_count"] == 1
+    assert source["latest_pending_reason"] == "cookie_blocked"
+    assert source["remediation_label"] == "cookie_banner"
 
 
 def test_intervention_status_updates_and_notes(tmp_path: Path) -> None:

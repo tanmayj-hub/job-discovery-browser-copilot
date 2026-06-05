@@ -30,6 +30,7 @@ def get_storage_api() -> dict[str, Any]:
         get_companies,
         get_companies_needing_url,
         get_dashboard_overview,
+        get_intervention_history,
         get_intervention_queue,
         get_jobs,
         get_source_status_rows,
@@ -45,6 +46,7 @@ def get_storage_api() -> dict[str, Any]:
         "get_companies": get_companies,
         "get_companies_needing_url": get_companies_needing_url,
         "get_dashboard_overview": get_dashboard_overview,
+        "get_intervention_history": get_intervention_history,
         "get_intervention_queue": get_intervention_queue,
         "get_jobs": get_jobs,
         "get_source_status_rows": get_source_status_rows,
@@ -722,12 +724,32 @@ def render_intervention_queue_tab(connection: Any) -> None:
     storage_api = get_storage_api()
     companies = {company["name"]: company for company in storage_api["get_companies"](connection)}
     interventions = storage_api["get_intervention_queue"](connection)
+    intervention_history = storage_api["get_intervention_history"](connection)
 
     render_section_heading("Intervention Queue")
     st.caption("Pause on blockers, keep a human in the loop, and avoid unsafe automation.")
 
+    metric_col1, metric_col2 = st.columns(2)
+    with metric_col1:
+        st.metric("Active Pending Sources", len(interventions))
+    with metric_col2:
+        st.metric("Resolved History", len(intervention_history))
+
     if not interventions:
         st.success("No interventions are pending right now.")
+        if intervention_history:
+            with st.expander("Resolved intervention history", expanded=False):
+                history_rows = [
+                    {
+                        "ID": item["id"],
+                        "Company": item.get("company_name") or "-",
+                        "Reason": item.get("reason") or "-",
+                        "Status": item.get("status") or "-",
+                        "Resolved At": format_timestamp(item.get("resolved_at")),
+                    }
+                    for item in intervention_history
+                ]
+                st.dataframe(history_rows, hide_index=True, use_container_width=True)
         return
 
     rows = [
@@ -736,6 +758,8 @@ def render_intervention_queue_tab(connection: Any) -> None:
             "Company": item.get("company_name") or "-",
             "Source URL": item.get("source_url") or "-",
             "Reason": item.get("reason") or "-",
+            "Occurrences": int(item.get("occurrence_count", 1) or 1),
+            "Remediation": item.get("remediation_label") or "-",
             "Detected At": format_timestamp(item.get("detected_at")),
             "Action Required": item.get("action_required") or "-",
             "Status": item.get("status") or "pending",
@@ -765,7 +789,12 @@ def render_intervention_queue_tab(connection: Any) -> None:
     st.markdown('<div class="detail-card">', unsafe_allow_html=True)
     st.write(f"Company: `{selected_intervention.get('company_name') or '-'}`")
     st.write(f"Reason: `{selected_intervention.get('reason') or '-'}`")
+    st.write(
+        f"Occurrences: `{int(selected_intervention.get('occurrence_count', 1) or 1)}`"
+    )
     st.write(f"Detected at: `{format_timestamp(selected_intervention.get('detected_at'))}`")
+    st.write(f"Remediation: `{selected_intervention.get('remediation_label') or '-'}`")
+    st.write(f"Suggested action: {selected_intervention.get('suggested_action') or '-'}")
     st.write(f"Action required: {selected_intervention.get('action_required') or '-'}")
     st.write(f"Status: `{selected_intervention.get('status') or 'pending'}`")
     if selected_intervention.get("notes"):
@@ -844,6 +873,22 @@ def render_intervention_queue_tab(connection: Any) -> None:
             st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+    if intervention_history:
+        with st.expander("Resolved intervention history", expanded=False):
+            history_rows = [
+                {
+                    "ID": item["id"],
+                    "Company": item.get("company_name") or "-",
+                    "Source URL": item.get("source_url") or "-",
+                    "Reason": item.get("reason") or "-",
+                    "Remediation": item.get("remediation_label") or "-",
+                    "Resolved At": format_timestamp(item.get("resolved_at")),
+                    "Status": item.get("status") or "-",
+                }
+                for item in intervention_history
+            ]
+            st.dataframe(history_rows, hide_index=True, use_container_width=True)
 
 
 def render_manual_job_entry_tab(connection: Any) -> None:
@@ -1001,12 +1046,13 @@ def render_daily_summary_tab(connection: Any) -> None:
     overview = storage_api["get_dashboard_overview"](connection)
     jobs = storage_api["get_jobs"](connection)
     interventions = storage_api["get_intervention_queue"](connection)
+    intervention_history = storage_api["get_intervention_history"](connection)
     source_rows = storage_api["get_source_status_rows"](connection)
     dashboard_api = get_dashboard_api()
     export_files = get_export_files()
 
     render_section_heading("Daily Summary")
-    metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+    metric_col1, metric_col2, metric_col3, metric_col4, metric_col5, metric_col6 = st.columns(6)
     with metric_col1:
         st.metric("Total Companies", overview["total_companies"])
     with metric_col2:
@@ -1017,6 +1063,8 @@ def render_daily_summary_tab(connection: Any) -> None:
         st.metric("Jobs Found", overview["jobs_found"])
     with metric_col5:
         st.metric("Pending Interventions", overview["interventions_pending"])
+    with metric_col6:
+        st.metric("Resolved History", overview["interventions_resolved_history"])
 
     source_metric_col1, source_metric_col2, source_metric_col3, source_metric_col4 = st.columns(4)
     source_metric_col5, source_metric_col6, source_metric_col7, source_metric_col8 = st.columns(4)
@@ -1064,6 +1112,11 @@ def render_daily_summary_tab(connection: Any) -> None:
             )
         else:
             st.success("No interventions are currently blocking work.")
+            if intervention_history:
+                st.caption(
+                    f"{len(intervention_history)} resolved/manual history rows remain "
+                    "available for review."
+                )
 
         if export_files:
             latest = export_files[0]
