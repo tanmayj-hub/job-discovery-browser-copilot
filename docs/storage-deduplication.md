@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Task 5 strengthens local job storage so repeated runs update the same job row instead of creating duplicates, especially for Greenhouse and Lever sources that expose stable external job IDs.
+Task 5 strengthens local job storage so repeated runs update the same job row instead of creating duplicates, especially for ATS and JSON-LD sources that expose stable external job IDs.
 
 ## Stored Metadata
 
@@ -28,7 +28,7 @@ Job identity now follows this priority order:
 - normalized `job_url`
 - `company_name + normalized_title + normalized_location + source_name`
 
-This means Greenhouse and Lever jobs prefer ATS-provided stable IDs, while browser-collected jobs still work correctly without external IDs.
+This means Greenhouse, Lever, and Ashby jobs prefer ATS-provided stable IDs, static JSON-LD pages can also preserve stable identifiers when they expose them, and browser-collected jobs still work correctly without external IDs.
 
 ## Update Behavior
 

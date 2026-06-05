@@ -19,9 +19,9 @@ Job searching across dozens of company career pages is repetitive, fragmented, a
 
 The app also distinguishes between detected source type and allowed operating mode. It can identify ATS families such as Greenhouse, Lever, Ashby, SmartRecruiters, Workday, SuccessFactors, Oracle HCM, ICIMS, and Phenom, then map them into the current local safety modes without adding collectors prematurely.
 
-The current routing layer also makes source handling explicit: browser-safe sources use the visible browser collector, manual-only sources are never automated, Greenhouse and Lever use public ATS APIs, and other API-friendly ATS types are reported as not yet implemented unless an explicit browser fallback is enabled.
+The current routing layer also makes source handling explicit: browser-safe sources first try a static JSON-LD precheck before the visible browser collector, manual-only sources are never automated, Greenhouse, Lever, and Ashby use public ATS APIs, and SmartRecruiters remains intentionally unimplemented unless an explicit browser fallback is enabled.
 
-SQLite storage now also preserves stable ATS metadata for API-collected jobs. Greenhouse and Lever jobs carry `external_job_id`, `ats_type`, `board_slug`, `content_hash`, and first/last-seen timestamps so repeated runs can update the same row instead of creating duplicates.
+SQLite storage now also preserves stable ATS metadata for API-collected and static JSON-LD jobs. Greenhouse, Lever, and Ashby jobs carry `external_job_id`, `ats_type`, `board_slug`, `content_hash`, and first/last-seen timestamps so repeated runs can update the same row instead of creating duplicates.
 
 ## Safety And Compliance Note
 
@@ -40,9 +40,10 @@ The MVP uses a collect-first, score-later strategy for company career pages.
 
 - Use company career pages as the source of truth.
 - Discover visible job listings broadly before relevance scoring.
-- For Greenhouse and Lever, collect broadly from the public ATS API before relevance scoring.
+- For Greenhouse, Lever, and Ashby, collect broadly from the public ATS API before relevance scoring.
 - Use location scope only when a career board needs a search/filter to reveal jobs.
 - Avoid role, title, or skill keyword searches on company boards by default.
+- For browser-safe public pages, try static JSON-LD `JobPosting` extraction before opening the interactive browser flow.
 - Score collected jobs locally for Cloud, DevOps, Admin, Platform, and Support relevance.
 - Keep LinkedIn and Indeed manual-only.
 - Pause for CAPTCHA, login, or unclear manual-intervention cases.
@@ -140,14 +141,14 @@ Suggested filenames:
 - It currently focuses on local workflows and local SQLite storage only.
 - Browser collection is intentionally conservative and may pause often on unclear layouts.
 - Some ATS-backed sites still require manual URL entry or human review before collection is safe.
-- Only Greenhouse and Lever API collectors are implemented today; Ashby and SmartRecruiters are still detection-only.
+- SmartRecruiters is still intentionally detection-only until there is a clearly safe public collector path.
 - Storage metadata is intentionally local-first and lightweight; it improves dedupe and update behavior but is not a full audit-history system.
 - Scoring is deterministic keyword scoring only and does not yet use semantic matching.
 - The current watchlist is strongest for Canadian banks and IT consulting targets, not broad job search.
 
 ## Roadmap
 
-- expand API-based collection beyond Greenhouse and Lever
+- expand safe public-source coverage beyond Greenhouse, Lever, Ashby, and static JSON-LD
 - improve normalization for job descriptions and posting dates
 - expand dashboard review tools for saved and rejected jobs
 - add richer intervention analytics and retry history

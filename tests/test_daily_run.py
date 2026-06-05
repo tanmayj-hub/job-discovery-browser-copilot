@@ -210,7 +210,7 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert companies["Missing URL Co"]["source_mode"] == "needs_url"
 
 
-def test_daily_run_preserves_greenhouse_and_lever_metadata_in_storage(tmp_path: Path) -> None:
+def test_daily_run_preserves_api_and_static_metadata_in_storage(tmp_path: Path) -> None:
     config_path = tmp_path / "companies.yaml"
     db_path = tmp_path / "job_discovery.db"
     exports_dir = tmp_path / "exports"
@@ -225,22 +225,22 @@ def test_daily_run_preserves_greenhouse_and_lever_metadata_in_storage(tmp_path: 
             return [
                 {
                     "company_name": "API Co",
-                    "source_name": "greenhouse",
+                    "source_name": "ashby",
                     "status": "completed",
                     "jobs": [
                         {
                             "company_name": "API Co",
                             "title": "Cloud Engineer",
                             "location": "Toronto, Ontario, Canada",
-                            "job_url": "https://boards.greenhouse.io/example/jobs/12345",
-                            "apply_url": "https://boards.greenhouse.io/example/jobs/12345",
+                            "job_url": "https://jobs.ashbyhq.com/example/job-12345",
+                            "apply_url": "https://jobs.ashbyhq.com/example/job-12345/apply",
                             "description": "AWS Terraform Linux support role.",
-                            "source_name": "greenhouse",
+                            "source_name": "ashby",
                             "source_mode": "api_allowed",
-                            "external_job_id": "12345",
-                            "ats_type": "greenhouse",
+                            "external_job_id": "job-12345",
+                            "ats_type": "ashby",
                             "board_slug": "example",
-                            "raw_payload_json": '{"id":12345}',
+                            "raw_payload_json": '{"id":"job-12345"}',
                         }
                     ],
                 }
@@ -257,9 +257,17 @@ def test_daily_run_preserves_greenhouse_and_lever_metadata_in_storage(tmp_path: 
                             "title": "Cloud Support Engineer",
                             "location": "Remote Canada",
                             "job_url": "https://careers.browser.example.com/jobs/1",
+                            "apply_url": "https://careers.browser.example.com/jobs/1",
                             "description": "Linux troubleshooting support role.",
                             "source_name": "company-careers",
                             "source_mode": "browser_allowed",
+                            "external_job_id": "browser-jsonld-1",
+                            "ats_type": "jsonld",
+                            "board_slug": "careers.browser.example.com",
+                            "raw_payload_json": (
+                                '{"@type":"JobPosting",'
+                                '"identifier":{"value":"browser-jsonld-1"}}'
+                            ),
                         }
                     ],
                 }
@@ -305,10 +313,13 @@ def test_daily_run_preserves_greenhouse_and_lever_metadata_in_storage(tmp_path: 
     connection = initialize_database(db_path)
     jobs = {job["company_name"]: job for job in get_jobs(connection)}
 
-    assert jobs["API Co"]["external_job_id"] == "12345"
-    assert jobs["API Co"]["ats_type"] == "greenhouse"
+    assert jobs["API Co"]["external_job_id"] == "job-12345"
+    assert jobs["API Co"]["ats_type"] == "ashby"
     assert jobs["API Co"]["board_slug"] == "example"
-    assert jobs["API Co"]["raw_payload_json"] == '{"id":12345}'
+    assert jobs["API Co"]["raw_payload_json"] == '{"id":"job-12345"}'
+    assert jobs["Browser Co"]["external_job_id"] == "browser-jsonld-1"
+    assert jobs["Browser Co"]["ats_type"] == "jsonld"
+    assert jobs["Browser Co"]["board_slug"] == "careers.browser.example.com"
     assert jobs["Human Co"]["external_job_id"] == "abc123"
     assert jobs["Human Co"]["ats_type"] == "lever"
     assert jobs["Human Co"]["board_slug"] == "human"

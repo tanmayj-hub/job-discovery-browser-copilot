@@ -7,7 +7,7 @@ The app tracks two related but different ideas:
 - `ats_type`: what kind of career board or ATS the source appears to use
 - `source_mode`: what the app is allowed to do with that source right now
 
-Task 2 added deterministic ATS detection, Task 3 added a small collector-routing skeleton, and Task 4 adds real public API collectors for Greenhouse and Lever only.
+Task 2 added deterministic ATS detection, later routing work adds real public API collectors for Greenhouse, Lever, and Ashby, plus a static JSON-LD precheck for browser-safe public pages.
 
 ## ATS Types
 
@@ -32,7 +32,7 @@ When the source does not match a known ATS, `ats_type` remains empty and the app
 
 ### `api_allowed`
 
-Use this for ATS types that are API-friendly in principle. Greenhouse and Lever now have real public API collectors. Ashby and SmartRecruiters are still detection-only in this mode.
+Use this for ATS types that are API-friendly in principle. Greenhouse, Lever, and Ashby now have real public API collectors. SmartRecruiters is still detection-only in this mode by default.
 
 Typical hints:
 
@@ -115,4 +115,4 @@ Collection should pause and create an intervention when the browser encounters:
 - Missing or invalid careers URLs classify as `needs_url`
 - Unknown public career pages classify as `browser_allowed`
 
-Greenhouse and Lever public job feeds are now collected broadly first and scored locally later. Their stored jobs also preserve `external_job_id`, `ats_type`, and `board_slug` so local dedupe prefers stable ATS identity before falling back to URL or title/location matching. Ashby and SmartRecruiters still remain unimplemented in the router, which keeps the routing small and local-first without expanding into unsupported collectors.
+Greenhouse, Lever, and Ashby public job feeds are now collected broadly first and scored locally later. Browser-safe public pages can also be collected from static JSON-LD `JobPosting` blocks before a headed browser session is opened. Stored jobs preserve `external_job_id`, `ats_type`, and `board_slug` when available so local dedupe prefers stable ATS identity before falling back to URL or title/location matching. SmartRecruiters still remains unimplemented in the router by default, which keeps the routing small and local-first without expanding into unsupported collectors.

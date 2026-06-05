@@ -156,12 +156,25 @@ def test_unknown_public_source_routes_to_browser_collector(
         ]
 
     monkeypatch.setattr(router_module, "collect_companies_with_browser", fake_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_static_jsonld_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="company-careers",
+            status="no_jobs_found",
+            collector="static_jsonld",
+            ats_type="jsonld",
+            source_mode="browser_allowed",
+        ),
+    )
 
     result = collect_company_jobs_routed(connection, _company())
 
     assert result.status == "completed"
-    assert result.collector == "browser"
+    assert result.collector == "browser_after_jsonld"
     assert result.source_mode == "browser_allowed"
+    assert result.fallback_used is True
 
 
 def test_browser_allowed_routes_to_browser_collector(
@@ -185,6 +198,18 @@ def test_browser_allowed_routes_to_browser_collector(
         ]
 
     monkeypatch.setattr(router_module, "collect_companies_with_browser", fake_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_static_jsonld_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="company-careers",
+            status="no_jobs_found",
+            collector="static_jsonld",
+            ats_type="jsonld",
+            source_mode="browser_allowed",
+        ),
+    )
 
     result = collect_company_jobs_routed(
         connection,
@@ -192,9 +217,43 @@ def test_browser_allowed_routes_to_browser_collector(
         save_jobs=True,
     )
 
-    assert result.collector == "browser"
+    assert result.collector == "browser_after_jsonld"
     assert result.jobs_discovered == 2
     assert result.jobs_saved == 1
+    assert result.fallback_used is True
+
+
+def test_browser_allowed_uses_static_jsonld_before_browser(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+
+    def fail_browser(*args, **kwargs):  # noqa: ARG001
+        raise AssertionError("browser collector should not be called")
+
+    monkeypatch.setattr(router_module, "collect_companies_with_browser", fail_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_static_jsonld_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="company-careers",
+            status="success",
+            collector="static_jsonld",
+            ats_type="jsonld",
+            source_mode="browser_allowed",
+            jobs_discovered=1,
+            jobs=[{"title": "Cloud Engineer"}],
+        ),
+    )
+
+    result = collect_company_jobs_routed(connection, _company(source_mode="browser_allowed"))
+
+    assert result.collector == "static_jsonld"
+    assert result.status == "success"
+    assert result.jobs_discovered == 1
+    assert result.fallback_used is False
 
 
 def test_human_in_loop_routes_to_browser_collector(
@@ -218,6 +277,13 @@ def test_human_in_loop_routes_to_browser_collector(
         ]
 
     monkeypatch.setattr(router_module, "collect_companies_with_browser", fake_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_static_jsonld_jobs",
+        lambda company: (_ for _ in ()).throw(  # noqa: ARG005
+            AssertionError("static JSON-LD should not run for human_in_loop")
+        ),
+    )
 
     result = collect_company_jobs_routed(
         connection,
@@ -317,7 +383,7 @@ def test_api_allowed_lever_calls_api_collector_when_fallback_disabled(
     assert result.jobs_discovered == 2
 
 
-def test_api_allowed_ashby_returns_not_implemented_when_fallback_disabled(
+def test_api_allowed_ashby_calls_api_collector_when_fallback_disabled(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
@@ -327,6 +393,20 @@ def test_api_allowed_ashby_returns_not_implemented_when_fallback_disabled(
         raise AssertionError("browser collector should not be called")
 
     monkeypatch.setattr(router_module, "collect_companies_with_browser", fail_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_ashby_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="ashby",
+            status="success",
+            collector="ashby_api",
+            ats_type="ashby",
+            source_mode="api_allowed",
+            jobs_discovered=1,
+            jobs=[{"title": "Platform Engineer"}],
+        ),
+    )
 
     result = collect_company_jobs_routed(
         connection,
@@ -339,8 +419,9 @@ def test_api_allowed_ashby_returns_not_implemented_when_fallback_disabled(
         allow_api_browser_fallback=False,
     )
 
-    assert result.status == "api_collector_not_implemented"
-    assert result.collector == "api_not_implemented"
+    assert result.status == "success"
+    assert result.collector == "ashby_api"
+    assert result.jobs_discovered == 1
 
 
 def test_api_allowed_smartrecruiters_returns_not_implemented_when_fallback_disabled(
@@ -481,13 +562,28 @@ def test_router_result_includes_core_fields(
         ]
 
     monkeypatch.setattr(router_module, "collect_companies_with_browser", fake_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_static_jsonld_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="company-careers",
+            status="parse_error",
+            collector="static_jsonld",
+            ats_type="jsonld",
+            source_mode="browser_allowed",
+            error="Malformed JSON-LD encountered",
+        ),
+    )
 
     result = collect_company_jobs_routed(connection, _company(), save_jobs=True)
     payload = result.to_dict()
 
-    assert payload["collector"] == "browser"
+    assert payload["collector"] == "browser_after_jsonld"
     assert payload["source_mode"] == "browser_allowed"
     assert payload["ats_type"] is None
     assert payload["status"] == "completed"
     assert payload["jobs_discovered"] == 1
     assert payload["jobs_saved"] == 1
+    assert payload["fallback_used"] is True
+    assert "Static JSON-LD precheck failed" in str(payload["error"])

@@ -9,9 +9,10 @@ from typing import Any
 import yaml
 
 from classifier.source_classifier import classify_source
-from collectors.api import collect_greenhouse_jobs, collect_lever_jobs
+from collectors.api import collect_ashby_jobs, collect_greenhouse_jobs, collect_lever_jobs
 from collectors.base import CollectorResult
 from collectors.browser_collector import collect_companies_with_browser
+from collectors.static_jsonld import collect_static_jsonld_jobs
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DISCOVERY_CONFIG_PATH = PROJECT_ROOT / "config" / "discovery.yaml"
@@ -19,11 +20,45 @@ API_FRIENDLY_ATS_TYPES = {"greenhouse", "lever", "ashby", "smartrecruiters"}
 
 
 def _get_api_collector(ats_type: str | None):
+    if ats_type == "ashby":
+        return collect_ashby_jobs
     if ats_type == "greenhouse":
         return collect_greenhouse_jobs
     if ats_type == "lever":
         return collect_lever_jobs
     return None
+
+
+def _collect_with_browser(
+    conn: sqlite3.Connection,
+    company: dict[str, Any],
+    *,
+    headless: bool,
+    save_jobs: bool,
+    allowed_source_modes: set[str],
+    collector_name: str,
+    ats_type: str | None,
+    source_mode: str | None,
+    fallback_used: bool = False,
+    error: str | None = None,
+) -> CollectorResult:
+    browser_result = collect_companies_with_browser(
+        conn,
+        companies=[company],
+        headless=headless,
+        save_jobs=save_jobs,
+        allowed_source_modes=allowed_source_modes,
+    )[0]
+    if error and not browser_result.get("error"):
+        browser_result["error"] = error
+    return _as_collector_result(
+        browser_result,
+        collector=collector_name,
+        ats_type=ats_type,
+        source_mode=source_mode,
+        fallback_used=fallback_used,
+        intervention_required=browser_result.get("status") == "paused",
+    )
 
 
 def load_api_browser_fallback_flag(
@@ -130,20 +165,17 @@ def collect_company_jobs_routed(
             if api_result.status in {"success", "no_jobs_found"} or not fallback_enabled:
                 return api_result
 
-            browser_result = collect_companies_with_browser(
+            return _collect_with_browser(
                 conn,
-                companies=[company],
+                company,
                 headless=headless,
                 save_jobs=save_jobs,
                 allowed_source_modes={"api_allowed", "browser_allowed", "human_in_loop"},
-            )[0]
-            return _as_collector_result(
-                browser_result,
-                collector="browser_fallback",
+                collector_name="browser_fallback",
                 ats_type=classification.ats_type,
                 source_mode=classification.source_mode,
                 fallback_used=True,
-                intervention_required=browser_result.get("status") == "paused",
+                error=f"API collector failed before browser fallback: {api_result.error}",
             )
 
         if classification.ats_type in API_FRIENDLY_ATS_TYPES and not fallback_enabled:
@@ -156,36 +188,49 @@ def collect_company_jobs_routed(
                 source_mode=classification.source_mode,
             )
 
-        browser_result = collect_companies_with_browser(
+        return _collect_with_browser(
             conn,
-            companies=[company],
+            company,
             headless=headless,
             save_jobs=save_jobs,
             allowed_source_modes={"api_allowed", "browser_allowed", "human_in_loop"},
-        )[0]
-        return _as_collector_result(
-            browser_result,
-            collector="browser_fallback" if fallback_enabled else "browser",
+            collector_name="browser_fallback" if fallback_enabled else "browser",
             ats_type=classification.ats_type,
             source_mode=classification.source_mode,
             fallback_used=fallback_enabled,
-            intervention_required=browser_result.get("status") == "paused",
         )
 
-    if classification.source_mode in {"browser_allowed", "human_in_loop"}:
-        browser_result = collect_companies_with_browser(
+    if classification.source_mode == "browser_allowed":
+        jsonld_result = collect_static_jsonld_jobs(routed_company)
+        if jsonld_result.status == "success":
+            return jsonld_result
+        return _collect_with_browser(
             conn,
-            companies=[company],
+            company,
+            headless=headless,
+            save_jobs=save_jobs,
+            allowed_source_modes={"browser_allowed"},
+            collector_name="browser_after_jsonld",
+            ats_type=classification.ats_type,
+            source_mode=classification.source_mode,
+            fallback_used=True,
+            error=(
+                None
+                if jsonld_result.status == "no_jobs_found"
+                else f"Static JSON-LD precheck failed: {jsonld_result.error}"
+            ),
+        )
+
+    if classification.source_mode == "human_in_loop":
+        return _collect_with_browser(
+            conn,
+            company,
             headless=headless,
             save_jobs=save_jobs,
             allowed_source_modes={"browser_allowed", "human_in_loop"},
-        )[0]
-        return _as_collector_result(
-            browser_result,
-            collector="browser",
+            collector_name="browser",
             ats_type=classification.ats_type,
             source_mode=classification.source_mode,
-            intervention_required=browser_result.get("status") == "paused",
         )
 
     return CollectorResult(
