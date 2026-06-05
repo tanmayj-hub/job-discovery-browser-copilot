@@ -471,10 +471,122 @@ def test_intervention_storage_and_queue_fields(tmp_path: Path) -> None:
 
     assert intervention_id == queue[0]["id"]
     assert queue[0]["company_name"] == "Example Co"
-    assert queue[0]["source_url"] == "https://careers.example.com"
+    assert queue[0]["source_url"] == "https://careers.example.com/"
     assert queue[0]["reason"] == "captcha_detected"
     assert queue[0]["status"] == "pending"
     assert queue[0]["action_required"] == "Review manually. Do not continue automatically."
+
+
+def test_rerecording_same_pending_intervention_reuses_existing_row(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    intervention_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/jobs",
+        reason="location_selection_required",
+        notes="Initial pause.",
+    )
+    connection.execute(
+        "UPDATE interventions SET detected_at = '2026-06-01 00:00:00' WHERE id = ?",
+        (intervention_id,),
+    )
+    connection.commit()
+
+    second_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/jobs/",
+        reason="location_selection_required",
+        notes="Repeated pause.",
+    )
+
+    interventions = get_interventions(connection)
+
+    assert second_id == intervention_id
+    assert len(interventions) == 1
+    assert interventions[0]["status"] == "pending"
+    assert interventions[0]["detected_at"] != "2026-06-01 00:00:00"
+    assert "Initial pause." in interventions[0]["notes"]
+    assert "Repeated pause." in interventions[0]["notes"]
+
+
+def test_resolved_intervention_allows_new_future_row(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    first_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/jobs",
+        reason="captcha_detected",
+    )
+    update_intervention_status(connection, first_id, "resolved")
+
+    second_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/jobs",
+        reason="captcha_detected",
+    )
+
+    interventions = get_interventions(connection)
+
+    assert second_id != first_id
+    assert len(interventions) == 2
+    assert interventions[0]["status"] == "pending"
+    assert interventions[1]["status"] == "resolved"
+
+
+def test_different_pending_intervention_source_creates_separate_row(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    first_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/jobs",
+        reason="location_selection_required",
+    )
+    second_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/openings",
+        reason="location_selection_required",
+    )
+
+    assert second_id != first_id
+    assert len(get_interventions(connection)) == 2
+
+
+def test_different_pending_intervention_reason_creates_separate_row(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    first_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/jobs",
+        reason="location_selection_required",
+    )
+    second_id = create_intervention(
+        connection,
+        intervention_type="browser_pause",
+        company_name="Example Co",
+        source_url="https://careers.example.com/jobs",
+        reason="cookie_blocked",
+    )
+
+    assert second_id != first_id
+    assert len(get_interventions(connection)) == 2
 
 
 def test_intervention_status_updates_and_notes(tmp_path: Path) -> None:

@@ -341,6 +341,74 @@ def _default_action_required(reason: str | None) -> str:
     return lookup.get(reason or "", "Review manually before continuing.")
 
 
+def _normalize_intervention_company(value: str | None) -> str:
+    return normalize_job_text(value)
+
+
+def _normalize_intervention_reason(
+    reason: str | None,
+    intervention_type: str | None,
+) -> str:
+    return normalize_job_text(reason or intervention_type)
+
+
+def _normalize_intervention_source_url(value: str | None) -> str:
+    return normalize_job_text(normalize_job_url(value))
+
+
+def _merge_intervention_notes(existing_notes: str | None, new_notes: str | None) -> str | None:
+    existing = str(existing_notes or "").strip()
+    incoming = str(new_notes or "").strip()
+    if not incoming:
+        return existing or None
+    if not existing:
+        return incoming
+    if incoming == existing or incoming in existing:
+        return existing
+    return f"{existing}\n\n{incoming}"
+
+
+def find_open_intervention(
+    connection: sqlite3.Connection,
+    *,
+    company_name: str | None = None,
+    source_url: str | None = None,
+    intervention_type: str,
+    reason: str | None = None,
+) -> dict[str, Any] | None:
+    """Return an existing unresolved intervention for the same logical issue."""
+
+    company_key = _normalize_intervention_company(company_name)
+    source_url_key = _normalize_intervention_source_url(source_url)
+    reason_key = _normalize_intervention_reason(reason, intervention_type)
+
+    rows = connection.execute(
+        """
+        SELECT *
+        FROM interventions
+        WHERE COALESCE(status, 'pending') = 'pending'
+          AND lower(trim(COALESCE(company_name, ''))) = ?
+        ORDER BY COALESCE(detected_at, created_at) DESC, id DESC
+        """,
+        (company_key,),
+    ).fetchall()
+
+    for row in rows:
+        record = _row_to_dict(row)
+        if _normalize_intervention_source_url(record.get("source_url")) != source_url_key:
+            continue
+        if (
+            _normalize_intervention_reason(
+                record.get("reason"),
+                record.get("intervention_type"),
+            )
+            != reason_key
+        ):
+            continue
+        return record
+    return None
+
+
 def upsert_companies(
     connection: sqlite3.Connection,
     companies: Iterable[Mapping[str, Any]],
@@ -1051,6 +1119,45 @@ def create_intervention(
     if status not in INTERVENTION_STATUS_VALUES:
         raise ValueError(f"Invalid intervention status: {status}")
 
+    normalized_source_url = normalize_job_url(source_url)
+    normalized_reason = str(reason or "").strip() or None
+    resolved_action_required = action_required or _default_action_required(reason)
+    open_intervention = None
+    if status == "pending":
+        open_intervention = find_open_intervention(
+            connection,
+            company_name=company_name,
+            source_url=normalized_source_url,
+            intervention_type=intervention_type,
+            reason=normalized_reason,
+        )
+    if open_intervention is not None:
+        merged_notes = _merge_intervention_notes(open_intervention.get("notes"), notes)
+        connection.execute(
+            """
+            UPDATE interventions
+            SET job_id = COALESCE(job_id, ?),
+                reason = COALESCE(?, reason),
+                source_url = COALESCE(?, source_url),
+                action_required = COALESCE(?, action_required),
+                notes = ?,
+                status = 'pending',
+                detected_at = CURRENT_TIMESTAMP,
+                resolved_at = NULL
+            WHERE id = ?
+            """,
+            (
+                job_id,
+                normalized_reason,
+                normalized_source_url,
+                resolved_action_required,
+                merged_notes,
+                int(open_intervention["id"]),
+            ),
+        )
+        connection.commit()
+        return int(open_intervention["id"])
+
     cursor = connection.execute(
         """
         INSERT INTO interventions (
@@ -1069,9 +1176,9 @@ def create_intervention(
             job_id,
             company_name,
             intervention_type,
-            reason,
-            source_url,
-            action_required or _default_action_required(reason),
+            normalized_reason,
+            normalized_source_url,
+            resolved_action_required,
             status,
             notes,
         ),

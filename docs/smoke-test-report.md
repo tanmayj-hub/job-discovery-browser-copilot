@@ -275,6 +275,10 @@ The generated daily Markdown report also rendered the expected routing summary, 
 - Suggested fix:
   - Before inserting a new intervention, check for an unresolved intervention with the same `company_name`, `reason`, and `source_url`
 
+Update:
+
+- Fixed in Task 8.1 by reusing an open pending intervention row and refreshing `detected_at` instead of inserting a duplicate.
+
 ## Fixes Made During Task 8
 
 - Updated ATS-backed job lookup in [src/storage/db.py](/C:/projects/job-discovery-browser-copilot/src/storage/db.py)
