@@ -590,3 +590,49 @@ def test_router_result_includes_core_fields(
     assert payload["location_scope_used"] is True
     assert payload["keyword_scope_used"] is False
     assert "Static JSON-LD precheck failed" in str(payload["error"])
+
+
+def test_browser_allowed_ssl_jsonld_precheck_falls_back_to_browser(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+
+    def fake_browser(*args, **kwargs):  # noqa: ARG001
+        return [
+            {
+                "company_name": "Example Co",
+                "source_name": "company-careers",
+                "status": "completed",
+                "jobs_discovered": 1,
+                "jobs_scored": 0,
+                "jobs_relevant": 0,
+                "jobs_saved": 0,
+                "jobs": [],
+            }
+        ]
+
+    monkeypatch.setattr(router_module, "collect_companies_with_browser", fake_browser)
+    monkeypatch.setattr(
+        router_module,
+        "collect_static_jsonld_jobs",
+        lambda company: router_module.CollectorResult(  # noqa: ARG005
+            company_name="Example Co",
+            source_name="company-careers",
+            status="api_error",
+            collector="static_jsonld",
+            ats_type="jsonld",
+            source_mode="browser_allowed",
+            error=(
+                "Static JSON-LD SSL verification failed: "
+                "[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed"
+            ),
+        ),
+    )
+
+    result = collect_company_jobs_routed(connection, _company())
+
+    assert result.collector == "browser_after_jsonld"
+    assert result.status == "completed"
+    assert result.fallback_used is True
+    assert "Static JSON-LD precheck failed" in str(result.error)

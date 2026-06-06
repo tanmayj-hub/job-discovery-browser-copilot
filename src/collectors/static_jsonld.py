@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import ssl
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
@@ -27,6 +28,12 @@ def _fetch_html(url: str, *, timeout: int = STATIC_JSONLD_TIMEOUT_SECONDS) -> st
     )
     with urlopen(request, timeout=timeout) as response:
         return response.read().decode("utf-8", errors="replace")
+
+
+def _format_fetch_error(exc: Exception) -> str:
+    if isinstance(exc, URLError) and isinstance(exc.reason, ssl.SSLError):
+        return f"Static JSON-LD SSL verification failed: {exc.reason}"
+    return f"Static JSON-LD request failed: {exc}"
 
 
 def _iter_json_ld_items(payload: Any) -> list[dict[str, Any]]:
@@ -178,7 +185,7 @@ def collect_static_jsonld_jobs(company: dict[str, Any]) -> CollectorResult:
             collector="static_jsonld",
             ats_type="jsonld",
             source_mode=source_mode,
-            error=f"Static JSON-LD request failed: {exc}",
+            error=_format_fetch_error(exc),
         )
     except Exception as exc:  # noqa: BLE001
         return CollectorResult(

@@ -79,6 +79,7 @@ NOISE_URL_HINTS = (
     "/login",
 )
 RESTRICTED_DOMAINS = ("linkedin.com", "indeed.com")
+NON_NAVIGABLE_URL_SCHEMES = ("javascript", "mailto", "tel", "data", "vbscript")
 JOB_URL_HINTS = (
     "job",
     "jobs",
@@ -147,18 +148,42 @@ MARKETING_TITLE_EXACT_HINTS = (
     "living wage employers",
     "always-open job posting",
 )
-FACET_COUNT_TITLE_HINTS = (
-    "hybrid",
+GENERIC_NON_JOB_TITLES = (
+    "filter results",
+    "search results",
+    "job search",
+    "careers home",
+    "view all jobs",
+    "all jobs",
+    "departments",
+    "locations",
+    "job category",
+    "category",
+    "business area",
+    "employment type",
     "remote",
+    "hybrid",
     "on-site",
     "onsite",
-    "career areas",
-    "job families",
-    "locations",
-    "categories",
-    "departments",
-    "full-time",
-    "part-time",
+    "manage consent preferences",
+)
+GENERIC_NON_JOB_TITLE_PREFIXES = (
+    "filter results",
+    "search results",
+    "job search",
+    "careers home",
+)
+INDEX_PAGE_PATH_SUFFIXES = (
+    "/careers",
+    "/jobs",
+    "/search",
+    "/job-search",
+    "/job-search-results",
+    "/life-at",
+    "/benefits",
+    "/culture",
+    "/teams",
+    "/locations",
 )
 JOB_SEARCH_ENTRY_HINTS = (
     "job search",
@@ -244,7 +269,7 @@ def search_with_location_term(page: Page, location_term: str) -> str | None:
         search_input.fill(query)
     search_input.press("Enter")
     page.wait_for_timeout(1_500)
-    current_text = _clean_text(page.locator("body").inner_text(timeout=3_000))
+    current_text = _safe_locator_inner_text(page.locator("body"), timeout=3_000)
     if _looks_like_empty_results_page(current_text):
         try:
             if page.url != starting_url:
@@ -337,7 +362,9 @@ def navigate_to_job_search_page(page: Page) -> str | None:
         href = candidate["href"]
         if not href:
             continue
-        resolved = urljoin(page.url, href)
+        resolved = _normalize_actionable_url(page.url, href)
+        if not resolved:
+            continue
         resolved_host = urlparse(resolved).netloc.lower()
         if (
             resolved_host
@@ -354,7 +381,7 @@ def navigate_to_job_search_page(page: Page) -> str | None:
     locator = page.locator("button, a, [role='button']")
     candidate_count = min(locator.count(), 80)
     before_url = page.url
-    before_text = _clean_text(page.locator("body").inner_text(timeout=3_000))[:1200]
+    before_text = _safe_locator_inner_text(page.locator("body"), timeout=3_000)[:1200]
     for candidate in normalized:
         target_text = candidate["text"].lower()
         target_aria = candidate["aria"].lower()
@@ -364,13 +391,13 @@ def navigate_to_job_search_page(page: Page) -> str | None:
             element = locator.nth(index)
             if not element.is_visible():
                 continue
-            text = _clean_text(element.inner_text()).lower()
-            aria = _clean_text(element.get_attribute("aria-label")).lower()
+            text = _safe_locator_inner_text(element).lower()
+            aria = _safe_locator_attribute(element, "aria-label").lower()
             if (target_text and text == target_text) or (target_aria and aria == target_aria):
                 element.click()
                 page.wait_for_timeout(2_000)
                 after_url = page.url
-                after_text = _clean_text(page.locator("body").inner_text(timeout=3_000))[:1200]
+                after_text = _safe_locator_inner_text(page.locator("body"), timeout=3_000)[:1200]
                 if after_url != before_url or after_text != before_text:
                     return after_url
                 break
@@ -399,6 +426,41 @@ def _is_public_job_search_url(url: str) -> bool:
 
 def _clean_text(value: object) -> str:
     return " ".join(str(value or "").split())
+
+
+def _safe_locator_inner_text(locator: Locator, *, timeout: int | None = None) -> str:
+    try:
+        if timeout is None:
+            return _clean_text(locator.inner_text())
+        return _clean_text(locator.inner_text(timeout=timeout))
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def _safe_locator_attribute(locator: Locator, name: str) -> str:
+    try:
+        return _clean_text(locator.get_attribute(name))
+    except Exception:  # noqa: BLE001
+        return ""
+
+
+def _normalize_actionable_url(base_url: str, candidate_url: str | None) -> str | None:
+    raw = str(candidate_url or "").strip()
+    if not raw or raw.startswith("#"):
+        return None
+
+    parsed = urlparse(raw)
+    scheme = parsed.scheme.lower()
+    if scheme in NON_NAVIGABLE_URL_SCHEMES:
+        return None
+    if scheme and scheme not in {"http", "https"}:
+        return None
+
+    resolved = urljoin(base_url, raw)
+    resolved_parsed = urlparse(resolved)
+    if resolved_parsed.scheme.lower() not in {"http", "https"}:
+        return None
+    return resolved
 
 
 def _normalize_job_title_text(title: str) -> str:
@@ -468,8 +530,7 @@ def _registrable_domain(hostname: str) -> str:
 
 
 def _is_usable_job_url(job_url: str) -> bool:
-    parsed = urlparse(job_url)
-    return parsed.scheme in {"", "http", "https"}
+    return _normalize_actionable_url("https://example.invalid", job_url) is not None
 
 
 def _is_allowed_external_job_link(job_url: str, base_url: str | None) -> bool:
@@ -501,11 +562,27 @@ def _looks_like_marketing_title(title: str) -> bool:
     )
 
 
+def _looks_like_generic_non_job_title(title: str) -> bool:
+    normalized = title.lower()
+    if normalized in GENERIC_NON_JOB_TITLES:
+        return True
+    if normalized.startswith(GENERIC_NON_JOB_TITLE_PREFIXES):
+        return True
+    return bool(re.search(r"\b\d+\s+available jobs?\b", normalized))
+
+
 def _looks_like_facet_count_title(title: str) -> bool:
     normalized = title.lower()
-    if not re.fullmatch(r"[a-z0-9/&,\- ]+\(\d+\)", normalized):
+    return re.fullmatch(r"[a-z0-9/&,\- ]+\(\d+\)", normalized) is not None
+
+
+def _looks_like_index_or_category_url(job_url: str) -> bool:
+    path = urlparse(job_url).path.lower().rstrip("/")
+    if not path:
         return False
-    return any(hint in normalized for hint in FACET_COUNT_TITLE_HINTS)
+    if any(path == suffix or path.endswith(suffix) for suffix in INDEX_PAGE_PATH_SUFFIXES):
+        return True
+    return re.search(r"/c/[^/]+-jobs$", path) is not None
 
 
 def _has_job_title_hint(title: str) -> bool:
@@ -536,9 +613,7 @@ def _best_link_from_container(container: BeautifulSoup, base_url: str) -> str | 
     if link is None:
         return None
     href = str(link.get("href") or "").strip()
-    if not href or href.startswith("#") or href.startswith("javascript:"):
-        return None
-    return urljoin(base_url, href)
+    return _normalize_actionable_url(base_url, href)
 
 
 def _has_job_posting_signal(
@@ -584,13 +659,19 @@ def is_probable_job_listing(
 
     if not title:
         return False
-    if _looks_like_marketing_title(title) or _looks_like_facet_count_title(title):
+    if (
+        _looks_like_marketing_title(title)
+        or _looks_like_generic_non_job_title(title)
+        or _looks_like_facet_count_title(title)
+    ):
         return False
     if job_url and not _is_usable_job_url(job_url):
         return False
     if job_url and not _is_allowed_external_job_link(job_url, base_url):
         return False
     if _is_noise_candidate(title, job_url, description):
+        return False
+    if job_url and not has_external_identity and _looks_like_index_or_category_url(job_url):
         return False
 
     has_job_signal = _has_job_posting_signal(
@@ -616,6 +697,45 @@ def is_probable_job_listing(
     return has_job_title and (has_job_signal or has_context_signal)
 
 
+def get_job_quality_signals(
+    job: Mapping[str, Any],
+    *,
+    base_url: str | None = None,
+) -> list[str]:
+    """Return debug-friendly quality flags for suspicious rows."""
+
+    title = _normalize_job_title_text(job.get("title"))
+    job_url = str(job.get("job_url") or "").strip()
+    external_job_id = _clean_text(job.get("external_job_id"))
+    ats_type = _clean_text(job.get("ats_type"))
+    board_slug = _clean_text(job.get("board_slug"))
+    source_mode = _clean_text(job.get("source_mode"))
+    has_external_identity = bool(external_job_id and (ats_type or board_slug))
+    signals: list[str] = []
+
+    if not title:
+        signals.append("missing_title")
+    if _looks_like_generic_non_job_title(title):
+        signals.append("generic_title")
+    if _looks_like_facet_count_title(title):
+        signals.append("facet_count_title")
+    if _looks_like_marketing_title(title):
+        signals.append("marketing_title")
+    if not job_url and not has_external_identity:
+        signals.append("missing_url")
+    if job_url and not _is_usable_job_url(job_url):
+        signals.append("non_actionable_url")
+    if job_url and not has_external_identity and _looks_like_index_or_category_url(job_url):
+        signals.append("index_or_category_url")
+    if (
+        source_mode in {"browser_allowed", "human_in_loop"}
+        and not has_external_identity
+        and signals
+    ):
+        signals.append("browser_without_external_id")
+    return signals
+
+
 def _build_job_record(
     *,
     company_name: str,
@@ -633,11 +753,13 @@ def _build_job_record(
 ) -> dict[str, Any] | None:
     cleaned_title = _normalize_job_title_text(title)
     cleaned_description = _clean_text(description)
-    resolved_href = (
-        urljoin(base_url, href)
-        if href
-        else (base_url if allow_base_url_fallback else None)
-    )
+    raw_href = str(href or "").strip()
+    if raw_href:
+        resolved_href = _normalize_actionable_url(base_url, raw_href)
+        if resolved_href is None:
+            return None
+    else:
+        resolved_href = base_url if allow_base_url_fallback else None
     cleaned_location = _clean_text(location) or extract_location(cleaned_description) or None
     if not cleaned_title or (resolved_href and _is_restricted_url(resolved_href)):
         return None
@@ -661,7 +783,7 @@ def _build_job_record(
         "title": cleaned_title,
         "location": cleaned_location,
         "job_url": resolved_href,
-        "apply_url": urljoin(base_url, apply_url) if apply_url else None,
+        "apply_url": _normalize_actionable_url(base_url, apply_url) if apply_url else None,
         "source_name": source_name,
         "source_mode": source_mode,
         "description": cleaned_description or None,
@@ -772,6 +894,7 @@ def _extract_from_cards(
                 continue
             title = _best_title_from_container(container)
             href = _best_link_from_container(container, base_url)
+            has_explicit_link = container.select_one("a[href]") is not None
             text = _clean_text(container.get_text(" ", strip=True))
             if _is_page_shell_container(container, text):
                 continue
@@ -785,6 +908,7 @@ def _extract_from_cards(
                 base_url=base_url,
                 href=href,
                 description=text,
+                allow_base_url_fallback=not has_explicit_link,
             )
             if job is not None:
                 jobs.append(job)
@@ -1239,7 +1363,7 @@ def dismiss_cookie_banner(page: Page) -> str | None:
         if attempt < 5:
             page.wait_for_timeout(500)
 
-    top_page_text = _clean_text(page.locator("body").inner_text(timeout=3_000)[:1200]).lower()
+    top_page_text = _safe_locator_inner_text(page.locator("body"), timeout=3_000)[:1200].lower()
     if "cookie" in top_page_text or "consent" in top_page_text:
         locator = page.locator("button, a, [role='button']")
         candidate_count = min(locator.count(), 40)
@@ -1247,7 +1371,7 @@ def dismiss_cookie_banner(page: Page) -> str | None:
             candidate = locator.nth(index)
             if not candidate.is_visible():
                 continue
-            label = _clean_text(candidate.inner_text()).lower()
+            label = _safe_locator_inner_text(candidate).lower()
             if label in COOKIE_ACCEPT_TEXT_HINTS:
                 candidate.click()
                 page.wait_for_timeout(1_000)
@@ -1345,14 +1469,16 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
         if not enabled:
             continue
 
-        text = _clean_text(candidate.inner_text()).lower()
+        text = _safe_locator_inner_text(candidate).lower()
         if text not in PAGINATION_LABELS:
             continue
         if any(blocked in text for blocked in ("sign in", "log in", "linkedin", "indeed")):
             continue
-        href = str(candidate.get_attribute("href") or "").strip()
+        href = _safe_locator_attribute(candidate, "href")
         if href:
-            resolved = urljoin(page.url, href)
+            resolved = _normalize_actionable_url(page.url, href)
+            if not resolved:
+                continue
             resolved_host = urlparse(resolved).netloc.lower()
             if resolved_host and resolved_host != current_host:
                 continue

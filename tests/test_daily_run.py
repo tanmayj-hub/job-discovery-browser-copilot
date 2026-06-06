@@ -212,12 +212,14 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert "## Source Outcomes" in report_text
     assert "## Active Pending Interventions" in report_text
     assert "## Resolved Intervention History" in report_text
+    assert "## Suspicious Saved Rows" in report_text
     assert "| Browser Co | company-careers | browser_allowed | - |" in report_text
     assert "| API Co | greenhouse | api_allowed | - |" in report_text
     assert "Location scope used: True" in report_text
     assert "Keyword scope used: False" in report_text
     assert "Top Matched Jobs" in report_text
     assert "Companies Skipped" in report_text
+    assert result.suspicious_saved_rows == []
 
     csv_text = result.artifacts.csv_path.read_text(encoding="utf-8")
     assert "external_job_id,ats_type,board_slug,content_hash" in csv_text

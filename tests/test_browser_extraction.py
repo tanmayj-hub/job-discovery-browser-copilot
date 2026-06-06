@@ -40,6 +40,11 @@ class FakeLocatorItem:
         self.page.advance()
 
 
+class FakeBrokenTextLocatorItem(FakeLocatorItem):
+    def inner_text(self) -> str:
+        raise RuntimeError("Node is not an HTMLElement")
+
+
 class FakeLocatorCollection:
     def __init__(self, items: list[FakeLocatorItem]) -> None:
         self.items = items
@@ -192,6 +197,37 @@ class FakeExternalNavigationPage(FakeNavigationPage):
         ]
 
 
+class FakeJavascriptNavigationPage(FakeNavigationPage):
+    def __init__(self) -> None:
+        super().__init__()
+        self.candidates = [
+            {
+                "text": "Search careers",
+                "aria": "Search careers",
+                "href": "javascript:void(0)",
+            },
+            {
+                "text": "Search opportunities",
+                "aria": "Search opportunities",
+                "href": "/careers/jobsearch",
+            },
+        ]
+
+
+class FakeBrokenButtonNavigationPage(FakeButtonNavigationPage):
+    def locator(self, selector: str):
+        if selector == "body":
+            return FakeBodyLocator(self._body_text)
+        if selector == "button, a, [role='button']":
+            return FakeLocatorCollection(
+                [
+                    FakeBrokenTextLocatorItem(self, "Broken"),
+                    FakeLocatorItem(self, "FIND JOBS"),
+                ]
+            )
+        return FakeLocatorCollection([])
+
+
 class FakeSearchInput(FakeLocatorItem):
     def __init__(self, page) -> None:
         super().__init__(page, "")
@@ -342,6 +378,24 @@ def test_navigate_to_job_search_page_allows_public_external_job_boards() -> None
     assert page.url == "https://cgi.njoyn.com/CORP/xweb/xweb.asp?page=joblisting"
 
 
+def test_navigate_to_job_search_page_skips_javascript_links() -> None:
+    page = FakeJavascriptNavigationPage()
+
+    resolved = navigate_to_job_search_page(page)
+
+    assert resolved == "https://www.example.com/careers/jobsearch"
+    assert page.visited == ["https://www.example.com/careers/jobsearch"]
+
+
+def test_navigate_to_job_search_page_skips_non_html_button_nodes() -> None:
+    page = FakeBrokenButtonNavigationPage()
+
+    resolved = navigate_to_job_search_page(page)
+
+    assert resolved == "https://www.example.com/careers/search-results"
+    assert page.url == "https://www.example.com/careers/search-results"
+
+
 def test_extract_jobs_from_html_skips_empty_state_job_board_shell() -> None:
     html = """
     <main>
@@ -450,6 +504,27 @@ def test_extract_jobs_from_html_drops_browse_opportunities_ctas() -> None:
         company_name="Example Bank",
         source_name="workday",
         source_mode="human_in_loop",
+        base_url="https://example.com/careers",
+    )
+
+    assert jobs == []
+
+
+def test_extract_jobs_from_html_rejects_javascript_pseudo_links() -> None:
+    html = """
+    <main>
+      <article>
+        <a href="javascript:void(0)">Cloud Engineer</a>
+        <p>Toronto, Ontario, Canada</p>
+      </article>
+    </main>
+    """
+
+    jobs = extract_jobs_from_html(
+        html,
+        company_name="Example Bank",
+        source_name="company-careers",
+        source_mode="browser_allowed",
         base_url="https://example.com/careers",
     )
 
@@ -633,6 +708,70 @@ def test_is_probable_job_listing_rejects_marketing_and_facet_noise() -> None:
         },
         base_url="https://careers.td.com/",
     ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Technology (42)",
+            "job_url": "https://careers.example.com/job-search",
+            "description": "Browse technology openings.",
+        },
+        base_url="https://careers.example.com/job-search",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Filter Results",
+            "job_url": "https://careers.intactfc.com/jobs",
+            "description": "Filter Results Job Category Locations Remote Hybrid",
+        },
+        base_url="https://careers.intactfc.com/jobs",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Search Results",
+            "job_url": "https://www.ey.com/en_ca/careers/job-search",
+            "description": "Search Results for career opportunities.",
+        },
+        base_url="https://www.ey.com/en_ca/careers/job-search",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "View All Jobs",
+            "job_url": "https://careers.example.com/jobs",
+            "description": "View all jobs by department and location.",
+        },
+        base_url="https://careers.example.com/jobs",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Careers Home",
+            "job_url": "https://careers.example.com/careers",
+            "description": "Careers Home and job search links.",
+        },
+        base_url="https://careers.example.com/careers",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Careers",
+            "job_url": "https://careers.example.com/careers",
+            "description": "Learn about our teams, benefits, and locations.",
+        },
+        base_url="https://careers.example.com/careers",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Filter Results",
+            "job_url": "https://careers.example.com/job-search-results",
+            "description": "Filter Results by category, location, and employment type.",
+        },
+        base_url="https://careers.example.com/job-search-results",
+    ) is False
+    assert is_probable_job_listing(
+        {
+            "title": "Business & Customer Operations 149 available jobs",
+            "job_url": "https://careers.manulife.com/global/en/c/business-customer-operations-jobs",
+            "description": "Browse business and customer operations jobs.",
+        },
+        base_url="https://careers.manulife.com/global/en/search-results",
+    ) is False
 
 
 def test_is_probable_job_listing_requires_actionable_identity() -> None:
@@ -651,6 +790,17 @@ def test_is_probable_job_listing_requires_actionable_identity() -> None:
         {
             "title": "Cloud Engineer",
             "job_url": None,
+            "external_job_id": "job-123",
+            "ats_type": "greenhouse",
+            "board_slug": "example",
+            "description": "Remote Canada",
+        },
+        base_url="https://boards.greenhouse.io/example",
+    ) is True
+    assert is_probable_job_listing(
+        {
+            "title": "Cloud Engineer",
+            "job_url": "https://boards.greenhouse.io/example/careers",
             "external_job_id": "job-123",
             "ats_type": "greenhouse",
             "board_slug": "example",
@@ -680,3 +830,30 @@ def test_is_probable_job_listing_rejects_marketing_support_pages_and_js_links() 
         },
         base_url="https://www.ibm.com/careers/search",
     ) is False
+
+
+def test_is_probable_job_listing_keeps_real_broad_job_titles_with_real_urls() -> None:
+    assert is_probable_job_listing(
+        {
+            "title": "Infrastructure Analyst",
+            "job_url": "https://careers.example.com/jobs/infrastructure-analyst-123",
+            "description": "Toronto, Ontario, Canada. Posted today.",
+        },
+        base_url="https://careers.example.com/jobs",
+    ) is True
+    assert is_probable_job_listing(
+        {
+            "title": "Production Support Analyst",
+            "job_url": "https://careers.example.com/jobs/production-support-456",
+            "description": "Remote Canada. Full-time support role.",
+        },
+        base_url="https://careers.example.com/jobs",
+    ) is True
+    assert is_probable_job_listing(
+        {
+            "title": "Cloud Engineer",
+            "job_url": "https://careers.example.com/jobs/cloud-engineer-789",
+            "description": "Toronto, Ontario. AWS platform role.",
+        },
+        base_url="https://careers.example.com/jobs",
+    ) is True

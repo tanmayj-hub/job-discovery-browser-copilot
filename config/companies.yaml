@@ -770,3 +770,177 @@ companies:
   status: Not started
   source_mode: browser_allowed
   careers_url: https://ateko.com/en/careers/
+- name: Aviva Canada
+  sector: Insurance & Wealth
+  category: Insurance/Wealth
+  careers_url: https://aviva.wd1.myworkdayjobs.com/External?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+  source_mode: human_in_loop
+  status: Watching
+  role_families:
+  - Cloud / DevOps / Platform / SRE / Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  website_category: workday
+  ats_hint: workday
+  canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+- name: Canada Life
+  sector: Insurance & Wealth
+  category: Insurance/Wealth
+  careers_url: https://jobs.canadalife.com/go/All-Jobs/9170201?locale=en_US
+  source_mode: browser_allowed
+  status: Watching
+  role_families:
+  - Cloud / DevOps / Platform / SRE / Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  website_category: careers.
+  canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+- name: Definity Financial (Economical)
+  sector: Insurance & Wealth
+  category: Insurance/Wealth
+  careers_url: https://hdks.fa.ca2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/Careers-Definity/jobs?lastSelectedFacet=AttributeChar4&mode=location&selectedFlexFieldsFacets=%22AttributeChar4%7CEnglish+and+French%3BEnglish%22
+  source_mode: human_in_loop
+  status: Watching
+  role_families:
+  - Cloud / DevOps / Platform / SRE / Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  website_category: .oraclecloud
+  ats_hint: oracle_hcm
+  canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+- name: iA Financial Group
+  sector: Insurance & Wealth
+  category: Insurance/Wealth
+  careers_url: https://ia.ca/jobs/jobs-available
+  source_mode: browser_allowed
+  status: Watching
+  role_families:
+  - Cloud / DevOps / Platform / SRE / Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+- name: Intact Financial
+  sector: Insurance & Wealth
+  category: Insurance/Wealth
+  careers_url: https://careers.intactfc.com/jobs
+  source_mode: browser_allowed
+  status: Watching
+  role_families:
+  - Cloud / DevOps / Platform / SRE / Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  website_category: careers.
+  canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+- name: Manulife
+  sector: Insurance & Wealth
+  category: Insurance/Wealth
+  careers_url: https://careers.manulife.com/global/en/search-results
+  source_mode: browser_allowed
+  status: Watching
+  role_families:
+  - Cloud / DevOps / Platform / SRE / Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  website_category: careers.
+  canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+- name: Sun Life
+  sector: Insurance & Wealth
+  category: Insurance/Wealth
+  careers_url: https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs
+  source_mode: human_in_loop
+  status: Watching
+  role_families:
+  - Cloud / DevOps / Platform / SRE / Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  website_category: workday
+  ats_hint: workday
+  canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+- name: The Co-operators
+  sector: Insurance & Wealth
+  category: Insurance/Wealth
+  careers_url: https://recruiting.ultipro.com/COO5000COOP/JobBoard/163383cc-cbae-4201-956e-c5e437bbfeb3?q=&o=postedDateDesc&w=&wc=&we=&wpst=
+  source_mode: human_in_loop
+  status: Watching
+  role_families:
+  - Cloud / DevOps / Platform / SRE / Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  website_category: ultipro
+  ats_hint: ultipro
+  canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS
+- name: Wawanesa Insurance
+  sector: Insurance & Wealth
+  category: Insurance/Wealth
+  careers_url: https://jobs.wawanesa.com/search?utm_source=corporate_website&utm_medium=search_jobs_button&utm_campaign=traffic_source
+  source_mode: browser_allowed
+  status: Watching
+  role_families:
+  - Cloud / DevOps / Platform / SRE / Infra
+  keywords:
+  - cloud
+  - devops
+  - platform
+  - sre
+  - kubernetes
+  - terraform
+  website_category: jobs.
+  canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
+  priority: High
+  monitoring_hint: Often Workday/Custom ATS

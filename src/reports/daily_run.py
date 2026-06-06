@@ -12,7 +12,7 @@ from typing import Any
 
 import yaml
 
-from browser.extraction import is_probable_job_listing
+from browser.extraction import get_job_quality_signals, is_probable_job_listing
 from classifier.source_classifier import classify_source
 from collectors.router import collect_companies_routed
 from processing.score import score_job
@@ -67,6 +67,7 @@ class DailyRunResult:
     jobs_unchanged: int
     duplicates_skipped: int
     jobs_saved: list[dict[str, Any]]
+    suspicious_saved_rows: list[dict[str, Any]]
     location_scope_used: bool
     keyword_scope_used: bool
     source_metrics: dict[str, int]
@@ -252,6 +253,40 @@ def reject_non_actionable_new_jobs(connection) -> int:
     return rejected
 
 
+def find_suspicious_saved_rows(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return saved rows that still look suspicious enough for manual review."""
+
+    suspicious: list[dict[str, Any]] = []
+    for job in jobs:
+        signals = get_job_quality_signals(job, base_url=job.get("job_url") or None)
+        severe_signals = [
+            signal
+            for signal in signals
+            if signal
+            in {
+                "missing_title",
+                "generic_title",
+                "facet_count_title",
+                "marketing_title",
+                "missing_url",
+                "non_actionable_url",
+                "index_or_category_url",
+            }
+        ]
+        if not severe_signals:
+            continue
+        suspicious.append(
+            {
+                "company_name": job.get("company_name"),
+                "title": job.get("title"),
+                "job_url": job.get("job_url"),
+                "source_mode": job.get("source_mode"),
+                "signals": severe_signals,
+            }
+        )
+    return suspicious
+
+
 def default_collectors() -> dict[str, CollectorFunc]:
     """Return default collector functions keyed by source mode."""
 
@@ -410,6 +445,7 @@ def write_daily_report(
     jobs_updated: int,
     jobs_unchanged: int,
     duplicates_skipped: int,
+    suspicious_saved_rows: list[dict[str, Any]],
     location_scope_used: bool,
     keyword_scope_used: bool,
     routing_results: list[dict[str, Any]],
@@ -524,6 +560,16 @@ def write_daily_report(
         lines.extend(
             f"- {item['company_name']} | {item['source_mode']} | {item['reason']}"
             for item in companies_skipped
+        )
+    else:
+        lines.append("- None")
+
+    lines.extend(["", "## Suspicious Saved Rows"])
+    if suspicious_saved_rows:
+        lines.extend(
+            f"- {item.get('company_name') or '-'} | {item.get('title') or '-'} | "
+            f"{item.get('job_url') or 'no URL'} | signals={', '.join(item.get('signals', []))}"
+            for item in suspicious_saved_rows
         )
     else:
         lines.append("- None")
@@ -718,6 +764,7 @@ def run_daily_workflow(
     ]
     save_summary = save_jobs(connection, relevant_jobs)
     saved_jobs = save_summary["jobs"]
+    suspicious_saved_rows = find_suspicious_saved_rows(saved_jobs)
     raw_count_by_source = Counter(
         job["_source_key"] for job in normalized_jobs if "_source_key" in job
     )
@@ -811,6 +858,7 @@ def run_daily_workflow(
         jobs_updated=save_summary["jobs_updated"],
         jobs_unchanged=save_summary["jobs_unchanged"],
         duplicates_skipped=duplicates_skipped,
+        suspicious_saved_rows=suspicious_saved_rows,
         location_scope_used=location_scope_used,
         keyword_scope_used=keyword_scope_used,
         routing_results=routing_results,
@@ -831,6 +879,7 @@ def run_daily_workflow(
         jobs_unchanged=save_summary["jobs_unchanged"],
         duplicates_skipped=duplicates_skipped,
         jobs_saved=saved_jobs,
+        suspicious_saved_rows=suspicious_saved_rows,
         location_scope_used=location_scope_used,
         keyword_scope_used=keyword_scope_used,
         source_metrics=source_metrics,

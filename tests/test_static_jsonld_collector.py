@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import ssl
+from urllib.error import URLError
+
 import collectors.static_jsonld as jsonld_module
 from collectors.static_jsonld import collect_static_jsonld_jobs
 
@@ -131,3 +134,18 @@ def test_collect_static_jsonld_jobs_returns_no_jobs_when_no_jobposting_found(
 
     assert result.status == "no_jobs_found"
     assert result.collector == "static_jsonld"
+
+
+def test_collect_static_jsonld_jobs_reports_ssl_verification_failures(monkeypatch) -> None:
+    ssl_error = ssl.SSLCertVerificationError("certificate verify failed")
+
+    def raise_ssl_error(url, timeout=15):  # noqa: ARG001
+        raise URLError(ssl_error)
+
+    monkeypatch.setattr(jsonld_module, "_fetch_html", raise_ssl_error)
+
+    result = collect_static_jsonld_jobs(_company())
+
+    assert result.status == "api_error"
+    assert result.collector == "static_jsonld"
+    assert "SSL verification failed" in str(result.error)
