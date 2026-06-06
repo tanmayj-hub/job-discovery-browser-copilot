@@ -12,7 +12,7 @@ from playwright.sync_api import Error as PlaywrightError
 
 from browser.extraction import (
     dismiss_cookie_banner,
-    extract_visible_job_cards,
+    extract_visible_job_cards_with_diagnostics,
     find_search_input,
     is_probable_job_listing,
     navigate_to_job_search_page,
@@ -40,6 +40,7 @@ from storage.db import (
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DISCOVERY_CONFIG_PATH = PROJECT_ROOT / "config" / "discovery.yaml"
 DEFAULT_LOCATION_SCOPE = ("Canada", "Toronto", "Ontario", "Remote Canada", "Remote")
+DEFAULT_MAX_PAGES_PER_SOURCE = 10
 
 
 @dataclass(slots=True)
@@ -127,6 +128,30 @@ def collect_companies_with_browser(
     return results
 
 
+def collect_single_company_with_browser(
+    connection: sqlite3.Connection,
+    *,
+    company: dict[str, Any],
+    headless: bool = False,
+    save_jobs: bool = False,
+    allowed_source_modes: set[str] | None = None,
+) -> dict[str, Any]:
+    """Collect one company through a dedicated browser session."""
+
+    config = BrowserSessionConfig(
+        headless=headless,
+        timeout_ms=15_000,
+    )
+    with open_browser_session(config) as session:
+        return collect_company_jobs(
+            connection,
+            company=company,
+            page=session.page,
+            save_jobs=save_jobs,
+            allowed_source_modes=allowed_source_modes,
+        )
+
+
 def collect_company_jobs(
     connection: sqlite3.Connection,
     *,
@@ -141,6 +166,8 @@ def collect_company_jobs(
     source_name = str(company.get("website_category") or company_name)
     careers_url = str(company.get("careers_url") or "").strip()
     location_scope = load_source_scope_locations()
+    max_pages_per_source = load_browser_max_pages_per_source()
+    max_cards_per_source = max(20, max_pages_per_source * 20)
 
     classification = classify_source(
         {
@@ -183,6 +210,7 @@ def collect_company_jobs(
     )
 
     try:
+        starting_url = careers_url
         page.goto(
             careers_url,
             wait_until="domcontentloaded",
@@ -235,15 +263,20 @@ def collect_company_jobs(
                 intervention_id=intervention_id,
             )
 
-        extracted_jobs = extract_visible_job_cards(
+        extraction_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
             page,
             company_name=company_name,
             source_name=source_name,
             source_mode=classification.source_mode,
+            max_cards=max_cards_per_source,
+            max_pages=max_pages_per_source,
         )
+        extracted_jobs = extraction_jobs
         location_queries: list[str] = []
-        location_scope_used = False
+        location_scope_used = _url_uses_location_scope(page.url or careers_url)
         keyword_scope_used = False
+        if location_scope_used:
+            location_queries.append("Canada (URL filter)")
         if not extracted_jobs and find_search_input(page) is not None:
             for location_term in location_scope:
                 query = search_with_location_term(page, location_term)
@@ -251,14 +284,15 @@ def collect_company_jobs(
                     continue
                 location_scope_used = True
                 location_queries.append(query)
-                extracted_jobs.extend(
-                    extract_visible_job_cards(
-                        page,
-                        company_name=company_name,
-                        source_name=source_name,
-                        source_mode=classification.source_mode,
-                    )
+                search_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
+                    page,
+                    company_name=company_name,
+                    source_name=source_name,
+                    source_mode=classification.source_mode,
+                    max_cards=max_cards_per_source,
+                    max_pages=max_pages_per_source,
                 )
+                extracted_jobs.extend(search_jobs)
             extracted_jobs = _dedupe_collected_jobs(extracted_jobs)
 
         post_search_cookie = dismiss_cookie_banner(page)
@@ -348,13 +382,17 @@ def collect_company_jobs(
         return {
             "company_name": company_name,
             "source_name": source_name,
+            "source_mode": classification.source_mode,
+            "ats_type": classification.ats_type,
             "status": "completed",
             "jobs_seen": len(extracted_jobs),
             "jobs_new": jobs_new,
             "jobs_discovered": len(extracted_jobs),
-            "jobs_scored": len(scored_jobs) if save_jobs else 0,
-            "jobs_relevant": len(relevant_jobs) if save_jobs else 0,
+            "jobs_scored": len(scored_jobs),
+            "jobs_relevant": len(relevant_jobs),
             "jobs_saved": jobs_new,
+            "starting_url": starting_url,
+            "final_url": page.url or navigated_url or careers_url,
             "location_scope_used": location_scope_used,
             "location_scope": list(location_scope),
             "location_queries": location_queries,
@@ -362,7 +400,15 @@ def collect_company_jobs(
             "query": None,
             "navigated_url": navigated_url,
             "cookie_dismissed": dismissed_cookie,
-            "jobs": scored_jobs if save_jobs else extracted_jobs,
+            "pagination_detected": extraction_diagnostics.pagination_detected,
+            "pagination_stop_reason": extraction_diagnostics.pagination_stop_reason,
+            "pages_visited": extraction_diagnostics.pages_visited,
+            "jobs_extracted_per_page": extraction_diagnostics.jobs_extracted_per_page,
+            "max_pages_per_source": max_pages_per_source,
+            "jobs": extracted_jobs,
+            "candidate_jobs": extracted_jobs,
+            "scored_jobs": scored_jobs,
+            "relevant_jobs": relevant_jobs,
         }
     except PlaywrightError as exc:
         create_browser_intervention(
@@ -440,6 +486,27 @@ def load_source_scope_locations(
     return normalized or DEFAULT_LOCATION_SCOPE
 
 
+def load_browser_max_pages_per_source(
+    path: Path = DEFAULT_DISCOVERY_CONFIG_PATH,
+) -> int:
+    """Load the safe per-source pagination cap from discovery config."""
+
+    if not path.exists():
+        return DEFAULT_MAX_PAGES_PER_SOURCE
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    browser_config = payload.get("browser", {})
+    raw_value = (
+        browser_config.get("max_pages_per_source")
+        if isinstance(browser_config, dict)
+        else DEFAULT_MAX_PAGES_PER_SOURCE
+    )
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        return DEFAULT_MAX_PAGES_PER_SOURCE
+    return max(1, value)
+
+
 def _score_collected_job(job: dict[str, Any]) -> dict[str, Any]:
     scored = dict(job)
     score_result = score_job(scored)
@@ -460,6 +527,11 @@ def _is_relevant_scored_job(job: dict[str, Any]) -> bool:
         or reason.startswith("support/ops signals")
         for reason in reasons
     )
+
+
+def _url_uses_location_scope(url: str) -> bool:
+    normalized = str(url or "").lower()
+    return "locationcountry=" in normalized or "country=ca" in normalized
 
 
 def _dedupe_collected_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:

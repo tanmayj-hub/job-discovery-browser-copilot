@@ -45,7 +45,7 @@ companies:
   status: Watching
   source_mode: human_in_loop
   ats_hint: workday
-  careers_url: https://careers.td.com/
+  careers_url: https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?locationCountry=a30a87ed25634629aa6c3958aa2b91ea
 - name: Scotiabank
   sector: Banking & Capital Markets
   category: Bank/Market

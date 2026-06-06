@@ -110,6 +110,30 @@ Run the daily workflow:
 python -m src.main daily-run
 ```
 
+Export a reviewable MVP accuracy-audit sample:
+
+```powershell
+python -m src.main audit export-sample --output data/exports/accuracy-audit-sample.csv
+```
+
+Create a manual recall-audit template:
+
+```powershell
+python -m src.main audit create-manual-template --output data/exports/manual-job-audit-template.csv
+```
+
+Compare MVP results against manual audit files:
+
+```powershell
+python -m src.main audit compare --mvp data/exports/accuracy-audit-sample.csv --manual data/exports/manual-job-audit-template.csv --output docs/accuracy-audit-report.md
+```
+
+Validate audit files before compare:
+
+```powershell
+python -m src.main audit validate-files --mvp data/exports/accuracy-audit-sample.csv --manual data/exports/manual-job-audit-template.csv
+```
+
 Apply verified starter career URLs into the main company config:
 
 ```powershell
@@ -192,3 +216,5 @@ Suggested filenames:
 - [Reporting And Dashboard](docs/reporting-dashboard.md)
 - [Storage And Deduplication](docs/storage-deduplication.md)
 - [Demo Script](docs/demo-script.md)
+- [Accuracy Audit](docs/accuracy-audit.md)
+- [First Manual Accuracy Audit Guide](docs/first-manual-accuracy-audit-guide.md)

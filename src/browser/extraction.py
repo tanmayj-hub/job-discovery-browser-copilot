@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Iterable, Mapping
+from dataclasses import asdict, dataclass
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
@@ -221,6 +222,22 @@ FORBIDDEN_PRE_EXTRACTION_TERMS = (
     "engineer",
     "analyst",
 )
+
+
+@dataclass(slots=True)
+class ExtractionDiagnostics:
+    """Structured metadata about one paginated extraction pass."""
+
+    pages_visited: list[str]
+    jobs_extracted_per_page: list[int]
+    pagination_detected: bool
+    pagination_stop_reason: str
+    max_pages: int
+    total_candidates_before_dedupe: int
+    total_candidates_after_dedupe: int
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
 
 
 def _is_search_results_style_page(page: Page) -> bool:
@@ -1470,9 +1487,17 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
             continue
 
         text = _safe_locator_inner_text(candidate).lower()
-        if text not in PAGINATION_LABELS:
+        aria = _safe_locator_attribute(candidate, "aria-label").lower()
+        title = _safe_locator_attribute(candidate, "title").lower()
+        combined = " ".join(part for part in (text, aria, title) if part)
+        if not any(
+            re.search(rf"\b{re.escape(label)}\b", combined)
+            for label in PAGINATION_LABELS
+        ):
             continue
-        if any(blocked in text for blocked in ("sign in", "log in", "linkedin", "indeed")):
+        if any(
+            blocked in combined for blocked in ("sign in", "log in", "linkedin", "indeed")
+        ):
             continue
         href = _safe_locator_attribute(candidate, "href")
         if href:
@@ -1488,20 +1513,120 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
     return None
 
 
-def _collect_paginated_snapshots(page: Page, *, max_pages: int) -> list[tuple[str, str]]:
-    snapshots: list[tuple[str, str]] = [(page.url, page.content())]
-    for _ in range(max_pages - 1):
+def _job_identity_key(job: Mapping[str, Any]) -> tuple[str, str]:
+    job_url = str(job.get("job_url") or "").strip()
+    if job_url:
+        return ("url", job_url)
+    title = str(job.get("title") or "").strip()
+    location = str(job.get("location") or "").strip()
+    return ("fallback", f"{title}|{location}")
+
+
+def extract_visible_job_cards_with_diagnostics(
+    page: Page,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+    max_cards: int = 20,
+    max_pages: int = 2,
+) -> tuple[list[dict[str, Any]], ExtractionDiagnostics]:
+    """Extract plausible jobs and return pagination diagnostics for the pass."""
+
+    if _is_restricted_url(page.url):
+        diagnostics = ExtractionDiagnostics(
+            pages_visited=[],
+            jobs_extracted_per_page=[],
+            pagination_detected=False,
+            pagination_stop_reason="restricted_url",
+            max_pages=max_pages,
+            total_candidates_before_dedupe=0,
+            total_candidates_after_dedupe=0,
+        )
+        return [], diagnostics
+
+    candidates: list[dict[str, Any]] = []
+    pages_visited: list[str] = []
+    jobs_extracted_per_page: list[int] = []
+    seen_job_identities: set[tuple[str, str]] = set()
+    pagination_detected = False
+    pagination_stop_reason = "single_page_only"
+
+    interactive_jobs = _extract_from_interactive_cards(
+        page,
+        company_name=company_name,
+        source_name=source_name,
+        source_mode=source_mode,
+    )
+    candidates.extend(interactive_jobs)
+    seen_job_identities.update(_job_identity_key(job) for job in interactive_jobs)
+
+    current_url = page.url
+    current_html = page.content()
+    current_jobs = extract_jobs_from_html(
+        current_html,
+        company_name=company_name,
+        source_name=source_name,
+        source_mode=source_mode,
+        base_url=current_url,
+        max_cards=max_cards,
+    )
+    pages_visited.append(current_url)
+    jobs_extracted_per_page.append(len(current_jobs))
+    candidates.extend(current_jobs)
+    seen_job_identities.update(_job_identity_key(job) for job in current_jobs)
+
+    for _ in range(max(0, max_pages - 1)):
         target = _find_safe_pagination_target(page)
         if target is None:
+            pagination_stop_reason = (
+                "next_disabled_or_missing" if pagination_detected else "pagination_not_detected"
+            )
             break
-        before = page.content()
+        pagination_detected = True
+        before_url = page.url
+        before_html = page.content()
         target.click()
-        page.wait_for_timeout(1_000)
-        after = page.content()
-        if after == before:
+        page.wait_for_timeout(1_500)
+        after_url = page.url
+        after_html = page.content()
+        if after_url == before_url and after_html == before_html:
+            pagination_stop_reason = "no_page_change"
             break
-        snapshots.append((page.url, after))
-    return snapshots
+
+        page_jobs = extract_jobs_from_html(
+            after_html,
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            base_url=after_url,
+            max_cards=max_cards,
+        )
+        pages_visited.append(after_url)
+        jobs_extracted_per_page.append(len(page_jobs))
+
+        new_jobs = [
+            job for job in page_jobs if _job_identity_key(job) not in seen_job_identities
+        ]
+        candidates.extend(page_jobs)
+        if not new_jobs:
+            pagination_stop_reason = "no_new_job_urls"
+            break
+        seen_job_identities.update(_job_identity_key(job) for job in new_jobs)
+    else:
+        pagination_stop_reason = "max_pages_reached"
+
+    deduped = _dedupe_jobs(candidates, max_cards=max_cards)
+    diagnostics = ExtractionDiagnostics(
+        pages_visited=pages_visited,
+        jobs_extracted_per_page=jobs_extracted_per_page,
+        pagination_detected=pagination_detected,
+        pagination_stop_reason=pagination_stop_reason,
+        max_pages=max_pages,
+        total_candidates_before_dedupe=len(candidates),
+        total_candidates_after_dedupe=len(deduped),
+    )
+    return deduped, diagnostics
 
 
 def extract_visible_job_cards(
@@ -1513,32 +1638,17 @@ def extract_visible_job_cards(
     max_cards: int = 20,
     max_pages: int = 2,
 ) -> list[dict[str, Any]]:
-    """Extract plausible jobs from one page and up to one safe pagination step."""
+    """Extract plausible jobs from the current page and safe pagination flow."""
 
-    if _is_restricted_url(page.url):
-        return []
-
-    candidates: list[dict[str, Any]] = []
-    candidates.extend(
-        _extract_from_interactive_cards(
-            page,
-            company_name=company_name,
-            source_name=source_name,
-            source_mode=source_mode,
-        )
+    jobs, _ = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name=company_name,
+        source_name=source_name,
+        source_mode=source_mode,
+        max_cards=max_cards,
+        max_pages=max_pages,
     )
-    for url, html in _collect_paginated_snapshots(page, max_pages=max_pages):
-        candidates.extend(
-            extract_jobs_from_html(
-                html,
-                company_name=company_name,
-                source_name=source_name,
-                source_mode=source_mode,
-                base_url=url,
-                max_cards=max_cards,
-            )
-        )
-    return _dedupe_jobs(candidates, max_cards=max_cards)
+    return jobs
 
 
 def extract_location(description: str) -> str | None:

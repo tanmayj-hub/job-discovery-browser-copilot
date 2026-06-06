@@ -5,6 +5,7 @@ from pathlib import Path
 from browser.extraction import (
     extract_jobs_from_html,
     extract_visible_job_cards,
+    extract_visible_job_cards_with_diagnostics,
     has_interactive_job_cards,
     is_probable_job_listing,
     navigate_to_job_search_page,
@@ -264,6 +265,55 @@ class FakeSearchPage:
         return 0
 
 
+class FakeMultiPageLocatorItem(FakeLocatorItem):
+    def get_attribute(self, name: str) -> str | None:
+        if name == "href":
+            return self.href
+        if name == "aria-label":
+            return self.label
+        return None
+
+
+class FakeMultiPageWorkday:
+    def __init__(self, urls: list[str], html_pages: list[str]) -> None:
+        self.urls = urls
+        self.html_pages = html_pages
+        self.index = 0
+
+    @property
+    def url(self) -> str:
+        return self.urls[self.index]
+
+    def content(self) -> str:
+        return self.html_pages[self.index]
+
+    def locator(self, selector: str):
+        if selector == "button, a, [role='button']":
+            if self.index < len(self.html_pages) - 1:
+                return FakeLocatorCollection(
+                    [FakeMultiPageLocatorItem(self, "next", enabled=True)]
+                )
+            return FakeLocatorCollection(
+                [FakeMultiPageLocatorItem(self, "next", enabled=False)]
+            )
+        if selector == "body":
+            return FakeBodyLocator("TD Workday jobs")
+        return FakeLocatorCollection([])
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def advance(self) -> None:
+        if self.index < len(self.html_pages) - 1:
+            self.index += 1
+
+
+class FakeNoNewJobsPage(FakeMultiPageWorkday):
+    def advance(self) -> None:
+        if self.index < len(self.html_pages) - 1:
+            self.index += 1
+
+
 def test_extract_jobs_from_html_uses_anchor_and_card_strategies() -> None:
     html = (FIXTURES_DIR / "anchors_cards.html").read_text(encoding="utf-8")
 
@@ -325,6 +375,150 @@ def test_extract_visible_job_cards_uses_interactive_job_cards() -> None:
     assert jobs[0]["title"] == "Support Analyst"
     assert jobs[0]["job_url"] == "https://careers.example.com/careers/job/123"
     assert "match_score" not in jobs[0]
+
+
+def test_extract_visible_job_cards_paginates_until_disabled_or_max_pages() -> None:
+    page1 = """
+    <main>
+      <article>
+        <a href="/en-US/TD_Bank_Careers/job/Toronto/Lead-Platform-Engineer_R_1491997">
+          Lead Platform Engineer, TD Securities
+        </a>
+        <p>Toronto, Ontario</p>
+      </article>
+      <article>
+        <a href="/en-US/TD_Bank_Careers/job/Toronto/IT-Support-Analyst_R_1489302">
+          IT Support Analyst, ION / MarketView Trading
+        </a>
+        <p>Toronto, Ontario</p>
+      </article>
+    </main>
+    """
+    page2 = """
+    <main>
+      <article>
+        <a href="/en-US/TD_Bank_Careers/job/Toronto/Software-Engineer-II_R_1486443">
+          Software Engineer II, Salesforce
+        </a>
+        <p>Toronto, Ontario</p>
+      </article>
+      <article>
+        <a href="/en-US/TD_Bank_Careers/job/Toronto/Sr-IT-Support-Analyst_R_1489301">
+          Sr IT Support Analyst, ION / MarketView Trading
+        </a>
+        <p>Toronto, Ontario</p>
+      </article>
+    </main>
+    """
+    page3 = """
+    <main>
+      <article>
+        <a href="/en-US/TD_Bank_Careers/job/Toronto/Java-Engineer_R_1489761">
+          Java Engineer, TD Securities
+        </a>
+        <p>Toronto, Ontario</p>
+      </article>
+    </main>
+    """
+    page = FakeMultiPageWorkday(
+        urls=[
+            "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?locationCountry=ca",
+            "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?page=2&locationCountry=ca",
+            "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?page=3&locationCountry=ca",
+        ],
+        html_pages=[page1, page2, page3],
+    )
+
+    jobs, diagnostics = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name="TD",
+        source_name="workday",
+        source_mode="human_in_loop",
+        max_cards=60,
+        max_pages=3,
+    )
+
+    titles = {job["title"] for job in jobs}
+
+    assert "Lead Platform Engineer, TD Securities" in titles
+    assert "IT Support Analyst, ION / MarketView Trading" in titles
+    assert "Software Engineer II, Salesforce" in titles
+    assert "Sr IT Support Analyst, ION / MarketView Trading" in titles
+    assert diagnostics.pagination_detected is True
+    assert diagnostics.pages_visited == [
+        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?locationCountry=ca",
+        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?page=2&locationCountry=ca",
+        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?page=3&locationCountry=ca",
+    ]
+    assert diagnostics.pagination_stop_reason == "max_pages_reached"
+
+
+def test_extract_visible_job_cards_stops_when_no_new_job_urls_appear() -> None:
+    repeated_page = """
+    <main>
+      <article>
+        <a href="/en-US/TD_Bank_Careers/job/Toronto/Lead-Platform-Engineer_R_1491997">
+          Lead Platform Engineer, TD Securities
+        </a>
+        <p>Toronto, Ontario</p>
+      </article>
+    </main>
+    """
+    page = FakeMultiPageWorkday(
+        urls=[
+            "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?locationCountry=ca",
+            "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?page=2&locationCountry=ca",
+            "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?page=3&locationCountry=ca",
+        ],
+        html_pages=[repeated_page, repeated_page, repeated_page],
+    )
+
+    jobs, diagnostics = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name="TD",
+        source_name="workday",
+        source_mode="human_in_loop",
+        max_cards=60,
+        max_pages=10,
+    )
+
+    assert len(jobs) == 1
+    assert diagnostics.pagination_detected is True
+    assert diagnostics.pagination_stop_reason == "no_new_job_urls"
+    assert diagnostics.pages_visited == [
+        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?locationCountry=ca",
+        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?page=2&locationCountry=ca",
+    ]
+
+
+def test_extract_visible_job_cards_does_not_loop_forever_on_static_next_page() -> None:
+    page1 = """
+    <main>
+      <article>
+        <a href="/jobs/1">Lead Platform Engineer, TD Securities</a>
+        <p>Toronto, Ontario</p>
+      </article>
+    </main>
+    """
+    page = FakeMultiPageWorkday(
+        urls=[
+            "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs",
+            "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?page=2",
+        ],
+        html_pages=[page1, page1],
+    )
+
+    _, diagnostics = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name="TD",
+        source_name="workday",
+        source_mode="human_in_loop",
+        max_cards=40,
+        max_pages=10,
+    )
+
+    assert diagnostics.pagination_stop_reason == "no_new_job_urls"
+    assert len(diagnostics.pages_visited) == 2
 
 
 def test_search_with_location_term_does_not_use_role_or_skill_terms() -> None:

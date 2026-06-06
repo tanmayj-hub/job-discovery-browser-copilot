@@ -9,5 +9,8 @@ source_scope:
 keyword_fallback:
   enabled: false
 
+browser:
+  max_pages_per_source: 10
+
 routing:
   api_fallback_to_browser: false

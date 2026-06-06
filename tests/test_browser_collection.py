@@ -15,6 +15,7 @@ from collectors.browser_collector import (
     _source_navigation_timeout_ms,
     collect_browser_jobs,
     collect_company_jobs,
+    load_browser_max_pages_per_source,
     load_source_scope_locations,
 )
 from storage.db import get_interventions, initialize_database, upsert_companies
@@ -173,6 +174,22 @@ source_scope:
     )
 
     assert load_source_scope_locations(config_path) == ("Canada", "Toronto", "Remote")
+
+
+def test_load_browser_max_pages_per_source_uses_discovery_config(tmp_path: Path) -> None:
+    config_path = tmp_path / "discovery.yaml"
+    config_path.write_text(
+        """
+source_scope:
+  locations:
+    - Canada
+browser:
+  max_pages_per_source: 8
+""",
+        encoding="utf-8",
+    )
+
+    assert load_browser_max_pages_per_source(config_path) == 8
 
 
 def test_source_navigation_timeout_extends_for_tech_mahindra() -> None:

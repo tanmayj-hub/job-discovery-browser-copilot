@@ -21,10 +21,14 @@ DATABASE_PATH = PROJECT_ROOT / "data" / "job_discovery.db"
 def get_collection_api():
     """Load collection helpers after the src path is available."""
 
-    from collectors.browser_collector import collect_browser_jobs
+    from collectors.browser_collector import (
+        collect_browser_jobs,
+        collect_single_company_with_browser,
+    )
 
     return {
         "collect_browser_jobs": collect_browser_jobs,
+        "collect_single_company_with_browser": collect_single_company_with_browser,
     }
 
 
@@ -35,6 +39,32 @@ def get_reports_api():
 
     return {
         "run_daily_workflow": run_daily_workflow,
+    }
+
+
+def get_audit_api():
+    """Load accuracy audit helpers after the src path is available."""
+
+    from audit.accuracy_audit import (
+        build_company_audit_pack,
+        build_manual_audit_link_sheet,
+        compare_audit_files,
+        create_manual_template,
+        export_audit_sample,
+        parse_company_filter,
+        validate_audit_files,
+        write_company_collection_diagnostic,
+    )
+
+    return {
+        "build_company_audit_pack": build_company_audit_pack,
+        "build_manual_audit_link_sheet": build_manual_audit_link_sheet,
+        "compare_audit_files": compare_audit_files,
+        "create_manual_template": create_manual_template,
+        "export_audit_sample": export_audit_sample,
+        "parse_company_filter": parse_company_filter,
+        "validate_audit_files": validate_audit_files,
+        "write_company_collection_diagnostic": write_company_collection_diagnostic,
     }
 
 
@@ -268,6 +298,162 @@ def build_parser() -> argparse.ArgumentParser:
         default=PROJECT_ROOT / "data" / "exports" / "large-list-needs-website-input.csv",
         help="Optional CSV output for companies that still need a website URL.",
     )
+
+    audit_parser = subparsers.add_parser(
+        "audit",
+        help="Export and compare manual accuracy-audit artifacts",
+    )
+    audit_subparsers = audit_parser.add_subparsers(dest="audit_command", required=True)
+
+    audit_export = audit_subparsers.add_parser(
+        "export-sample",
+        help="Export a reviewable MVP audit sample CSV",
+    )
+    audit_export.add_argument(
+        "--output",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "exports" / "accuracy-audit-sample.csv",
+        help="CSV output path for the MVP audit sample.",
+    )
+    audit_export.add_argument(
+        "--companies",
+        type=str,
+        default=None,
+        help="Optional comma-separated company filter.",
+    )
+    audit_export.add_argument(
+        "--limit-per-company",
+        type=int,
+        default=10,
+        help="Maximum number of rows to export per company.",
+    )
+    audit_export.add_argument(
+        "--include-recent-days",
+        type=int,
+        default=14,
+        help="Only include rows seen within this many days when possible.",
+    )
+    audit_export.add_argument(
+        "--status",
+        type=str,
+        default="new",
+        help="Optional job status filter.",
+    )
+
+    audit_template = audit_subparsers.add_parser(
+        "create-manual-template",
+        help="Create a blank manual-job template CSV for recall auditing",
+    )
+    audit_template.add_argument(
+        "--output",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "exports" / "manual-job-audit-template.csv",
+        help="CSV output path for the manual template.",
+    )
+    audit_template.add_argument(
+        "--companies",
+        type=str,
+        default=None,
+        help="Optional comma-separated company list to prefill blank rows.",
+    )
+
+    audit_compare = audit_subparsers.add_parser(
+        "compare",
+        help="Compare MVP audit sample rows against manually collected jobs",
+    )
+    audit_compare.add_argument(
+        "--mvp",
+        type=Path,
+        required=True,
+        help="Path to the filled MVP audit sample CSV.",
+    )
+    audit_compare.add_argument(
+        "--manual",
+        type=Path,
+        required=True,
+        help="Path to the manual-job audit CSV.",
+    )
+    audit_compare.add_argument(
+        "--output",
+        type=Path,
+        default=PROJECT_ROOT / "docs" / "accuracy-audit-report.md",
+        help="Markdown output path for the audit report.",
+    )
+    audit_compare.add_argument(
+        "--audited-by",
+        type=str,
+        default="manual_audit",
+        help="Name to record in the generated audit rows.",
+    )
+
+    audit_validate = audit_subparsers.add_parser(
+        "validate-files",
+        help="Validate manual audit CSV files before compare",
+    )
+    audit_validate.add_argument(
+        "--mvp",
+        type=Path,
+        required=True,
+        help="Path to the MVP audit sample CSV.",
+    )
+    audit_validate.add_argument(
+        "--manual",
+        type=Path,
+        required=True,
+        help="Path to the manual-job audit CSV.",
+    )
+
+    audit_company_pack = audit_subparsers.add_parser(
+        "company-pack",
+        help="Create a simple one-company manual audit pack",
+    )
+    audit_company_pack.add_argument(
+        "--company",
+        type=str,
+        required=True,
+        help="Company name to audit.",
+    )
+    audit_company_pack.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Markdown output path for the company audit pack.",
+    )
+    audit_company_pack.add_argument(
+        "--limit",
+        type=int,
+        default=10,
+        help="Maximum number of MVP rows to include.",
+    )
+    audit_company_pack.add_argument(
+        "--include-recent-days",
+        type=int,
+        default=14,
+        help="Only include rows seen within this many days when possible.",
+    )
+    audit_company_pack.add_argument(
+        "--status",
+        type=str,
+        default="new",
+        help="Optional job status filter.",
+    )
+
+    audit_diagnose = audit_subparsers.add_parser(
+        "diagnose-company-collection",
+        help="Run a focused one-company browser collection diagnostic",
+    )
+    audit_diagnose.add_argument(
+        "--company",
+        type=str,
+        required=True,
+        help="Company name to diagnose.",
+    )
+    audit_diagnose.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Markdown output path for the collection diagnostic.",
+    )
     return parser
 
 
@@ -279,6 +465,7 @@ def main(argv: list[str] | None = None) -> int:
     collection_api = get_collection_api()
     onboarding_api = get_onboarding_api()
     reports_api = get_reports_api()
+    audit_api = get_audit_api()
     connection = storage_api["initialize_database"](DATABASE_PATH)
     seed_companies_if_needed(connection)
 
@@ -412,7 +599,138 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
+    if args.command == "audit" and args.audit_command == "export-sample":
+        companies = audit_api["parse_company_filter"](args.companies)
+        rows = audit_api["export_audit_sample"](
+            connection,
+            output_path=args.output,
+            companies=companies,
+            limit_per_company=args.limit_per_company,
+            include_recent_days=args.include_recent_days,
+            status=args.status,
+        )
+        print(
+            {
+                "exported_rows": len(rows),
+                "companies": companies or "all",
+                "output_path": str(args.output),
+            }
+        )
+        return 0
+
+    if args.command == "audit" and args.audit_command == "create-manual-template":
+        companies = audit_api["parse_company_filter"](args.companies)
+        rows = audit_api["create_manual_template"](
+            output_path=args.output,
+            companies=companies,
+        )
+        audit_api["build_manual_audit_link_sheet"](
+            connection,
+            output_path=PROJECT_ROOT / "data" / "exports" / "manual-audit-link-sheet.csv",
+            companies_path=COMPANIES_CONFIG_PATH,
+            audit_sample_path=PROJECT_ROOT / "data" / "exports" / "accuracy-audit-sample.csv",
+            manual_template_path=args.output,
+            companies=companies,
+        )
+        print(
+            {
+                "template_rows": len(rows),
+                "companies": companies or [],
+                "output_path": str(args.output),
+            }
+        )
+        return 0
+
+    if args.command == "audit" and args.audit_command == "compare":
+        result = audit_api["compare_audit_files"](
+            mvp_path=args.mvp,
+            manual_path=args.manual,
+            output_path=args.output,
+            audited_by=args.audited_by,
+        )
+        print(
+            {
+                "companies_audited": result.companies_audited,
+                "overall_metrics": result.overall_metrics.to_dict(),
+                "report_path": str(result.report_path),
+            }
+        )
+        return 0
+
+    if args.command == "audit" and args.audit_command == "validate-files":
+        result = audit_api["validate_audit_files"](
+            mvp_path=args.mvp,
+            manual_path=args.manual,
+        )
+        print(result.to_dict())
+        return 0 if result.is_valid else 1
+
+    if args.command == "audit" and args.audit_command == "company-pack":
+        slug = _slugify_company_name(args.company)
+        markdown_output = args.output or (
+            PROJECT_ROOT / "docs" / "audits" / f"{slug}-audit-pack.md"
+        )
+        audits_export_dir = PROJECT_ROOT / "data" / "exports" / "audits"
+        result = audit_api["build_company_audit_pack"](
+            connection,
+            company_name=args.company,
+            companies_path=COMPANIES_CONFIG_PATH,
+            markdown_output_path=markdown_output,
+            mvp_output_path=audits_export_dir / f"{slug}-mvp-sample.csv",
+            manual_output_path=audits_export_dir / f"{slug}-manual-template.csv",
+            limit_per_company=args.limit,
+            include_recent_days=args.include_recent_days,
+            status=args.status,
+        )
+        print(result.to_dict())
+        return 0
+
+    if args.command == "audit" and args.audit_command == "diagnose-company-collection":
+        company = _find_company_config(args.company)
+        slug = _slugify_company_name(args.company)
+        output_path = args.output or (
+            PROJECT_ROOT / "docs" / "audits" / f"{slug}-collection-diagnostic.md"
+        )
+        result = collection_api["collect_single_company_with_browser"](
+            connection,
+            company=company,
+            headless=False,
+            save_jobs=False,
+            allowed_source_modes={"browser_allowed", "human_in_loop"},
+        )
+        diagnostic = audit_api["write_company_collection_diagnostic"](
+            output_path=output_path,
+            company=company,
+            collection_result=result,
+        )
+        print(
+            {
+                **diagnostic.to_dict(),
+                "jobs_discovered": result.get("jobs_discovered", 0),
+                "jobs_relevant": result.get("jobs_relevant", 0),
+                "pages_visited": result.get("pages_visited", []),
+                "pagination_stop_reason": result.get("pagination_stop_reason"),
+            }
+        )
+        return 0
+
     raise ValueError(f"Unsupported command: {args.command}")
+
+
+def _slugify_company_name(company_name: str) -> str:
+    return "-".join(
+        segment for segment in "".join(
+            char if char.isalnum() else "-" for char in str(company_name or "").strip()
+        ).split("-") if segment
+    ) or "company"
+
+
+def _find_company_config(company_name: str) -> dict[str, object]:
+    target = _slugify_company_name(company_name)
+    for company in load_companies_config():
+        if _slugify_company_name(str(company.get("name") or "")) == target:
+            return company
+    raise ValueError(f"Company not found in config/companies.yaml: {company_name}")
 
 
 if __name__ == "__main__":
