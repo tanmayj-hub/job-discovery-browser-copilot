@@ -20,16 +20,16 @@
 | extracted_and_relevant | 10 |
 | extracted_but_rejected_by_scoring | 3 |
 | outside_scope | 3 |
-| missed_by_collection | 1 |
+| inactive_or_expired | 1 |
 | blocked_or_not_tested | 0 |
 | unknown | 0 |
 
 ## Per-Company Results
-- TD: saved_by_mvp=2, extracted_and_relevant=1, missed_by_collection=1
+- TD: saved_by_mvp=2, extracted_and_relevant=1, inactive_or_expired=1
 - Lead Platform Engineer, TD Securities: saved_by_mvp
 - Sr IT Support Analyst, ION / MarketView Trading: saved_by_mvp
 - IT Build Analyst II - Onsite AV Support: extracted_and_relevant
-- Software Engineer II, Salesforce: missed_by_collection
+- Software Engineer II, Salesforce: inactive_or_expired
 - IBM Consulting: extracted_and_relevant=8, extracted_but_rejected_by_scoring=3, outside_scope=1
 - https://careers.ibm.com/en_US/careers/JobDetail?jobId=92913&source=WEB_Search_NA: extracted_and_relevant
 - https://careers.ibm.com/en_US/careers/JobDetail?jobId=113691&source=WEB_Search_NA: extracted_and_relevant
@@ -49,7 +49,12 @@
 - Future Opportunities: outside_scope
 
 ## Remaining Collection Misses
-- TD: Software Engineer II, Salesforce (https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Software-Engineer-II--Salesforce_R_1486443?locationCountry=a30a87ed25634629aa6c3958aa2b91ea)
+- None in the current first-10-page audited slice.
+
+## Direct URL Follow-Up
+- TD: Software Engineer II, Salesforce -> inactive_or_expired
+  Direct official Workday URL now returns `The page you are looking for doesn't exist.`
+  The role was also absent from the current Canada listing in both the first 10 pages and a diagnostic-only 20-page rerun.
 
 ## Remaining Scoring Or Scope Debates
 - IBM Consulting: Consulting Customer Experience Consulting Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA -> extracted_but_rejected_by_scoring (Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason.)
@@ -60,7 +65,7 @@
 - Sun Life: Future Opportunities -> outside_scope (Rejected because no positive scoring signals survived after penalties.)
 
 ## Recommendation
-- Collection follow-up is still needed for the remaining missed manual URL slice.
+- No current extractor fix is justified from this first 3-company manual URL audit.
 - Scoring changes are not yet recommended broadly; review rejected-but-extracted rows case by case.
-- TD `Software Engineer II, Salesforce` remains a scope decision only if it reappears in a future collected slice; title-only evidence is not enough to promote it.
-- Move to the next company audit after documenting any remaining collection gaps.
+- TD `Software Engineer II, Salesforce` should be monitored only if it reappears in a future collected slice; title-only historical evidence is not enough to promote it.
+- Move to the next company audit or the next scoring-focused review with the current collection path unchanged.

@@ -20,12 +20,12 @@
 | extracted_and_relevant | 10 |
 | extracted_but_rejected_by_scoring | 3 |
 | outside_scope | 3 |
-| missed_by_collection | 1 |
+| inactive_or_expired | 1 |
 | blocked_or_not_tested | 0 |
 | unknown | 0 |
 
 ## Per-Company Status Counts
-- TD: saved_by_mvp=2, extracted_and_relevant=1, missed_by_collection=1
+- TD: saved_by_mvp=2, extracted_and_relevant=1, inactive_or_expired=1
 - IBM Consulting: extracted_and_relevant=8, extracted_but_rejected_by_scoring=3, outside_scope=1
 - Sun Life: extracted_and_relevant=1, outside_scope=2
 
@@ -40,7 +40,7 @@
 | https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Lead-Platform-Engineer--TD-Securities_R_1491997?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | Lead Platform Engineer, TD Securities | saved_by_mvp | Lead Platform Engineer, TD Securities | 53 | core_target_fit | title matches target role: Platform Engineer | - |
 | https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Sr-IT-Support-Analyst---ION--MarketView--Trading_R_1489301?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | Sr IT Support Analyst, ION / MarketView Trading | saved_by_mvp | Sr. IT Support Analyst - ION, MarketView, Trading | 20 | core_target_fit | matched skills: support; support/ops signals: support | - |
 | https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/IT-Build-Analyst-II---Onsite-AV-Support_R_1493452?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | IT Build Analyst II - Onsite AV Support | extracted_and_relevant | IT Build Analyst II - Onsite AV Support | 12 | core_target_fit | matched skills: support; support/ops signals: support | Saved as relevant because the job had a positive score and at least one core non-location signal. |
-| https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Software-Engineer-II--Salesforce_R_1486443?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | Software Engineer II, Salesforce | missed_by_collection | - | - | not_relevant | - | - |
+| https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Software-Engineer-II--Salesforce_R_1486443?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | Software Engineer II, Salesforce | inactive_or_expired | - | - | not_relevant | - | Direct official URL now returns a Workday not-found page, and the role was absent from the current Canada listing in both the first 10 pages and a diagnostic-only 20-page rerun. |
 ### IBM Consulting
 - Manual career page: https://www.ibm.com/careers/search
 - Filter used: Canada
@@ -77,7 +77,7 @@
 - `outside_scope` is used when a manual URL was collected but still does not match the current core or adjacent target definitions.
 
 ## Recommended Fixes
-- Prioritize collection gaps first where the manual URL never appeared in scored candidates.
+- Prioritize collection gaps first where the manual URL never appeared in scored candidates and is still active in the current public listing.
 - Review rejected-but-extracted rows next to confirm whether scoring should promote them.
 - Keep clearly outside-scope roles separate so recall tuning does not broaden generic software or sales roles.
 - Preserve the current core-target scoring path for rows already saved cleanly by the MVP.
@@ -85,3 +85,4 @@
 ## Remaining Limitations
 - Saved-job comparison only reflects what already exists in SQLite; scored-candidate exports are still required to distinguish rejection from collection misses.
 - IBM and other non-Workday search pages may still depend on site-specific public filters that are not uniformly exposed through one generic search control.
+- Manual URL audits should distinguish inactive direct URLs from real extractor misses; TD `R_1486443` is currently inactive/unavailable rather than missing from a still-live listing row.

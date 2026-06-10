@@ -46,16 +46,29 @@
 ## Manual Expected Coverage
 - Manual expected URLs provided: 4
 - Matching manual expected URLs found: 3 / 4
-- Manual expected URLs still missing: 1
+- Manual expected URLs still missing from the current listing slice: 1
 - Matching manual Workday job IDs found: R_1489301, R_1491997, R_1493452
-- Manual Workday job IDs still missing: R_1486443
+- Manual Workday job IDs still missing from the current listing slice: R_1486443
 
 | Manual URL | Manual Title | Raw HTML | Anchor href | Script/JSON | Extracted | Scored | Saved by MVP | Status | Reason |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Lead-Platform-Engineer--TD-Securities_R_1491997?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | Lead Platform Engineer, TD Securities | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
 | https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Sr-IT-Support-Analyst---ION--MarketView--Trading_R_1489301?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | Sr IT Support Analyst, ION / MarketView Trading | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
 | https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/IT-Build-Analyst-II---Onsite-AV-Support_R_1493452?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | IT Build Analyst II - Onsite AV Support | yes | yes | no | yes | yes | no | extracted_and_relevant | Saved as relevant because the job had a positive score and at least one core non-location signal. |
-| https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Software-Engineer-II--Salesforce_R_1486443?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | Software Engineer II, Salesforce | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Software-Engineer-II--Salesforce_R_1486443?locationCountry=a30a87ed25634629aa6c3958aa2b91ea | Software Engineer II, Salesforce | no | no | no | no | no | no | inactive_or_expired | Direct official URL now returns a Workday not-found page, and the job does not appear in the current Canada listing slice. |
+
+## TD R_1486443 Direct URL / Listing Position Check
+- Checked direct URL on: 2026-06-10
+- Direct URL active: no
+- Direct URL title: TD Careers
+- Direct URL location visible: no
+- Direct URL result: Workday page body says `The page you are looking for doesn't exist.`
+- Found in first 10 listing pages: no
+- Found in first 20 listing pages: no
+- Page number if found: n/a
+- Reason classification: inactive_or_expired
+- Extraction bug evidence: none
+- Notes: A diagnostic-only 20-page Canada-filtered rerun found 378 candidates and 11 relevant jobs, but still did not contain `R_1486443` in candidate URLs, scored candidates, or captured page HTML snapshots. This does not behave like a current extractor miss or a page-cap issue.
 
 ## Candidate Jobs Before Scoring
 - Technology Delivery Lead | - | https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Technology-Delivery-Lead_R_1490874?locationCountry=a30a87ed25634629aa6c3958aa2b91ea
