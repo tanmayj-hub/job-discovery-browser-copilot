@@ -16,16 +16,16 @@
 ## Summary
 | Status | Count |
 | --- | ---: |
-| blocked_or_not_tested | 0 |
+| saved_by_mvp | 2 |
 | extracted_and_relevant | 10 |
 | extracted_but_rejected_by_scoring | 3 |
-| missed_by_collection | 1 |
 | outside_scope | 3 |
-| saved_by_mvp | 2 |
+| missed_by_collection | 1 |
+| blocked_or_not_tested | 0 |
 | unknown | 0 |
 
 ## Per-Company Status Counts
-- TD: extracted_and_relevant=1, missed_by_collection=1, saved_by_mvp=2
+- TD: saved_by_mvp=2, extracted_and_relevant=1, missed_by_collection=1
 - IBM Consulting: extracted_and_relevant=8, extracted_but_rejected_by_scoring=3, outside_scope=1
 - Sun Life: extracted_and_relevant=1, outside_scope=2
 

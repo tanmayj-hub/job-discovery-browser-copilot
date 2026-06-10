@@ -19,6 +19,7 @@ from audit.accuracy_audit import (
     load_manual_expected_jobs,
     validate_audit_files,
     write_company_collection_diagnostic,
+    write_first_manual_url_audit_summary,
 )
 from storage.db import initialize_database, upsert_companies, upsert_job_record
 
@@ -880,7 +881,9 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
     assert "- Cookie banner action: #truste-consent-button" in content
     assert "- Language prompt action: .geo-btn-secondary-cancel" in content
     assert "- Jobs extracted per page: [2]" in content
-    assert "- Matching manual IBM jobIds found: none" in content
+    assert "- Matching manual expected URLs found: 1 / 1" in content
+    assert "- Manual expected URLs still missing: 0" in content
+    assert "extracted_and_relevant" in content
     assert "Software Engineer II, Salesforce" in content
     assert {row["is_relevant"] for row in exported_rows} == {"true", "false"}
 
@@ -953,7 +956,7 @@ def test_write_company_collection_diagnostic_reports_manual_ibm_raw_html_anchor_
     assert "| Manual URL | Manual Title | Raw HTML | Anchor href | Script/JSON |" in content
     assert "Manual IBM jobIds still missing: 115116" in content
     assert (
-        "| yes | yes | no | no | no | no | "
+        "| yes | yes | no | no | no | no | missed_by_collection | "
         "job anchor present in DOM but extraction did not emit a candidate |"
     ) in content
 
@@ -1059,6 +1062,16 @@ def test_ibm_url_identity_extracts_job_id() -> None:
     )
 
     assert identity["ibm_job_id"] == "92913"
+
+
+def test_workday_url_identity_extracts_td_salesforce_job_id() -> None:
+    identity = _url_identity(
+        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/"
+        "Toronto-Ontario/Software-Engineer-II--Salesforce_R_1486443"
+        "?locationCountry=a30a87ed25634629aa6c3958aa2b91ea"
+    )
+
+    assert identity["workday_job_id"] == "R_1486443"
 
 
 def test_compare_manual_expected_urls_matches_workday_id_despite_query_difference(
@@ -1267,6 +1280,82 @@ def test_compare_manual_expected_urls_matches_ibm_job_id(
     assert result["records"][0]["status"] == "extracted_and_relevant"
 
 
+def test_compare_manual_expected_urls_matches_td_workday_id_with_query_params(
+    tmp_path: Path,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    _write_csv(
+        tmp_path / "TD-scored-candidates.csv",
+        [
+            "company",
+            "title",
+            "location",
+            "url",
+            "score",
+            "is_relevant",
+            "relevance_tier",
+            "matched_terms",
+            "reason",
+            "match_reasons",
+            "risk_flags",
+            "rejection_reason",
+            "description",
+            "source_mode",
+        ],
+        [
+            {
+                "company": "TD",
+                "title": "Software Engineer II, Salesforce",
+                "location": "Toronto, Ontario, Canada",
+                "url": (
+                    "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/"
+                    "Toronto-Ontario/Software-Engineer-II--Salesforce_R_1486443"
+                ),
+                "score": "0",
+                "is_relevant": "false",
+                "relevance_tier": "not_relevant",
+                "matched_terms": "",
+                "reason": "Rejected because no positive scoring signals survived after penalties.",
+                "match_reasons": "",
+                "risk_flags": "",
+                "rejection_reason": (
+                    "Rejected because no positive scoring signals survived after penalties."
+                ),
+                "description": "",
+                "source_mode": "human_in_loop",
+            }
+        ],
+    )
+    fixture = [
+        {
+            "company_name": "TD",
+            "manual_career_page": "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers",
+            "manual_filter_used": "Canada",
+            "pages_checked": "first 10",
+            "expected_jobs": [
+                {
+                    "job_url": (
+                        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/"
+                        "Toronto-Ontario/Software-Engineer-II--Salesforce_R_1486443"
+                        "?locationCountry=a30a87ed25634629aa6c3958aa2b91ea"
+                    ),
+                    "title": "Software Engineer II, Salesforce",
+                    "notes": "",
+                }
+            ],
+        }
+    ]
+
+    result = compare_manual_expected_urls(
+        connection,
+        companies=fixture,
+        scored_candidates_dir=tmp_path,
+    )
+
+    assert result["records"][0]["matched_title"] == "Software Engineer II, Salesforce"
+    assert result["records"][0]["status"] == "outside_scope"
+
+
 def test_compare_manual_expected_urls_distinguishes_saved_rejected_and_missed(
     tmp_path: Path,
 ) -> None:
@@ -1394,3 +1483,88 @@ def test_compare_manual_expected_urls_distinguishes_saved_rejected_and_missed(
         "extracted_but_rejected_by_scoring",
         "missed_by_collection",
     ]
+
+
+def test_write_first_manual_url_audit_summary_includes_per_company_status_counts(
+    tmp_path: Path,
+) -> None:
+    output_path = tmp_path / "first-3-company-manual-url-audit-summary.md"
+    companies = [
+        {
+            "company_name": "TD",
+            "expected_jobs": [{}, {}, {}, {}],
+        },
+        {
+            "company_name": "IBM Consulting",
+            "expected_jobs": [{}] * 12,
+        },
+        {
+            "company_name": "Sun Life",
+            "expected_jobs": [{}] * 3,
+        },
+    ]
+    audit_records = [
+        {
+            "company_name": "TD",
+            "manual_title": "Lead Platform Engineer",
+            "status": "saved_by_mvp",
+            "manual_job_url": "https://td.example/1",
+            "rejection_reason": "",
+            "matched_reasons": "",
+        },
+        {
+            "company_name": "TD",
+            "manual_title": "Software Engineer II, Salesforce",
+            "status": "missed_by_collection",
+            "manual_job_url": "https://td.example/2",
+            "rejection_reason": "",
+            "matched_reasons": "",
+        },
+        {
+            "company_name": "IBM Consulting",
+            "manual_title": "Solutions Engineer",
+            "status": "extracted_and_relevant",
+            "manual_job_url": "https://ibm.example/1",
+            "rejection_reason": "",
+            "matched_reasons": (
+                "adjacent customer-facing technical fit: Solutions Engineer"
+            ),
+        },
+        {
+            "company_name": "Sun Life",
+            "manual_title": "Future Opportunities",
+            "status": "outside_scope",
+            "manual_job_url": "https://sunlife.example/1",
+            "rejection_reason": (
+                "Rejected because no positive scoring signals survived after penalties."
+            ),
+            "matched_reasons": "",
+        },
+    ]
+    summary = {
+        "status_counts": {
+            "saved_by_mvp": 1,
+            "extracted_and_relevant": 1,
+            "outside_scope": 1,
+            "missed_by_collection": 1,
+        },
+        "per_company": {
+            "TD": {"saved_by_mvp": 1, "missed_by_collection": 1},
+            "IBM Consulting": {"extracted_and_relevant": 1},
+            "Sun Life": {"outside_scope": 1},
+        },
+    }
+
+    write_first_manual_url_audit_summary(
+        output_path,
+        companies=companies,
+        audit_records=audit_records,
+        summary=summary,
+    )
+
+    content = output_path.read_text(encoding="utf-8")
+
+    assert "| saved_by_mvp | 1 |" in content
+    assert "| missed_by_collection | 1 |" in content
+    assert "- TD: saved_by_mvp=1, missed_by_collection=1" in content
+    assert "- IBM Consulting: extracted_and_relevant=1" in content
