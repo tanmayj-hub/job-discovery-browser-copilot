@@ -7,6 +7,7 @@ import main as cli_main
 from audit.accuracy_audit import (
     AUDIT_SAMPLE_FIELDS,
     MANUAL_TEMPLATE_FIELDS,
+    _url_identity,
     build_company_audit_pack,
     build_manual_audit_link_sheet,
     calculate_metrics,
@@ -796,11 +797,14 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
         "location_scope_used": True,
         "location_scope": ["Canada", "Toronto"],
         "location_queries": ["Canada (URL filter)"],
+        "location_filter_method": "url_filter",
         "pagination_detected": True,
         "max_pages_per_source": 10,
         "pages_visited": ["https://careers.td.com/jobs"],
         "jobs_extracted_per_page": [2],
         "pagination_stop_reason": "completed",
+        "cookie_dismissed": "#truste-consent-button",
+        "language_prompt_action": ".geo-btn-secondary-cancel",
         "jobs_discovered": 2,
         "jobs_scored": 2,
         "jobs_relevant": 1,
@@ -859,6 +863,12 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
         company=company,
         collection_result=collection_result,
         scored_candidates_output_path=scored_candidates_path,
+        manual_expected_jobs=[
+            {
+                "job_url": "https://careers.td.com/jobs/lead-platform-engineer",
+                "title": "Lead Platform Engineer",
+            }
+        ],
     )
 
     content = output_path.read_text(encoding="utf-8")
@@ -866,6 +876,10 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
 
     assert "## Scored Candidates" in content
     assert "## Rejected But Interesting Jobs" in content
+    assert "- Cookie banner action: #truste-consent-button" in content
+    assert "- Language prompt action: .geo-btn-secondary-cancel" in content
+    assert "- Jobs extracted per page: [2]" in content
+    assert "- Matching manual IBM jobIds found: none" in content
     assert "Software Engineer II, Salesforce" in content
     assert {row["is_relevant"] for row in exported_rows} == {"true", "false"}
 
@@ -963,6 +977,14 @@ def test_load_manual_expected_jobs_reads_structured_fixture() -> None:
         "Sun Life",
     ]
     assert len(companies[0]["expected_jobs"]) == 4
+
+
+def test_ibm_url_identity_extracts_job_id() -> None:
+    identity = _url_identity(
+        "https://careers.ibm.com/en_US/careers/JobDetail?jobId=92913&source=WEB_Search_NA"
+    )
+
+    assert identity["ibm_job_id"] == "92913"
 
 
 def test_compare_manual_expected_urls_matches_workday_id_despite_query_difference(

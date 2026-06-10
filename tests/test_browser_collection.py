@@ -252,3 +252,9 @@ def test_url_uses_location_scope_supports_workday_location_country_format() -> N
         "https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs"
         "?Location_Country=a30a87ed25634629aa6c3958aa2b91ea"
     ) is True
+
+
+def test_url_uses_location_scope_supports_ibm_canada_query_param() -> None:
+    assert _url_uses_location_scope(
+        "https://www.ibm.com/careers/search?field_keyword_05%5B0%5D=Canada&p=2"
+    ) is True

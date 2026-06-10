@@ -35,6 +35,16 @@ PAGINATION_LABELS = (
     "show more",
     "more jobs",
 )
+IBM_LANGUAGE_DISMISS_SELECTORS = (
+    ".geo-btn-secondary-cancel",
+    "button:has-text('Annuler')",
+    ".geo-modal-close-icon",
+)
+IBM_CANADA_FILTER_SELECTORS = (
+    "input[aria-label='Canada']",
+    "label:has-text('Canada')",
+    "text=Canada (102)",
+)
 COOKIE_ACCEPT_TEXT_HINTS = (
     "accept",
     "accept all",
@@ -310,6 +320,76 @@ def search_with_location_term(
         page.wait_for_timeout(1_000)
         return None
     return query
+
+
+def is_ibm_careers_search_url(url: str) -> bool:
+    """Return True when the URL is IBM's public careers search surface."""
+
+    parsed = urlparse(str(url or "").strip().lower())
+    return parsed.netloc.endswith("ibm.com") and parsed.path.rstrip("/") == "/careers/search"
+
+
+def dismiss_ibm_language_prompt(page: Page) -> str | None:
+    """Dismiss IBM's French geo/language prompt without switching locales."""
+
+    if not is_ibm_careers_search_url(page.url):
+        return None
+    for selector in IBM_LANGUAGE_DISMISS_SELECTORS:
+        locator = page.locator(selector)
+        if locator.count() > 0 and locator.first.is_visible():
+            locator.first.click()
+            page.wait_for_timeout(1_000)
+            return selector
+    return None
+
+
+def apply_ibm_canada_filter(
+    page: Page,
+    location_scope: Iterable[str],
+) -> str | None:
+    """Apply IBM's public Canada location facet when the current page supports it."""
+
+    if not is_ibm_careers_search_url(page.url):
+        return None
+    normalized_scope = {
+        str(item).strip().lower() for item in location_scope if str(item).strip()
+    }
+    if "canada" not in normalized_scope:
+        return None
+
+    before_url = page.url
+    try:
+        location_button = page.locator("button:has-text('Location')").first
+        if location_button.is_visible():
+            location_button.click()
+            page.wait_for_timeout(500)
+    except Exception:  # noqa: BLE001
+        return None
+
+    for selector in IBM_CANADA_FILTER_SELECTORS:
+        locator = page.locator(selector)
+        if locator.count() == 0 or not locator.first.is_visible():
+            continue
+        try:
+            candidate = locator.first
+            if hasattr(candidate, "is_checked") and candidate.is_checked():
+                return "Canada (IBM location facet)"
+            if hasattr(candidate, "check"):
+                candidate.check(force=True)
+            else:
+                candidate.click(force=True)
+            for _ in range(8):
+                page.wait_for_timeout(500)
+                current_url = page.url
+                if (
+                    current_url != before_url
+                    or "field_keyword_05[0]=canada" in current_url.lower()
+                    or "field_keyword_05%5b0%5d=canada" in current_url.lower()
+                ):
+                    return "Canada (IBM location facet)"
+        except Exception:  # noqa: BLE001
+            continue
+    return None
 
 
 def has_interactive_job_cards(page: Page) -> bool:
@@ -1483,9 +1563,36 @@ def dismiss_cookie_banner(page: Page) -> str | None:
 
 
 def _find_safe_pagination_target(page: Page) -> Locator | None:
-    locator = page.locator("button, a, [role='button']")
-    candidate_count = min(locator.count(), 50)
     current_host = urlparse(page.url).netloc.lower()
+    priority_selectors = (
+        "[aria-label='Next']",
+        "button[aria-label*='Next' i]",
+        "a[aria-label*='Next' i]",
+    )
+    for selector in priority_selectors:
+        locator = page.locator(selector)
+        if locator.count() == 0 or not locator.first.is_visible():
+            continue
+        candidate = locator.first
+        try:
+            enabled = candidate.is_enabled()
+        except Exception:  # noqa: BLE001
+            enabled = True
+        if not enabled:
+            continue
+        href = _safe_locator_attribute(candidate, "href")
+        if href:
+            resolved = _normalize_actionable_url(page.url, href)
+            if resolved:
+                resolved_host = urlparse(resolved).netloc.lower()
+                if resolved_host and resolved_host != current_host:
+                    continue
+                if _is_restricted_url(resolved):
+                    continue
+        return candidate
+
+    locator = page.locator("button, a, [role='button']")
+    candidate_count = min(locator.count(), 150)
 
     for index in range(candidate_count):
         candidate = locator.nth(index)
@@ -1532,6 +1639,36 @@ def _job_identity_key(job: Mapping[str, Any]) -> tuple[str, str]:
     title = str(job.get("title") or "").strip()
     location = str(job.get("location") or "").strip()
     return ("fallback", f"{title}|{location}")
+
+
+def _wait_for_page_settle(
+    page: Page,
+    *,
+    before_url: str,
+    before_html: str,
+    max_polls: int = 8,
+    poll_delay_ms: int = 500,
+) -> tuple[str, str]:
+    latest_url = page.url
+    latest_html = page.content()
+    stable_polls = 0
+
+    for _ in range(max_polls):
+        page.wait_for_timeout(poll_delay_ms)
+        current_url = page.url
+        current_html = page.content()
+        if current_url == latest_url and current_html == latest_html:
+            stable_polls += 1
+            if stable_polls >= 2 and (
+                current_url != before_url or current_html != before_html
+            ):
+                return current_url, current_html
+            continue
+        latest_url = current_url
+        latest_html = current_html
+        stable_polls = 0
+
+    return latest_url, latest_html
 
 
 def extract_visible_job_cards_with_diagnostics(
@@ -1599,9 +1736,11 @@ def extract_visible_job_cards_with_diagnostics(
         before_url = page.url
         before_html = page.content()
         target.click()
-        page.wait_for_timeout(1_500)
-        after_url = page.url
-        after_html = page.content()
+        after_url, after_html = _wait_for_page_settle(
+            page,
+            before_url=before_url,
+            before_html=before_html,
+        )
         if after_url == before_url and after_html == before_html:
             pagination_stop_reason = "no_page_change"
             break

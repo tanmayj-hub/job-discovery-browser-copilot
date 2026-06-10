@@ -789,6 +789,25 @@ def main(argv: list[str] | None = None) -> int:
             location_scope_override = collection_api["load_audit_scope_locations"]()
             max_pages_per_source_override = collection_api["load_audit_max_pages_per_source"]()
             force_location_scope_search = True
+        manual_expected_jobs: list[dict[str, object]] = []
+        manual_expected_fixture_path = (
+            PROJECT_ROOT
+            / "tests"
+            / "fixtures"
+            / "audit"
+            / "manual_expected_jobs_td_ibm_sunlife.yaml"
+        )
+        if manual_expected_fixture_path.exists():
+            for fixture_company in audit_api["load_manual_expected_jobs"](
+                manual_expected_fixture_path
+            ):
+                if _slugify_company_name(
+                    str(fixture_company.get("company_name") or "")
+                ) == slug:
+                    manual_expected_jobs = list(
+                        fixture_company.get("expected_jobs", []) or []
+                    )
+                    break
         result = collection_api["collect_single_company_with_browser"](
             connection,
             company=company,
@@ -804,6 +823,7 @@ def main(argv: list[str] | None = None) -> int:
             company=company,
             collection_result=result,
             scored_candidates_output_path=scored_candidates_output_path,
+            manual_expected_jobs=manual_expected_jobs,
         )
         print(
             {

@@ -11,9 +11,12 @@ import yaml
 from playwright.sync_api import Error as PlaywrightError
 
 from browser.extraction import (
+    apply_ibm_canada_filter,
     dismiss_cookie_banner,
+    dismiss_ibm_language_prompt,
     extract_visible_job_cards_with_diagnostics,
     find_search_input,
+    is_ibm_careers_search_url,
     is_probable_job_listing,
     navigate_to_job_search_page,
     search_with_location_term,
@@ -228,15 +231,24 @@ def collect_company_jobs(
         )
         page.wait_for_timeout(1_000)
         dismissed_cookie_steps: list[str] = []
+        dismissed_language_steps: list[str] = []
+        location_filter_method = "none"
         initial_cookie = dismiss_cookie_banner(page)
         if initial_cookie:
             dismissed_cookie_steps.append(initial_cookie)
+        initial_language = dismiss_ibm_language_prompt(page)
+        if initial_language:
+            dismissed_language_steps.append(initial_language)
         navigated_url = navigate_to_job_search_page(page)
         if navigated_url:
             navigated_cookie = dismiss_cookie_banner(page)
             if navigated_cookie:
                 dismissed_cookie_steps.append(navigated_cookie)
+            navigated_language = dismiss_ibm_language_prompt(page)
+            if navigated_language:
+                dismissed_language_steps.append(navigated_language)
         dismissed_cookie = " -> ".join(dismissed_cookie_steps) or None
+        dismissed_language_prompt = " -> ".join(dismissed_language_steps) or None
 
         initial_html = page.content()
         initial_text = page.locator("body").inner_text(timeout=3_000)
@@ -277,7 +289,18 @@ def collect_company_jobs(
         location_scope_used = _url_uses_location_scope(page.url or careers_url)
         keyword_scope_used = False
         if location_scope_used:
-            location_queries.append("Canada (URL filter)")
+            if is_ibm_careers_search_url(page.url or careers_url):
+                location_queries.append("Canada (IBM URL filter)")
+                location_filter_method = "ibm_canada_url_filter"
+            else:
+                location_queries.append("Canada (URL filter)")
+                location_filter_method = "url_filter"
+        if not location_scope_used:
+            ibm_filter_query = apply_ibm_canada_filter(page, location_scope)
+            if ibm_filter_query:
+                location_scope_used = True
+                location_queries.append(ibm_filter_query)
+                location_filter_method = "ibm_location_facet"
         if (
             force_location_scope_search
             and find_search_input(page) is not None
@@ -293,6 +316,7 @@ def collect_company_jobs(
                     continue
                 location_scope_used = True
                 location_queries.append(query)
+                location_filter_method = "location_search_input"
                 break
 
         extraction_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
@@ -315,6 +339,7 @@ def collect_company_jobs(
                     continue
                 location_scope_used = True
                 location_queries.append(query)
+                location_filter_method = "location_search_input"
                 search_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
                     page,
                     company_name=company_name,
@@ -330,6 +355,10 @@ def collect_company_jobs(
         if post_search_cookie:
             dismissed_cookie_steps.append(post_search_cookie)
             dismissed_cookie = " -> ".join(dismissed_cookie_steps)
+        post_search_language = dismiss_ibm_language_prompt(page)
+        if post_search_language:
+            dismissed_language_steps.append(post_search_language)
+            dismissed_language_prompt = " -> ".join(dismissed_language_steps)
         current_html = page.content()
         current_text = page.locator("body").inner_text(timeout=3_000)
         late_barriers = detect_browser_barriers(
@@ -348,9 +377,11 @@ def collect_company_jobs(
                 notes=(
                     "Paused after page inspection. "
                     f"location_queries={location_queries or 'none'}; "
+                    f"location_filter_method={location_filter_method}; "
                     f"keyword_scope_used={keyword_scope_used}; "
                     f"navigated_url={navigated_url or 'none'}; "
-                    f"cookie_dismissed={dismissed_cookie or 'none'}"
+                    f"cookie_dismissed={dismissed_cookie or 'none'}; "
+                    f"language_prompt_dismissed={dismissed_language_prompt or 'none'}"
                 ),
             )
             finish_daily_run(
@@ -401,6 +432,7 @@ def collect_company_jobs(
             notes=(
                 "browser collection completed; "
                 f"location_queries={location_queries or 'none'}; "
+                f"location_filter_method={location_filter_method}; "
                 f"keyword_scope_used={keyword_scope_used}"
             ),
         )
@@ -427,10 +459,12 @@ def collect_company_jobs(
             "location_scope_used": location_scope_used,
             "location_scope": list(location_scope),
             "location_queries": location_queries,
+            "location_filter_method": location_filter_method,
             "keyword_scope_used": keyword_scope_used,
             "query": None,
             "navigated_url": navigated_url,
             "cookie_dismissed": dismissed_cookie,
+            "language_prompt_action": dismissed_language_prompt,
             "pagination_detected": extraction_diagnostics.pagination_detected,
             "pagination_stop_reason": extraction_diagnostics.pagination_stop_reason,
             "pages_visited": extraction_diagnostics.pages_visited,
@@ -595,6 +629,8 @@ def _url_uses_location_scope(url: str) -> bool:
     return (
         "locationcountry=" in normalized
         or "location_country=" in normalized
+        or "field_keyword_05[0]=canada" in normalized
+        or "field_keyword_05%5b0%5d=canada" in normalized
         or "country=ca" in normalized
     )
 

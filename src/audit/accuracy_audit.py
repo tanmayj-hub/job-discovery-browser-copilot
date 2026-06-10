@@ -476,6 +476,7 @@ def write_company_collection_diagnostic(
     company: dict[str, Any],
     collection_result: dict[str, Any],
     scored_candidates_output_path: Path | None = None,
+    manual_expected_jobs: list[dict[str, Any]] | None = None,
 ) -> CompanyCollectionDiagnosticResult:
     """Write a focused one-company collection diagnostic report."""
 
@@ -504,6 +505,11 @@ def write_company_collection_diagnostic(
         for item in collection_result.get("location_queries", [])
         if str(item).strip()
     ]
+    extracted_identifiers = _collect_company_url_identities(candidate_jobs)
+    manual_expected_summary = _summarize_manual_expected_coverage(
+        candidate_jobs,
+        manual_expected_jobs or [],
+    )
     lines = [
         f"# {company_name} Collection Diagnostic",
         "",
@@ -519,14 +525,28 @@ def write_company_collection_diagnostic(
             f"{collection_result.get('source_mode') or company.get('source_mode') or '-'}"
         ),
         f"- ATS type: {collection_result.get('ats_type') or company.get('ats_hint') or '-'}",
+        f"- Cookie banner action: {collection_result.get('cookie_dismissed') or 'none'}",
+        f"- Language prompt action: {collection_result.get('language_prompt_action') or 'none'}",
         "",
         "## Location Scope",
         f"- Location scope used: {bool(collection_result.get('location_scope_used', False))}",
         f"- Configured locations: {', '.join(collection_result.get('location_scope', [])) or '-'}",
         f"- Location filter/search attempted: {', '.join(location_queries) or 'none'}",
+        (
+            "- Exact filter method: "
+            f"{collection_result.get('location_filter_method') or 'none'}"
+        ),
         "",
         "## Pagination",
         f"- Pagination detected: {bool(collection_result.get('pagination_detected', False))}",
+        (
+            "- Next/load-more detection result: "
+            + (
+                "detected"
+                if collection_result.get("pagination_detected", False)
+                else "not detected"
+            )
+        ),
         f"- Max pages per source: {collection_result.get('max_pages_per_source') or '-'}",
         f"- Pages visited: {len(pages_visited)}",
         f"- Jobs extracted per page: {jobs_per_page or '-'}",
@@ -536,6 +556,7 @@ def write_company_collection_diagnostic(
         f"- Candidate jobs before scoring: {collection_result.get('jobs_discovered', 0)}",
         f"- Jobs after scoring: {collection_result.get('jobs_scored', 0)}",
         f"- Relevant jobs after scoring: {collection_result.get('jobs_relevant', 0)}",
+        f"- Unique IBM jobIds extracted: {len(extracted_identifiers['ibm_job_ids'])}",
         (
             "- Scored candidates CSV: "
             f"{scored_candidates_output_path if scored_candidates_output_path is not None else '-'}"
@@ -547,6 +568,18 @@ def write_company_collection_diagnostic(
         lines.extend(f"- {url}" for url in pages_visited)
     else:
         lines.append("- None")
+
+    if manual_expected_jobs:
+        lines.extend(["", "## Manual Expected Coverage"])
+        lines.append(f"- Manual expected URLs provided: {len(manual_expected_jobs)}")
+        lines.append(
+            "- Matching manual IBM jobIds found: "
+            f"{', '.join(manual_expected_summary['found_ibm_job_ids']) or 'none'}"
+        )
+        lines.append(
+            "- Manual IBM jobIds still missing: "
+            f"{', '.join(manual_expected_summary['missing_ibm_job_ids']) or 'none'}"
+        )
 
     lines.extend(["", "## Candidate Jobs Before Scoring"])
     if candidate_jobs:
@@ -618,6 +651,47 @@ def write_company_collection_diagnostic(
         company_name=company_name,
         output_path=output_path,
     )
+
+
+def _collect_company_url_identities(rows: list[dict[str, Any]]) -> dict[str, set[str]]:
+    identifiers = {
+        "ibm_job_ids": set(),
+        "workday_job_ids": set(),
+    }
+    for row in rows:
+        identity = _url_identity(str(row.get("job_url") or row.get("url") or ""))
+        if identity["ibm_job_id"]:
+            identifiers["ibm_job_ids"].add(identity["ibm_job_id"])
+        if identity["workday_job_id"]:
+            identifiers["workday_job_ids"].add(identity["workday_job_id"])
+    return identifiers
+
+
+def _summarize_manual_expected_coverage(
+    candidate_jobs: list[dict[str, Any]],
+    manual_expected_jobs: list[dict[str, Any]],
+) -> dict[str, list[str]]:
+    found_ibm_job_ids: list[str] = []
+    missing_ibm_job_ids: list[str] = []
+    for expected_job in manual_expected_jobs:
+        manual_url = str(expected_job.get("job_url") or "").strip()
+        matched = _find_matching_job_record(
+            manual_url,
+            candidate_jobs,
+            url_field="job_url",
+            manual_title=str(expected_job.get("title") or "").strip(),
+        )
+        identity = _url_identity(manual_url)
+        ibm_job_id = identity["ibm_job_id"]
+        if ibm_job_id:
+            if matched is not None:
+                found_ibm_job_ids.append(ibm_job_id)
+            else:
+                missing_ibm_job_ids.append(ibm_job_id)
+    return {
+        "found_ibm_job_ids": sorted(found_ibm_job_ids),
+        "missing_ibm_job_ids": sorted(missing_ibm_job_ids),
+    }
 
 
 def validate_audit_files(

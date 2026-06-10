@@ -3,10 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 
 from browser.extraction import (
+    apply_ibm_canada_filter,
+    dismiss_cookie_banner,
+    dismiss_ibm_language_prompt,
     extract_jobs_from_html,
     extract_visible_job_cards,
     extract_visible_job_cards_with_diagnostics,
     has_interactive_job_cards,
+    is_ibm_careers_search_url,
     is_probable_job_listing,
     navigate_to_job_search_page,
     search_with_location_term,
@@ -14,6 +18,13 @@ from browser.extraction import (
 from processing.score import score_job
 
 FIXTURES_DIR = Path("tests/fixtures/browser")
+
+
+def _ibm_job_article(job_id: str) -> str:
+    return (
+        '<article><a href="https://careers.ibm.com/en_US/careers/JobDetail'
+        f'?jobId={job_id}">Job {job_id}</a></article>'
+    )
 
 
 class FakeLocatorItem:
@@ -263,6 +274,88 @@ class FakeSearchPage:
 
     def evaluate(self, _script: str):
         return 0
+
+
+class FakeCheckboxLocatorItem(FakeLocatorItem):
+    def __init__(self, page, label: str) -> None:
+        super().__init__(page, label)
+        self.checked = False
+
+    def is_checked(self) -> bool:
+        return self.checked
+
+    def check(self, force: bool = False) -> None:  # noqa: ARG002
+        self.checked = True
+        self.page._url = "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada"
+
+
+class FakeIbmModalPage:
+    def __init__(self) -> None:
+        self._url = "https://www.ibm.com/careers/search"
+        self.cookie = FakeLocatorItem(self, "Accept all")
+        self.language = FakeLocatorItem(self, "Annuler")
+        self.location = FakeLocatorItem(self, "Location")
+        self.canada = FakeCheckboxLocatorItem(self, "Canada")
+
+    @property
+    def url(self) -> str:
+        return self._url
+
+    def locator(self, selector: str):
+        mapping = {
+            "#truste-consent-button": [self.cookie],
+            ".geo-btn-secondary-cancel": [self.language],
+            "button:has-text('Annuler')": [self.language],
+            ".geo-modal-close-icon": [],
+            "button:has-text('Location')": [self.location],
+            "input[aria-label='Canada']": [self.canada],
+            "label:has-text('Canada')": [],
+            "text=Canada (102)": [],
+        }
+        return FakeLocatorCollection(mapping.get(selector, []))
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def advance(self) -> None:
+        return None
+
+
+class FakeDenseIbmPaginationPage:
+    def __init__(self, urls: list[str], html_pages: list[str]) -> None:
+        self.urls = urls
+        self.html_pages = html_pages
+        self.index = 0
+        self.controls = [FakeLocatorItem(self, f"Filter {index}") for index in range(80)]
+        self.next_item = FakeMultiPageLocatorItem(self, "next", enabled=True)
+        self.controls.append(self.next_item)
+
+    @property
+    def url(self) -> str:
+        return self.urls[self.index]
+
+    def content(self) -> str:
+        return self.html_pages[self.index]
+
+    def locator(self, selector: str):
+        if selector == "[aria-label='Next']":
+            if self.index < len(self.html_pages) - 1:
+                return FakeLocatorCollection([self.next_item])
+            return FakeLocatorCollection([])
+        if selector == "button, a, [role='button']":
+            if self.index < len(self.html_pages) - 1:
+                return FakeLocatorCollection(self.controls)
+            return FakeLocatorCollection(self.controls[:-1])
+        if selector == "body":
+            return FakeBodyLocator("IBM careers results")
+        return FakeLocatorCollection([])
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def advance(self) -> None:
+        if self.index < len(self.html_pages) - 1:
+            self.index += 1
 
 
 class FakeMultiPageLocatorItem(FakeLocatorItem):
@@ -521,6 +614,58 @@ def test_extract_visible_job_cards_does_not_loop_forever_on_static_next_page() -
     assert len(diagnostics.pages_visited) == 2
 
 
+def test_extract_visible_job_cards_handles_ibm_dense_pagination_until_max_pages() -> None:
+    page1 = f"<main>{_ibm_job_article('92913')}{_ibm_job_article('113691')}</main>"
+    page2 = f"<main>{_ibm_job_article('115116')}{_ibm_job_article('118746')}</main>"
+    page3 = f"<main>{_ibm_job_article('109784')}{_ibm_job_article('119355')}</main>"
+    page = FakeDenseIbmPaginationPage(
+        urls=[
+            "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada",
+            "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada&p=2",
+            "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada&p=3",
+        ],
+        html_pages=[page1, page2, page3],
+    )
+
+    jobs, diagnostics = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name="IBM Consulting",
+        source_name="IBM Consulting",
+        source_mode="browser_allowed",
+        max_cards=60,
+        max_pages=3,
+    )
+
+    assert len(jobs) == 6
+    assert diagnostics.pagination_detected is True
+    assert diagnostics.pagination_stop_reason == "max_pages_reached"
+    assert diagnostics.jobs_extracted_per_page == [2, 2, 2]
+
+
+def test_extract_visible_job_cards_handles_ibm_dense_pagination_no_new_job_ids() -> None:
+    repeated_page = f"<main>{_ibm_job_article('92913')}</main>"
+    page = FakeDenseIbmPaginationPage(
+        urls=[
+            "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada",
+            "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada&p=2",
+        ],
+        html_pages=[repeated_page, repeated_page],
+    )
+
+    jobs, diagnostics = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name="IBM Consulting",
+        source_name="IBM Consulting",
+        source_mode="browser_allowed",
+        max_cards=60,
+        max_pages=10,
+    )
+
+    assert len(jobs) == 1
+    assert diagnostics.pagination_detected is True
+    assert diagnostics.pagination_stop_reason == "no_new_job_urls"
+
+
 def test_search_with_location_term_does_not_use_role_or_skill_terms() -> None:
     page = FakeSearchPage()
 
@@ -536,6 +681,30 @@ def test_search_with_location_term_uses_single_location_scope_term() -> None:
     assert query == "Toronto"
     assert page.search_terms == ["Toronto"]
     assert page.pressed_keys == ["Enter"]
+
+
+def test_ibm_helpers_dismiss_cookie_and_language_modal_and_apply_canada_filter() -> None:
+    page = FakeIbmModalPage()
+
+    cookie_action = dismiss_cookie_banner(page)
+    language_action = dismiss_ibm_language_prompt(page)
+    filter_action = apply_ibm_canada_filter(page, ("Canada",))
+
+    assert is_ibm_careers_search_url("https://www.ibm.com/careers/search") is True
+    assert cookie_action == "#truste-consent-button"
+    assert language_action in {
+        ".geo-btn-secondary-cancel",
+        "button:has-text('Annuler')",
+    }
+    assert filter_action == "Canada (IBM location facet)"
+    assert "field_keyword_05[0]=Canada" in page.url
+
+
+def test_ibm_helpers_return_none_safely_when_page_is_not_ibm() -> None:
+    page = FakeSearchPage()
+
+    assert dismiss_ibm_language_prompt(page) is None
+    assert apply_ibm_canada_filter(page, ("Canada",)) is None
 
 
 def test_has_interactive_job_cards_detects_live_view_job_elements() -> None:
