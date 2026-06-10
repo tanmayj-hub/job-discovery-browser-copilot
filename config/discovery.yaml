@@ -6,6 +6,11 @@ source_scope:
     - Remote Canada
     - Remote
 
+audit_scope:
+  locations:
+    - Canada
+  max_pages_per_source: 10
+
 keyword_fallback:
   enabled: false
 

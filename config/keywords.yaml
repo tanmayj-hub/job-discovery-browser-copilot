@@ -11,6 +11,50 @@ target_roles:
   - Site Reliability Engineer
   - Cloud Operations Analyst
 
+adjacent_roles:
+  - Solutions Engineer
+  - Solution Engineer
+  - Solutions Architect
+  - Solution Architect
+  - Cloud Solutions Architect
+  - Customer Success Engineer
+  - Customer Engineer
+  - Technical Account Manager
+  - Technical Consultant
+  - Solutions Consultant
+  - Implementation Engineer
+  - Implementation Consultant
+  - Professional Services Engineer
+  - Delivery Consultant
+  - Sales Engineer
+  - Pre-Sales Engineer
+  - Customer Success Architect
+
+conditional_adjacent_roles:
+  - Business Systems Analyst
+  - Release Train Engineer
+
+adjacent_technical_context:
+  - technical
+  - platform
+  - cloud
+  - enterprise
+  - software
+  - system
+  - systems
+  - implementation
+  - delivery
+  - integration
+  - architecture
+  - architect
+  - solution
+  - solutions
+  - product
+  - salesforce
+  - dynamics
+  - crm
+  - saas
+
 target_skills:
   AWS:
     - aws

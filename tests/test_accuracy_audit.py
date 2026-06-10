@@ -11,11 +11,17 @@ from audit.accuracy_audit import (
     build_manual_audit_link_sheet,
     calculate_metrics,
     compare_audit_files,
+    compare_manual_expected_urls,
     create_manual_template,
     export_audit_sample,
+    find_job_for_score_explanation,
+    load_manual_expected_jobs,
     validate_audit_files,
+    write_company_collection_diagnostic,
 )
 from storage.db import initialize_database, upsert_companies, upsert_job_record
+
+AUDIT_FIXTURE_PATH = Path("tests/fixtures/audit/manual_expected_jobs_td_ibm_sunlife.yaml")
 
 
 def _seed_company_and_job(tmp_path: Path) -> tuple[Path, object]:
@@ -769,3 +775,526 @@ def test_company_pack_command_reports_missing_company_clearly(
         assert "Company not found in config/companies.yaml" in str(error)
     else:
         raise AssertionError("Expected a clear missing-company error.")
+
+
+def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candidates(
+    tmp_path: Path,
+) -> None:
+    output_path = tmp_path / "docs" / "audits" / "TD-collection-diagnostic.md"
+    scored_candidates_path = tmp_path / "data" / "exports" / "audits" / "TD-scored-candidates.csv"
+    company = {
+        "name": "TD",
+        "careers_url": "https://careers.td.com/jobs",
+        "source_mode": "human_in_loop",
+        "ats_hint": "workday",
+    }
+    collection_result = {
+        "starting_url": "https://careers.td.com/jobs",
+        "final_url": "https://careers.td.com/jobs",
+        "source_mode": "human_in_loop",
+        "ats_type": "workday",
+        "location_scope_used": True,
+        "location_scope": ["Canada", "Toronto"],
+        "location_queries": ["Canada (URL filter)"],
+        "pagination_detected": True,
+        "max_pages_per_source": 10,
+        "pages_visited": ["https://careers.td.com/jobs"],
+        "jobs_extracted_per_page": [2],
+        "pagination_stop_reason": "completed",
+        "jobs_discovered": 2,
+        "jobs_scored": 2,
+        "jobs_relevant": 1,
+        "candidate_jobs": [
+            {
+                "company_name": "TD",
+                "title": "Lead Platform Engineer",
+                "location": "Toronto, Ontario, Canada",
+                "job_url": "https://careers.td.com/jobs/lead-platform-engineer",
+            },
+            {
+                "company_name": "TD",
+                "title": "Software Engineer II, Salesforce",
+                "location": "Toronto, Ontario, Canada",
+                "job_url": "https://careers.td.com/jobs/software-engineer-salesforce",
+            },
+        ],
+        "scored_jobs": [
+            {
+                "company_name": "TD",
+                "title": "Lead Platform Engineer",
+                "location": "Toronto, Ontario, Canada",
+                "job_url": "https://careers.td.com/jobs/lead-platform-engineer",
+                "match_score": 53,
+                "match_reasons": [
+                    "title matches target role: Platform Engineer",
+                    "location signals: Toronto, Ontario, Canada",
+                ],
+                "risk_flags": [],
+                "source_mode": "human_in_loop",
+            },
+            {
+                "company_name": "TD",
+                "title": "Software Engineer II, Salesforce",
+                "location": "Toronto, Ontario, Canada",
+                "job_url": "https://careers.td.com/jobs/software-engineer-salesforce",
+                "match_score": 8,
+                "match_reasons": ["location signals: Toronto, Ontario, Canada"],
+                "risk_flags": [],
+                "source_mode": "human_in_loop",
+            },
+        ],
+        "relevant_jobs": [
+            {
+                "company_name": "TD",
+                "title": "Lead Platform Engineer",
+                "location": "Toronto, Ontario, Canada",
+                "job_url": "https://careers.td.com/jobs/lead-platform-engineer",
+                "match_score": 53,
+            }
+        ],
+    }
+
+    write_company_collection_diagnostic(
+        output_path=output_path,
+        company=company,
+        collection_result=collection_result,
+        scored_candidates_output_path=scored_candidates_path,
+    )
+
+    content = output_path.read_text(encoding="utf-8")
+    exported_rows = _read_csv(scored_candidates_path)
+
+    assert "## Scored Candidates" in content
+    assert "## Rejected But Interesting Jobs" in content
+    assert "Software Engineer II, Salesforce" in content
+    assert {row["is_relevant"] for row in exported_rows} == {"true", "false"}
+
+
+def test_find_job_for_score_explanation_can_use_scored_candidates_export(tmp_path: Path) -> None:
+    db_path, connection = _seed_company_and_job(tmp_path)
+    assert db_path.exists()
+    scored_candidates_path = tmp_path / "TD-scored-candidates.csv"
+    _write_csv(
+        scored_candidates_path,
+        [
+            "company",
+            "title",
+            "location",
+            "url",
+            "score",
+            "is_relevant",
+            "matched_terms",
+            "reason",
+            "match_reasons",
+            "risk_flags",
+            "description",
+            "source_mode",
+        ],
+        [
+            {
+                "company": "TD",
+                "title": "Software Engineer II, Salesforce",
+                "location": "Toronto, Ontario, Canada",
+                "url": "https://careers.td.com/jobs/software-engineer-salesforce",
+                "score": "8",
+                "is_relevant": "false",
+                "matched_terms": "",
+                "reason": "Rejected because the score came from weak or location-only signals.",
+                "match_reasons": "location signals: Toronto, Ontario, Canada",
+                "risk_flags": "",
+                "description": "",
+                "source_mode": "human_in_loop",
+            }
+        ],
+    )
+
+    job, source = find_job_for_score_explanation(
+        connection,
+        company_name="TD",
+        title="Software Engineer II, Salesforce",
+        scored_candidates_path=scored_candidates_path,
+        include_rejected=True,
+    )
+
+    assert source == "scored_candidates_export"
+    assert job["title"] == "Software Engineer II, Salesforce"
+
+
+def test_explain_score_command_creates_markdown_file(tmp_path: Path, monkeypatch) -> None:
+    db_path, _ = _seed_company_and_job(tmp_path)
+    config_path = tmp_path / "companies.yaml"
+    _write_companies_config(config_path)
+    project_root = tmp_path / "project-root"
+    project_root.mkdir(parents=True, exist_ok=True)
+    output_path = project_root / "docs" / "audits" / "TD-score-explanation.md"
+
+    monkeypatch.setattr(cli_main, "DATABASE_PATH", db_path)
+    monkeypatch.setattr(cli_main, "COMPANIES_CONFIG_PATH", config_path)
+    monkeypatch.setattr(cli_main, "PROJECT_ROOT", project_root)
+
+    exit_code = cli_main.main(
+        [
+            "audit",
+            "explain-score",
+            "--company",
+            "TD",
+            "--title",
+            "Cloud Engineer",
+            "--output",
+            str(output_path),
+        ]
+    )
+
+    content = output_path.read_text(encoding="utf-8")
+
+    assert exit_code == 0
+    assert output_path.exists()
+    assert "# Cloud Engineer Score Explanation" in content
+    assert "## Score Result" in content
+    assert "Careers URL" not in content
+
+
+def test_load_manual_expected_jobs_reads_structured_fixture() -> None:
+    companies = load_manual_expected_jobs(AUDIT_FIXTURE_PATH)
+
+    assert [item["company_name"] for item in companies] == [
+        "TD",
+        "IBM Consulting",
+        "Sun Life",
+    ]
+    assert len(companies[0]["expected_jobs"]) == 4
+
+
+def test_compare_manual_expected_urls_matches_workday_id_despite_query_difference(
+    tmp_path: Path,
+) -> None:
+    _, connection = _seed_company_and_job(tmp_path)
+    upsert_job_record(
+        connection,
+        {
+            "company_name": "TD",
+            "title": "Lead Platform Engineer, TD Securities",
+            "location": "Toronto, Ontario, Canada",
+            "job_url": (
+                "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/"
+                "Lead-Platform-Engineer--TD-Securities_R_1491997"
+            ),
+            "apply_url": "",
+            "source_name": "workday",
+            "source_mode": "human_in_loop",
+            "description": "Platform engineering role.",
+            "date_posted": "2026-06-06",
+            "match_score": 45,
+            "match_reasons": ["title matches target role: Platform Engineer"],
+            "risk_flags": [],
+            "status": "new",
+        },
+    )
+    fixture = [
+        {
+            "company_name": "TD",
+            "manual_career_page": "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers",
+            "manual_filter_used": "Canada",
+            "pages_checked": "first 10",
+            "expected_jobs": [
+                {
+                    "job_url": (
+                        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/"
+                        "Toronto-Ontario/Lead-Platform-Engineer--TD-Securities_R_1491997"
+                        "?locationCountry=a30a87ed25634629aa6c3958aa2b91ea"
+                    ),
+                    "title": "Lead Platform Engineer, TD Securities",
+                    "notes": "",
+                }
+            ],
+        }
+    ]
+
+    result = compare_manual_expected_urls(
+        connection,
+        companies=fixture,
+        scored_candidates_dir=tmp_path,
+    )
+
+    assert result["records"][0]["status"] == "saved_by_mvp"
+    assert result["records"][0]["matched_title"] == "Lead Platform Engineer, TD Securities"
+
+
+def test_compare_manual_expected_urls_matches_sunlife_jr_id_despite_query_difference(
+    tmp_path: Path,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    export_dir = tmp_path
+    _write_csv(
+        export_dir / "Sun-Life-scored-candidates.csv",
+        [
+            "company",
+            "title",
+            "location",
+            "url",
+            "score",
+            "is_relevant",
+            "relevance_tier",
+            "matched_terms",
+            "reason",
+            "match_reasons",
+            "risk_flags",
+            "rejection_reason",
+            "description",
+            "source_mode",
+        ],
+        [
+            {
+                "company": "Sun Life",
+                "title": "M365 Productivity & Collaboration Engineer",
+                "location": "Waterloo, Ontario, Canada",
+                "url": (
+                    "https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/"
+                    "Waterloo-Ontario/M365-Productivity---Collaboration-Engineer_JR00124191"
+                ),
+                "score": "0",
+                "is_relevant": "false",
+                "relevance_tier": "not_relevant",
+                "matched_terms": "",
+                "reason": "Rejected because the job did not match the current target role profile.",
+                "match_reasons": "",
+                "risk_flags": "",
+                "rejection_reason": (
+                    "Rejected because the job did not match the current target role profile."
+                ),
+                "description": "",
+                "source_mode": "human_in_loop",
+            }
+        ],
+    )
+    fixture = [
+        {
+            "company_name": "Sun Life",
+            "manual_career_page": "https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs",
+            "manual_filter_used": "Canada",
+            "pages_checked": "first 10",
+            "expected_jobs": [
+                {
+                    "job_url": (
+                        "https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/"
+                        "Waterloo-Ontario/M365-Productivity---Collaboration-Engineer_JR00124191"
+                        "?Location_Country=a30a87ed25634629aa6c3958aa2b91ea"
+                    ),
+                    "title": "M365 Productivity & Collaboration Engineer",
+                    "notes": "",
+                }
+            ],
+        }
+    ]
+
+    result = compare_manual_expected_urls(
+        connection,
+        companies=fixture,
+        scored_candidates_dir=export_dir,
+    )
+
+    assert result["records"][0]["matched_title"] == "M365 Productivity & Collaboration Engineer"
+    assert result["records"][0]["status"] == "outside_scope"
+
+
+def test_compare_manual_expected_urls_matches_ibm_job_id(
+    tmp_path: Path,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    _write_csv(
+        tmp_path / "IBM-Consulting-scored-candidates.csv",
+        [
+            "company",
+            "title",
+            "location",
+            "url",
+            "score",
+            "is_relevant",
+            "relevance_tier",
+            "matched_terms",
+            "reason",
+            "match_reasons",
+            "risk_flags",
+            "rejection_reason",
+            "description",
+            "source_mode",
+        ],
+        [
+            {
+                "company": "IBM Consulting",
+                "title": "Technical Consultant",
+                "location": "Toronto, Ontario, Canada",
+                "url": (
+                    "https://careers.ibm.com/en_US/careers/JobDetail?jobId=92913"
+                ),
+                "score": "24",
+                "is_relevant": "true",
+                "relevance_tier": "adjacent_customer_facing_technical_fit",
+                "matched_terms": "Technical Consultant",
+                "reason": (
+                    "Saved as an adjacent customer-facing technical fit because the "
+                    "role matched the secondary relevance bucket."
+                ),
+                "match_reasons": "adjacent customer-facing technical fit: Technical Consultant",
+                "risk_flags": "",
+                "rejection_reason": "",
+                "description": "Technical consultant role.",
+                "source_mode": "browser_allowed",
+            }
+        ],
+    )
+    fixture = [
+        {
+            "company_name": "IBM Consulting",
+            "manual_career_page": "https://www.ibm.com/careers/search",
+            "manual_filter_used": "Canada",
+            "pages_checked": "first 10",
+            "expected_jobs": [
+                {
+                    "job_url": (
+                        "https://careers.ibm.com/en_US/careers/JobDetail?jobId=92913&source=WEB_Search_NA"
+                    ),
+                    "title": "",
+                    "notes": "",
+                }
+            ],
+        }
+    ]
+
+    result = compare_manual_expected_urls(
+        connection,
+        companies=fixture,
+        scored_candidates_dir=tmp_path,
+    )
+
+    assert result["records"][0]["matched_title"] == "Technical Consultant"
+    assert result["records"][0]["status"] == "extracted_and_relevant"
+
+
+def test_compare_manual_expected_urls_distinguishes_saved_rejected_and_missed(
+    tmp_path: Path,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(
+        connection,
+        [
+            {
+                "name": "TD",
+                "sector": "Banking & Capital Markets",
+                "category": "Bank/Market",
+                "careers_url": "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers",
+                "source_mode": "human_in_loop",
+            }
+        ],
+    )
+    upsert_job_record(
+        connection,
+        {
+            "company_name": "TD",
+            "title": "Lead Platform Engineer, TD Securities",
+            "location": "Toronto, Ontario, Canada",
+            "job_url": (
+                "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/"
+                "Lead-Platform-Engineer--TD-Securities_R_1491997"
+            ),
+            "apply_url": "",
+            "source_name": "workday",
+            "source_mode": "human_in_loop",
+            "description": "Platform engineering role.",
+            "date_posted": "2026-06-06",
+            "match_score": 45,
+            "match_reasons": ["title matches target role: Platform Engineer"],
+            "risk_flags": [],
+            "status": "new",
+        },
+    )
+    _write_csv(
+        tmp_path / "TD-scored-candidates.csv",
+        [
+            "company",
+            "title",
+            "location",
+            "url",
+            "score",
+            "is_relevant",
+            "relevance_tier",
+            "matched_terms",
+            "reason",
+            "match_reasons",
+            "risk_flags",
+            "rejection_reason",
+            "description",
+            "source_mode",
+        ],
+        [
+            {
+                "company": "TD",
+                "title": "Software Engineer II, Salesforce",
+                "location": "Toronto, Ontario, Canada",
+                "url": (
+                    "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/"
+                    "Software-Engineer-II--Salesforce_R_1486443"
+                ),
+                "score": "3",
+                "is_relevant": "false",
+                "relevance_tier": "not_relevant",
+                "matched_terms": "Toronto",
+                "reason": "Rejected because the score came from weak or location-only signals.",
+                "match_reasons": "location signals: Toronto",
+                "risk_flags": "",
+                "rejection_reason": (
+                    "Rejected because the score came from weak or location-only signals."
+                ),
+                "description": "",
+                "source_mode": "human_in_loop",
+            }
+        ],
+    )
+    fixture = [
+        {
+            "company_name": "TD",
+            "manual_career_page": "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers",
+            "manual_filter_used": "Canada",
+            "pages_checked": "first 10",
+            "expected_jobs": [
+                {
+                    "job_url": (
+                        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/"
+                        "Lead-Platform-Engineer--TD-Securities_R_1491997"
+                    ),
+                    "title": "Lead Platform Engineer, TD Securities",
+                    "notes": "",
+                },
+                {
+                    "job_url": (
+                        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/"
+                        "Software-Engineer-II--Salesforce_R_1486443"
+                    ),
+                    "title": "Software Engineer II, Salesforce",
+                    "notes": "",
+                },
+                {
+                    "job_url": (
+                        "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/"
+                        "IT-Build-Analyst-II---Onsite-AV-Support_R_1493452"
+                    ),
+                    "title": "IT Build Analyst II - Onsite AV Support",
+                    "notes": "",
+                },
+            ],
+        }
+    ]
+
+    result = compare_manual_expected_urls(
+        connection,
+        companies=fixture,
+        scored_candidates_dir=tmp_path,
+    )
+
+    statuses = [record["status"] for record in result["records"]]
+
+    assert statuses == [
+        "saved_by_mvp",
+        "extracted_but_rejected_by_scoring",
+        "missed_by_collection",
+    ]

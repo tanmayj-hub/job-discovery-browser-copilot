@@ -1,0 +1,73 @@
+companies:
+  - company_name: TD
+    manual_career_page: https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers
+    manual_filter_used: Canada
+    pages_checked: first 10
+    expected_jobs:
+      - job_url: https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Lead-Platform-Engineer--TD-Securities_R_1491997?locationCountry=a30a87ed25634629aa6c3958aa2b91ea
+        title: Lead Platform Engineer, TD Securities
+        notes: ""
+      - job_url: https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Sr-IT-Support-Analyst---ION--MarketView--Trading_R_1489301?locationCountry=a30a87ed25634629aa6c3958aa2b91ea
+        title: Sr IT Support Analyst, ION / MarketView Trading
+        notes: ""
+      - job_url: https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/IT-Build-Analyst-II---Onsite-AV-Support_R_1493452?locationCountry=a30a87ed25634629aa6c3958aa2b91ea
+        title: IT Build Analyst II - Onsite AV Support
+        notes: ""
+      - job_url: https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/job/Toronto-Ontario/Software-Engineer-II--Salesforce_R_1486443?locationCountry=a30a87ed25634629aa6c3958aa2b91ea
+        title: Software Engineer II, Salesforce
+        notes: ""
+  - company_name: IBM Consulting
+    manual_career_page: https://www.ibm.com/careers/search
+    manual_filter_used: Canada
+    pages_checked: first 10
+    expected_jobs:
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=92913&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=113691&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=99986&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=116909&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=109197&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=111494&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=111872&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=87530&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=118746&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=119355&source=WEB_Search_NA
+        title: ""
+        notes: ""
+      - job_url: https://careers.ibm.com/en_US/careers/JobDetail?jobId=109784&source=WEB_Search_NA
+        title: ""
+        notes: ""
+  - company_name: Sun Life
+    manual_career_page: https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+    manual_filter_used: Canada
+    pages_checked: first 10
+    expected_jobs:
+      - job_url: https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/M365-Productivity---Collaboration-Engineer_JR00124191?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+        title: M365 Productivity & Collaboration Engineer
+        notes: ""
+      - job_url: https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Container-Service-Delivery-Co-Ordinator--OpenShift---Kubernetes--_JR00123895-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+        title: Container Service Delivery Co-Ordinator (OpenShift / Kubernetes)
+        notes: ""
+      - job_url: https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Future-Opportunities_JR00106798?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+        title: Future Opportunities
+        notes: ""

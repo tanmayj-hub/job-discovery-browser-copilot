@@ -1,5 +1,17 @@
 """Parsing, deduplication, and enrichment package."""
 
-from .score import JobScoreResult, score_job
+from .score import (
+    JobScoreExplanation,
+    JobScoreResult,
+    explain_job_score,
+    is_relevant_score,
+    score_job,
+)
 
-__all__ = ["JobScoreResult", "score_job"]
+__all__ = [
+    "JobScoreExplanation",
+    "JobScoreResult",
+    "explain_job_score",
+    "is_relevant_score",
+    "score_job",
+]

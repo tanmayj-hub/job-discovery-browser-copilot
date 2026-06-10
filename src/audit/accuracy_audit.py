@@ -11,6 +11,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from processing.score import explain_job_score
 from storage.db import get_jobs, normalize_job_text, normalize_job_url
 
 AUDIT_SAMPLE_FIELDS = [
@@ -75,6 +76,31 @@ AUDIT_STATUS_VALUES = {
     "not_relevant",
 }
 MATCH_CONFIDENCE_VALUES = {"high", "medium", "low"}
+SCORED_CANDIDATE_FIELDS = [
+    "company",
+    "title",
+    "location",
+    "url",
+    "score",
+    "is_relevant",
+    "relevance_tier",
+    "matched_terms",
+    "reason",
+    "match_reasons",
+    "risk_flags",
+    "rejection_reason",
+    "description",
+    "source_mode",
+]
+MANUAL_URL_AUDIT_STATUSES = {
+    "saved_by_mvp",
+    "extracted_and_relevant",
+    "extracted_but_rejected_by_scoring",
+    "missed_by_collection",
+    "outside_scope",
+    "blocked_or_not_tested",
+    "unknown",
+}
 
 
 @dataclass(slots=True)
@@ -151,12 +177,52 @@ class CompanyCollectionDiagnosticResult:
         return payload
 
 
+@dataclass(slots=True)
+class ScoreExplanationResult:
+    """Structured result for a one-job scoring explanation report."""
+
+    company_name: str
+    title: str
+    output_path: Path
+    source: str
+    explanation: dict[str, Any]
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = asdict(self)
+        payload["output_path"] = str(self.output_path)
+        return payload
+
+
+@dataclass(slots=True)
+class ManualUrlRecallAuditResult:
+    """Structured result for manual-URL recall auditing."""
+
+    records: list[dict[str, Any]]
+    summary: dict[str, Any]
+    report_path: Path
+
+    def to_dict(self) -> dict[str, Any]:
+        payload = asdict(self)
+        payload["report_path"] = str(self.report_path)
+        return payload
+
+
 def parse_company_filter(raw: str | None) -> list[str]:
     """Parse a comma-separated company filter into a clean list."""
 
     if not raw:
         return []
     return [item.strip() for item in str(raw).split(",") if item.strip()]
+
+
+def load_manual_expected_jobs(path: Path) -> list[dict[str, Any]]:
+    """Load the structured manual expected job fixture."""
+
+    import yaml
+
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    companies = payload.get("companies", [])
+    return companies if isinstance(companies, list) else []
 
 
 def export_audit_sample(
@@ -362,11 +428,54 @@ def build_company_audit_pack(
     )
 
 
+def export_scored_candidates(
+    *,
+    output_path: Path,
+    scored_jobs: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Export scored candidates so rejected jobs can be audited later."""
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    rows: list[dict[str, Any]] = []
+    for job in sorted(
+        scored_jobs,
+        key=lambda item: (
+            int(item.get("match_score", 0) or 0),
+            str(item.get("title") or ""),
+        ),
+        reverse=True,
+    ):
+        explanation = explain_job_score(job)
+        rows.append(
+            {
+                "company": str(job.get("company_name") or "").strip(),
+                "title": str(job.get("title") or "").strip(),
+                "location": str(job.get("location") or "").strip(),
+                "url": str(job.get("job_url") or "").strip(),
+                "score": int(job.get("match_score", 0) or 0),
+                "is_relevant": "true" if explanation["is_relevant"] else "false",
+                "relevance_tier": explanation["relevance_tier"],
+                "matched_terms": "; ".join(explanation["positive_keyword_matches"]),
+                "reason": explanation["reason_summary"],
+                "match_reasons": "; ".join(explanation["match_reasons"]),
+                "risk_flags": "; ".join(explanation["risk_flags"]),
+                "rejection_reason": (
+                    explanation["reason_summary"] if not explanation["is_relevant"] else ""
+                ),
+                "description": str(job.get("description") or "").strip(),
+                "source_mode": str(job.get("source_mode") or "").strip(),
+            }
+        )
+    _write_csv(output_path, SCORED_CANDIDATE_FIELDS, rows)
+    return rows
+
+
 def write_company_collection_diagnostic(
     *,
     output_path: Path,
     company: dict[str, Any],
     collection_result: dict[str, Any],
+    scored_candidates_output_path: Path | None = None,
 ) -> CompanyCollectionDiagnosticResult:
     """Write a focused one-company collection diagnostic report."""
 
@@ -378,6 +487,12 @@ def write_company_collection_diagnostic(
     relevant_jobs = [
         job for job in collection_result.get("relevant_jobs", []) if isinstance(job, dict)
     ]
+    scored_jobs = [job for job in collection_result.get("scored_jobs", []) if isinstance(job, dict)]
+    if scored_candidates_output_path is not None and scored_jobs:
+        export_scored_candidates(
+            output_path=scored_candidates_output_path,
+            scored_jobs=scored_jobs,
+        )
     pages_visited = [
         str(url).strip() for url in collection_result.get("pages_visited", []) if str(url).strip()
     ]
@@ -421,6 +536,10 @@ def write_company_collection_diagnostic(
         f"- Candidate jobs before scoring: {collection_result.get('jobs_discovered', 0)}",
         f"- Jobs after scoring: {collection_result.get('jobs_scored', 0)}",
         f"- Relevant jobs after scoring: {collection_result.get('jobs_relevant', 0)}",
+        (
+            "- Scored candidates CSV: "
+            f"{scored_candidates_output_path if scored_candidates_output_path is not None else '-'}"
+        ),
         "",
         "## Visited Pages",
     ]
@@ -439,12 +558,57 @@ def write_company_collection_diagnostic(
     else:
         lines.append("- None")
 
+    lines.extend(["", "## Scored Candidates"])
+    if scored_jobs:
+        for job in sorted(
+            scored_jobs,
+            key=lambda item: (
+                int(item.get("match_score", 0) or 0),
+                str(item.get("title") or ""),
+            ),
+            reverse=True,
+        ):
+            explanation = explain_job_score(job)
+            lines.append(
+                f"- {job.get('title') or '-'} | score {job.get('match_score', 0)} | "
+                f"relevant={explanation['is_relevant']} | "
+                f"tier={explanation['relevance_tier']} | "
+                f"{'; '.join(explanation['match_reasons']) or 'no core matches'} | "
+                f"{job.get('job_url') or 'no URL'}"
+            )
+    else:
+        lines.append("- None")
+
     lines.extend(["", "## Relevant Jobs After Scoring"])
     if relevant_jobs:
         for job in relevant_jobs:
             lines.append(
                 f"- {job.get('title') or '-'} | score {job.get('match_score', 0)} | "
+                f"tier={explain_job_score(job)['relevance_tier']} | "
                 f"{job.get('location') or '-'} | {job.get('job_url') or 'no URL'}"
+            )
+    else:
+        lines.append("- None")
+
+    rejected_interesting_jobs = [
+        job
+        for job in scored_jobs
+        if _is_interesting_rejected_job(job)
+    ]
+    lines.extend(["", "## Rejected But Interesting Jobs"])
+    if rejected_interesting_jobs:
+        for job in sorted(
+            rejected_interesting_jobs,
+            key=lambda item: (
+                int(item.get("match_score", 0) or 0),
+                str(item.get("title") or ""),
+            ),
+            reverse=True,
+        ):
+            explanation = explain_job_score(job)
+            lines.append(
+                f"- {job.get('title') or '-'} | score {job.get('match_score', 0)} | "
+                f"{explanation['reason_summary']} | {job.get('job_url') or 'no URL'}"
             )
     else:
         lines.append("- None")
@@ -522,6 +686,503 @@ def validate_audit_files(
             seen_manual_rows.add(identity)
 
     return ValidationResult(is_valid=not errors, errors=errors)
+
+
+def find_job_for_score_explanation(
+    connection: sqlite3.Connection,
+    *,
+    company_name: str,
+    title: str | None = None,
+    url: str | None = None,
+    scored_candidates_path: Path | None = None,
+    include_rejected: bool = False,
+) -> tuple[dict[str, Any], str]:
+    """Find one job for score explanation from saved jobs or scored candidate exports."""
+
+    normalized_company = _normalize_text(company_name)
+    normalized_title = _normalize_text(title)
+    normalized_url = normalize_job_url(url)
+
+    saved_jobs = get_jobs(connection)
+    for job in saved_jobs:
+        if _normalize_text(job.get("company_name")) != normalized_company:
+            continue
+        if normalized_title and _normalize_text(job.get("title")) != normalized_title:
+            continue
+        if normalized_url and normalize_job_url(job.get("job_url")) != normalized_url:
+            continue
+        if title or url:
+            return job, "database_saved_job"
+
+    if include_rejected and scored_candidates_path is not None and scored_candidates_path.exists():
+        for row in _read_csv(scored_candidates_path):
+            if _normalize_text(row.get("company")) != normalized_company:
+                continue
+            if normalized_title and _normalize_text(row.get("title")) != normalized_title:
+                continue
+            if normalized_url and normalize_job_url(row.get("url")) != normalized_url:
+                continue
+            return (
+                {
+                    "company_name": str(row.get("company") or "").strip(),
+                    "title": str(row.get("title") or "").strip(),
+                    "location": str(row.get("location") or "").strip(),
+                    "job_url": str(row.get("url") or "").strip(),
+                    "description": str(row.get("description") or "").strip(),
+                    "source_mode": str(row.get("source_mode") or "").strip(),
+                },
+                "scored_candidates_export",
+            )
+
+    lookup = title or url or company_name
+    raise ValueError(
+        "No matching job found for score explanation: "
+        f"{lookup}. Saved jobs were checked first"
+        + (
+            f", then {scored_candidates_path}."
+            if include_rejected and scored_candidates_path is not None
+            else "."
+        )
+    )
+
+
+def write_score_explanation_report(
+    *,
+    output_path: Path,
+    job: dict[str, Any],
+    source: str,
+) -> ScoreExplanationResult:
+    """Write a focused Markdown score explanation for one job."""
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    explanation = explain_job_score(job)
+    lines = [
+        f"# {explanation['title'] or 'Job'} Score Explanation",
+        "",
+        "## Job",
+        f"- Company: {explanation['company'] or '-'}",
+        f"- Title: {explanation['title'] or '-'}",
+        f"- Location: {explanation['location'] or '-'}",
+        f"- URL: {job.get('job_url') or '-'}",
+        f"- Source mode: {job.get('source_mode') or '-'}",
+        f"- Explanation source: {source}",
+        "",
+        "## Score Result",
+        f"- Final score: {explanation['final_score']}",
+        f"- Is relevant: {explanation['is_relevant']}",
+        f"- Threshold: {explanation['threshold']}",
+        f"- Summary: {explanation['reason_summary']}",
+        "",
+        "## Positive Matches",
+        f"- Title matches: {', '.join(explanation['title_matches']) or 'None'}",
+        f"- Description/snippet matches: {', '.join(explanation['description_matches']) or 'None'}",
+        (
+            "- Positive keyword matches: "
+            f"{', '.join(explanation['positive_keyword_matches']) or 'None'}"
+        ),
+        f"- Location/scope signals: {', '.join(explanation['location_scope_signals']) or 'None'}",
+        f"- Support/ops signals: {', '.join(explanation['support_signal_matches']) or 'None'}",
+        "",
+        "## Negative Matches",
+        (
+            "- Negative keyword matches: "
+            f"{', '.join(explanation['negative_keyword_matches']) or 'None'}"
+        ),
+        f"- Risk flags: {', '.join(explanation['risk_flags']) or 'None'}",
+        "",
+        "## Match Reasons",
+    ]
+    if explanation["match_reasons"]:
+        lines.extend(f"- {reason}" for reason in explanation["match_reasons"])
+    else:
+        lines.append("- None")
+
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return ScoreExplanationResult(
+        company_name=str(explanation["company"] or "").strip(),
+        title=str(explanation["title"] or "").strip(),
+        output_path=output_path,
+        source=source,
+        explanation=explanation,
+    )
+
+
+def compare_manual_expected_urls(
+    connection: sqlite3.Connection,
+    *,
+    companies: list[dict[str, Any]],
+    scored_candidates_dir: Path,
+) -> dict[str, Any]:
+    """Compare manually expected URLs against saved jobs and scored candidate exports."""
+
+    saved_jobs = get_jobs(connection)
+    saved_jobs_by_company: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for job in saved_jobs:
+        saved_jobs_by_company[str(job.get("company_name") or "").strip()].append(job)
+
+    records: list[dict[str, Any]] = []
+    for company in companies:
+        company_name = str(company.get("company_name") or "").strip()
+        slug = _slugify_company_name(company_name)
+        export_path = scored_candidates_dir / f"{slug}-scored-candidates.csv"
+        scored_rows = _read_csv(export_path) if export_path.exists() else []
+        for item in company.get("expected_jobs", []):
+            record = _compare_manual_expected_job(
+                company=company,
+                expected_job=item,
+                saved_jobs=saved_jobs_by_company.get(company_name, []),
+                scored_rows=scored_rows,
+                scored_export_exists=export_path.exists(),
+            )
+            records.append(record)
+
+    summary = _summarize_manual_url_records(records)
+    return {
+        "records": records,
+        "summary": summary,
+    }
+
+
+def write_manual_url_recall_report(
+    path: Path,
+    *,
+    companies: list[dict[str, Any]],
+    audit_records: list[dict[str, Any]],
+    summary: dict[str, Any],
+) -> ManualUrlRecallAuditResult:
+    """Write the manual URL recall audit Markdown report."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# Manual URL Recall Audit",
+        "",
+        "## Scope",
+        "- Companies audited: "
+        + (", ".join(str(company.get("company_name") or "-") for company in companies) or "-"),
+        "- Manual filter used: Canada only",
+        "- City/province/remote filters: not applied",
+        "- Pages checked manually: first 10 pages per source",
+        "",
+        "## Manual Expected URL Counts",
+        "| Company | Expected URLs |",
+        "| --- | ---: |",
+    ]
+    for company in companies:
+        lines.append(
+            f"| {company.get('company_name') or '-'} | "
+            f"{len(company.get('expected_jobs', []))} |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Summary",
+            "| Status | Count |",
+            "| --- | ---: |",
+        ]
+    )
+    for status in sorted(MANUAL_URL_AUDIT_STATUSES):
+        lines.append(f"| {status} | {int(summary['status_counts'].get(status, 0))} |")
+
+    lines.extend(["", "## Per-Company Status Counts"])
+    for company in companies:
+        company_name = str(company.get("company_name") or "").strip()
+        company_summary = summary["per_company"].get(company_name, {})
+        counts_text = ", ".join(
+            f"{status}={count}"
+            for status, count in sorted(company_summary.items())
+        ) or "none"
+        lines.append(f"- {company_name}: {counts_text}")
+
+    lines.extend(["", "## Per-Company Analysis"])
+    for company in companies:
+        company_name = str(company.get("company_name") or "").strip()
+        company_records = [
+            record for record in audit_records if record.get("company_name") == company_name
+        ]
+        lines.extend(
+            [
+                f"### {company_name}",
+                f"- Manual career page: {company.get('manual_career_page') or '-'}",
+                f"- Filter used: {company.get('manual_filter_used') or '-'}",
+                f"- Pages checked: {company.get('pages_checked') or '-'}",
+                "",
+                (
+                    "| Manual URL | Manual Title | Status | Matched Title | Score | "
+                    "Tier | Reasons | Rejection/Notes |"
+                ),
+                "| --- | --- | --- | --- | ---: | --- | --- | --- |",
+            ]
+        )
+        if company_records:
+            for record in company_records:
+                lines.append(
+                    "| "
+                    + " | ".join(
+                        [
+                            _escape_table_cell(record.get("manual_job_url")),
+                            _escape_table_cell(record.get("manual_title")),
+                            _escape_table_cell(record.get("status")),
+                            _escape_table_cell(record.get("matched_title")),
+                            _escape_table_cell(record.get("score")),
+                            _escape_table_cell(record.get("relevance_tier")),
+                            _escape_table_cell(record.get("matched_reasons")),
+                            _escape_table_cell(
+                                record.get("rejection_reason") or record.get("notes")
+                            ),
+                        ]
+                    )
+                    + " |"
+                )
+        else:
+            lines.append("| - | - | - | - | - | - | - | - |")
+
+    lines.extend(["", "## Scoring And Tier Analysis"])
+    lines.append(
+        "- `core_target_fit` keeps the original Cloud/DevOps/Admin/Support target intact."
+    )
+    lines.append(
+        "- `adjacent_customer_facing_technical_fit` captures targeted solutions, "
+        "customer-engineering, "
+        "technical consulting, and similar adjacent roles."
+    )
+    lines.append(
+        "- `outside_scope` is used when a manual URL was collected but still does not "
+        "match the current "
+        "core or adjacent target definitions."
+    )
+
+    lines.extend(["", "## Recommended Fixes"])
+    lines.extend(_manual_url_recommendations(audit_records))
+
+    lines.extend(["", "## Remaining Limitations"])
+    lines.append(
+        "- Saved-job comparison only reflects what already exists in SQLite; "
+        "scored-candidate exports are "
+        "still required to distinguish rejection from collection misses."
+    )
+    lines.append(
+        "- IBM and other non-Workday search pages may still depend on site-specific "
+        "public filters that "
+        "are not uniformly exposed through one generic search control."
+    )
+
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return ManualUrlRecallAuditResult(
+        records=audit_records,
+        summary=summary,
+        report_path=path,
+    )
+
+
+def _compare_manual_expected_job(
+    *,
+    company: dict[str, Any],
+    expected_job: dict[str, Any],
+    saved_jobs: list[dict[str, Any]],
+    scored_rows: list[dict[str, Any]],
+    scored_export_exists: bool,
+) -> dict[str, Any]:
+    manual_url = str(expected_job.get("job_url") or "").strip()
+    manual_title = str(expected_job.get("title") or "").strip()
+    notes = str(expected_job.get("notes") or "").strip()
+
+    saved_match = _find_matching_job_record(
+        manual_url,
+        saved_jobs,
+        url_field="job_url",
+        manual_title=manual_title,
+    )
+    if saved_match is not None:
+        explanation = explain_job_score(saved_match)
+        return {
+            "company_name": str(company.get("company_name") or "").strip(),
+            "manual_career_page": str(company.get("manual_career_page") or "").strip(),
+            "manual_filter_used": str(company.get("manual_filter_used") or "").strip(),
+            "pages_checked": str(company.get("pages_checked") or "").strip(),
+            "manual_job_url": manual_url,
+            "manual_title": manual_title,
+            "matched_title": str(saved_match.get("title") or "").strip(),
+            "matched_url": str(saved_match.get("job_url") or "").strip(),
+            "status": "saved_by_mvp",
+            "score": int(saved_match.get("match_score", 0) or 0),
+            "is_relevant": True,
+            "relevance_tier": explanation["relevance_tier"],
+            "matched_reasons": "; ".join(explanation["match_reasons"]),
+            "rejection_reason": "",
+            "notes": notes,
+        }
+
+    scored_match = _find_matching_job_record(
+        manual_url,
+        scored_rows,
+        url_field="url",
+        manual_title=manual_title,
+    )
+    if scored_match is None:
+        return {
+            "company_name": str(company.get("company_name") or "").strip(),
+            "manual_career_page": str(company.get("manual_career_page") or "").strip(),
+            "manual_filter_used": str(company.get("manual_filter_used") or "").strip(),
+            "pages_checked": str(company.get("pages_checked") or "").strip(),
+            "manual_job_url": manual_url,
+            "manual_title": manual_title,
+            "matched_title": "",
+            "matched_url": "",
+            "status": "missed_by_collection" if scored_export_exists else "blocked_or_not_tested",
+            "score": "",
+            "is_relevant": False,
+            "relevance_tier": "not_relevant",
+            "matched_reasons": "",
+            "rejection_reason": "",
+            "notes": notes,
+        }
+
+    score = int(str(scored_match.get("score") or 0).strip() or 0)
+    is_relevant = _parse_boolish(scored_match.get("is_relevant"))
+    relevance_tier = str(scored_match.get("relevance_tier") or "not_relevant").strip()
+    matched_reasons = str(scored_match.get("match_reasons") or "").strip()
+    rejection_reason = str(
+        scored_match.get("rejection_reason") or scored_match.get("reason") or ""
+    ).strip()
+    if is_relevant:
+        status = "extracted_and_relevant"
+    elif score <= 0 and not matched_reasons:
+        status = "outside_scope"
+    else:
+        status = "extracted_but_rejected_by_scoring"
+
+    return {
+        "company_name": str(company.get("company_name") or "").strip(),
+        "manual_career_page": str(company.get("manual_career_page") or "").strip(),
+        "manual_filter_used": str(company.get("manual_filter_used") or "").strip(),
+        "pages_checked": str(company.get("pages_checked") or "").strip(),
+        "manual_job_url": manual_url,
+        "manual_title": manual_title,
+        "matched_title": str(scored_match.get("title") or "").strip(),
+        "matched_url": str(scored_match.get("url") or "").strip(),
+        "status": status,
+        "score": score,
+        "is_relevant": bool(is_relevant),
+        "relevance_tier": relevance_tier,
+        "matched_reasons": matched_reasons,
+        "rejection_reason": rejection_reason,
+        "notes": notes,
+    }
+
+
+def _find_matching_job_record(
+    manual_url: str,
+    rows: list[dict[str, Any]],
+    *,
+    url_field: str,
+    manual_title: str = "",
+) -> dict[str, Any] | None:
+    manual_key = _url_identity(manual_url)
+    for row in rows:
+        candidate_url = str(row.get(url_field) or "").strip()
+        if not candidate_url:
+            continue
+        if _url_identities_match(manual_key, _url_identity(candidate_url)):
+            return row
+    if manual_title:
+        normalized_title = _normalize_text(manual_title)
+        title_matches = [
+            row
+            for row in rows
+            if _normalize_text(row.get("title")) == normalized_title
+        ]
+        if len(title_matches) == 1:
+            return title_matches[0]
+    return None
+
+
+def _url_identity(url: str) -> dict[str, str]:
+    from urllib.parse import parse_qs, urlparse
+
+    parsed = urlparse(str(url or "").strip())
+    query = parse_qs(parsed.query)
+    ibm_job_id = ""
+    if query.get("jobId"):
+        ibm_job_id = str(query["jobId"][0]).strip()
+    workday_match = re.search(r"\b(R_\d+(?:-\d+)?|JR\d+(?:-\d+)?)\b", str(url or ""), re.I)
+    workday_id = workday_match.group(1).upper() if workday_match else ""
+    canonical = ""
+    if parsed.scheme and parsed.netloc:
+        canonical = (
+            f"{parsed.scheme.lower()}://{parsed.netloc.lower()}{parsed.path.rstrip('/')}"
+        )
+    return {
+        "ibm_job_id": ibm_job_id,
+        "workday_job_id": workday_id,
+        "canonical_url": canonical,
+    }
+
+
+def _url_identities_match(left: dict[str, str], right: dict[str, str]) -> bool:
+    if left["ibm_job_id"] and right["ibm_job_id"]:
+        return left["ibm_job_id"] == right["ibm_job_id"]
+    if left["workday_job_id"] and right["workday_job_id"]:
+        return left["workday_job_id"] == right["workday_job_id"]
+    return bool(left["canonical_url"] and left["canonical_url"] == right["canonical_url"])
+
+
+def _parse_boolish(value: object) -> bool:
+    return normalize_job_text(value) in {"true", "yes", "1", "y"}
+
+
+def _slugify_company_name(company_name: str) -> str:
+    return "-".join(
+        segment
+        for segment in "".join(
+            char if char.isalnum() else "-" for char in str(company_name or "").strip()
+        ).split("-")
+        if segment
+    ) or "company"
+
+
+def _summarize_manual_url_records(records: list[dict[str, Any]]) -> dict[str, Any]:
+    by_status = defaultdict(int)
+    by_company: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for record in records:
+        status = str(record.get("status") or "unknown").strip() or "unknown"
+        by_status[status] += 1
+        company_name = str(record.get("company_name") or "").strip()
+        by_company[company_name][status] += 1
+    return {
+        "status_counts": dict(by_status),
+        "per_company": {name: dict(counts) for name, counts in by_company.items()},
+    }
+
+
+def _manual_url_recommendations(records: list[dict[str, Any]]) -> list[str]:
+    counts = _summarize_manual_url_records(records)["status_counts"]
+    recommendations: list[str] = []
+    if counts.get("missed_by_collection", 0):
+        recommendations.append(
+            "- Prioritize collection gaps first where the manual URL never appeared "
+            "in scored candidates."
+        )
+    if counts.get("extracted_but_rejected_by_scoring", 0):
+        recommendations.append(
+            "- Review rejected-but-extracted rows next to confirm whether scoring "
+            "should promote them."
+        )
+    if counts.get("outside_scope", 0):
+        recommendations.append(
+            "- Keep clearly outside-scope roles separate so recall tuning does not "
+            "broaden generic software or sales roles."
+        )
+    if counts.get("saved_by_mvp", 0):
+        recommendations.append(
+            "- Preserve the current core-target scoring path for rows already saved "
+            "cleanly by the MVP."
+        )
+    if not recommendations:
+        recommendations.append(
+            "- No immediate changes were suggested by the current manual URL slice."
+        )
+    return recommendations
 
 
 def compare_audit_files(
@@ -1176,3 +1837,26 @@ def _write_csv(path: Path, fieldnames: list[str], rows: list[dict[str, Any]]) ->
         writer.writeheader()
         for row in rows:
             writer.writerow(row)
+
+
+def _is_interesting_rejected_job(job: dict[str, Any]) -> bool:
+    explanation = explain_job_score(job)
+    if explanation["is_relevant"]:
+        return False
+    title = _normalize_text(job.get("title"))
+    interesting_terms = (
+        "engineer",
+        "support",
+        "analyst",
+        "admin",
+        "administrator",
+        "platform",
+        "devops",
+        "cloud",
+        "linux",
+        "infrastructure",
+        "operations",
+        "sre",
+        "site reliability",
+    )
+    return any(term in title for term in interesting_terms)

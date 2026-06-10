@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from processing.score import score_job
+from processing.score import explain_job_score, score_job
 
 KEYWORDS_PATH = Path("config/keywords.yaml")
 SCORING_PATH = Path("config/scoring.yaml")
@@ -76,3 +76,218 @@ def test_score_job_returns_low_score_when_signals_are_weak() -> None:
     assert result.match_score == 0
     assert result.match_reasons == []
     assert result.risk_flags == []
+
+
+def test_explain_job_score_includes_threshold_score_and_relevance() -> None:
+    job = {
+        "company_name": "TD",
+        "title": "Cloud Support Engineer",
+        "location": "Toronto, Ontario, Canada",
+        "description": "Support AWS and Linux environments with monitoring and troubleshooting.",
+    }
+
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["final_score"] > 0
+    assert explanation["threshold"]
+    assert explanation["is_relevant"] is True
+    assert "Cloud Support Engineer" in explanation["title_matches"]
+    assert "AWS" in explanation["positive_keyword_matches"]
+
+
+def test_explain_job_score_handles_no_matches_cleanly() -> None:
+    job = {
+        "title": "Business Analyst",
+        "location": "Montreal",
+        "description": "Document stakeholder requirements and coordinate reporting.",
+    }
+
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["final_score"] == 0
+    assert explanation["is_relevant"] is False
+    assert explanation["positive_keyword_matches"] == []
+    assert explanation["match_reasons"] == []
+
+
+def test_explain_job_score_matches_score_job_output() -> None:
+    job = {
+        "title": "Technology Analyst",
+        "location": "Hybrid - Mississauga, Ontario",
+        "description": (
+            "This team is hiring a Junior DevOps Engineer to support Jenkins, "
+            "GitHub Actions, Linux administration, and troubleshooting."
+        ),
+    }
+
+    scored = score_job(job, keywords_path=KEYWORDS_PATH, scoring_path=SCORING_PATH)
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["final_score"] == scored.match_score
+    assert explanation["match_reasons"] == scored.match_reasons
+    assert explanation["risk_flags"] == scored.risk_flags
+
+
+def test_score_job_ignores_html_link_markup_noise_in_description() -> None:
+    job = {
+        "title": "Software Engineer II- Salesforce",
+        "location": "",
+        "description": (
+            '<div><a href="/en-US/TD_Bank_Careers/job/Toronto-Ontario/'
+            'Software-Engineer-II--Salesforce_R_1486443">Software Engineer II- Salesforce</a></div>'
+        ),
+    }
+
+    result = score_job(job, keywords_path=KEYWORDS_PATH, scoring_path=SCORING_PATH)
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert result.match_score == 0
+    assert result.match_reasons == []
+    assert explanation["location_scope_signals"] == []
+
+
+def test_solutions_engineer_is_scored_as_adjacent_customer_facing_technical_fit() -> None:
+    job = {
+        "title": "Solutions Engineer",
+        "location": "Toronto, Ontario, Canada",
+        "description": "Support enterprise platform demos and customer technical discovery.",
+    }
+
+    result = score_job(job, keywords_path=KEYWORDS_PATH, scoring_path=SCORING_PATH)
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert result.match_score > 0
+    assert explanation["is_relevant"] is True
+    assert explanation["relevance_tier"] == "adjacent_customer_facing_technical_fit"
+    assert any(
+        "adjacent customer-facing technical fit" in reason
+        for reason in explanation["match_reasons"]
+    )
+
+
+def test_customer_success_engineer_is_scored_as_adjacent_fit() -> None:
+    job = {
+        "title": "Customer Success Engineer",
+        "location": "Canada",
+        "description": "Guide customers through technical onboarding and platform adoption.",
+    }
+
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is True
+    assert explanation["relevance_tier"] == "adjacent_customer_facing_technical_fit"
+
+
+def test_technical_consultant_with_technical_context_is_adjacent_fit() -> None:
+    job = {
+        "title": "Technical Consultant",
+        "location": "Toronto, Ontario, Canada",
+        "description": (
+            "Work with customers on enterprise platform implementation, cloud integration, "
+            "and solution design."
+        ),
+    }
+
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is True
+    assert explanation["relevance_tier"] == "adjacent_customer_facing_technical_fit"
+
+
+def test_customer_service_representative_is_not_promoted_to_relevant() -> None:
+    job = {
+        "title": "Customer Service Representative",
+        "location": "Toronto, Ontario, Canada",
+        "description": "Support customer billing questions and handle account inquiries.",
+    }
+
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert explanation["relevance_tier"] == "not_relevant"
+
+
+def test_sales_associate_is_not_promoted_to_relevant() -> None:
+    job = {
+        "title": "Sales Associate",
+        "location": "Toronto, Ontario, Canada",
+        "description": "Retail sales role focused on store performance and transactions.",
+    }
+
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert explanation["relevance_tier"] == "not_relevant"
+
+
+def test_generic_business_analyst_without_technical_context_is_not_relevant() -> None:
+    job = {
+        "title": "Business Analyst",
+        "location": "Toronto, Ontario, Canada",
+        "description": "Coordinate reporting, timelines, and stakeholder meetings.",
+    }
+
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert explanation["relevance_tier"] == "not_relevant"
+
+
+def test_business_systems_analyst_with_platform_context_can_be_adjacent_fit() -> None:
+    job = {
+        "title": "Business Systems Analyst",
+        "location": "Toronto, Ontario, Canada",
+        "description": (
+            "Support enterprise platform implementation, systems integration, and product "
+            "delivery across cloud tooling."
+        ),
+    }
+
+    explanation = explain_job_score(
+        job,
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is True
+    assert explanation["relevance_tier"] == "adjacent_customer_facing_technical_fit"

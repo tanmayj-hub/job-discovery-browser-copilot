@@ -1,6 +1,9 @@
 weights:
   role_in_title: 45
   role_in_text: 20
+  adjacent_role_in_title: 24
+  adjacent_role_in_text: 12
+  conditional_adjacent_role_bonus: 18
   skill_per_match: 4
   skill_cap: 24
   location_per_match: 4

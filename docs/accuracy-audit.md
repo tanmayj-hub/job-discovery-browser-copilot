@@ -41,6 +41,102 @@ Recommended one-company flow:
 4. Fill the companion CSV files as you review.
 5. Run `audit compare` after the manual fields are complete.
 
+### Score Explanations For Saved Or Rejected Jobs
+
+Use this when collection found a job but you want to know exactly why scoring did or did not
+save it as relevant.
+
+First, export scored candidates for the company:
+
+```powershell
+python -m src.main audit diagnose-company-collection `
+  --company "TD" `
+  --output docs/audits/TD-collection-diagnostic.md `
+  --export-scored-candidates data/exports/audits/TD-scored-candidates.csv
+```
+
+Then explain one job:
+
+```powershell
+python -m src.main audit explain-score `
+  --company "TD" `
+  --title "Software Engineer II, Salesforce" `
+  --include-rejected `
+  --scored-candidates data/exports/audits/TD-scored-candidates.csv `
+  --output docs/audits/TD-score-explanation.md
+```
+
+The explanation report shows:
+
+- final score
+- whether the job qualifies as relevant under the current save rule
+- title matches
+- description or snippet matches
+- positive keyword matches
+- location-only signals
+- negative signals and risk flags
+- a short reason summary
+
+### Manual URL Recall Audit For One Company Set
+
+Use this when you already checked official career pages manually and want to compare those exact
+URLs against what the MVP saved, what it extracted but rejected, and what it missed completely.
+
+For the current TD / IBM Consulting / Sun Life audit pack, use the structured fixture in:
+
+- `tests/fixtures/audit/manual_expected_jobs_td_ibm_sunlife.yaml`
+
+Run the three diagnostics with the Canada-only audit scope first:
+
+```powershell
+python -m src.main audit diagnose-company-collection `
+  --company "TD" `
+  --use-audit-scope `
+  --output docs/audits/TD-collection-diagnostic.md `
+  --export-scored-candidates data/exports/audits/TD-scored-candidates.csv
+
+python -m src.main audit diagnose-company-collection `
+  --company "IBM Consulting" `
+  --use-audit-scope `
+  --output docs/audits/IBM-Consulting-collection-diagnostic.md `
+  --export-scored-candidates data/exports/audits/IBM-Consulting-scored-candidates.csv
+
+python -m src.main audit diagnose-company-collection `
+  --company "Sun Life" `
+  --use-audit-scope `
+  --output docs/audits/Sun-Life-collection-diagnostic.md `
+  --export-scored-candidates data/exports/audits/Sun-Life-scored-candidates.csv
+```
+
+Then compare the manual URLs:
+
+```powershell
+python -m src.main audit compare-manual-urls `
+  --input tests/fixtures/audit/manual_expected_jobs_td_ibm_sunlife.yaml `
+  --output docs/audits/manual-url-recall-audit.md `
+  --scored-candidates-dir data/exports/audits
+```
+
+This report classifies each manual URL as one of:
+
+- `saved_by_mvp`
+- `extracted_and_relevant`
+- `extracted_but_rejected_by_scoring`
+- `missed_by_collection`
+- `outside_scope`
+- `blocked_or_not_tested`
+- `unknown`
+
+The audit-only scope intentionally stays narrow:
+
+- filter term: `Canada`
+- no city filter
+- no province filter
+- no remote filter
+- first 10 pages only
+
+This keeps the automated diagnostic aligned with the exact way the manual audit was performed.
+
 ### Batch CSV Workflow
 
 1. Export a reviewable MVP sample from SQLite.

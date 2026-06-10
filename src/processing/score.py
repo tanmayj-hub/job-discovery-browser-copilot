@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -28,6 +29,61 @@ class JobScoreResult(BaseModel):
     match_score: int
     match_reasons: list[str] = Field(default_factory=list)
     risk_flags: list[str] = Field(default_factory=list)
+    relevance_tier: str = "not_relevant"
+
+
+class JobScoreExplanation(BaseModel):
+    """Human-readable explanation of deterministic scoring output."""
+
+    title: str
+    company: str
+    location: str
+    final_score: int
+    threshold: str
+    is_relevant: bool
+    relevance_tier: str
+    positive_keyword_matches: list[str] = Field(default_factory=list)
+    negative_keyword_matches: list[str] = Field(default_factory=list)
+    title_matches: list[str] = Field(default_factory=list)
+    description_matches: list[str] = Field(default_factory=list)
+    location_scope_signals: list[str] = Field(default_factory=list)
+    support_signal_matches: list[str] = Field(default_factory=list)
+    match_reasons: list[str] = Field(default_factory=list)
+    risk_flags: list[str] = Field(default_factory=list)
+    reason_summary: str
+
+
+CORE_REASON_PREFIXES = (
+    "title matches",
+    "description mentions",
+    "matched skills",
+    "support/ops signals",
+)
+ADJACENT_REASON_PREFIX = "adjacent customer-facing technical fit"
+CORE_TARGET_TIER = "core_target_fit"
+ADJACENT_TARGET_TIER = "adjacent_customer_facing_technical_fit"
+NOT_RELEVANT_TIER = "not_relevant"
+TECHNICAL_SUPPORT_CONTEXT_TERMS = (
+    "technical",
+    "technology",
+    "it ",
+    " it",
+    "platform",
+    "cloud",
+    "system",
+    "systems",
+    "software",
+    "application",
+    "applications",
+    "production",
+    "infrastructure",
+    "linux",
+    "network",
+    "desktop",
+    "endpoint",
+    "trading",
+    "marketview",
+)
 
 
 def _read_yaml(path: Path) -> dict[str, Any]:
@@ -62,9 +118,9 @@ def _build_search_text(job: dict[str, Any], fields: tuple[str, ...] = SEARCH_FIE
     for field in fields:
         value = job.get(field)
         if isinstance(value, (list, tuple, set)):
-            parts.extend(str(item) for item in value if item is not None)
+            parts.extend(_clean_search_text(str(item)) for item in value if item is not None)
         elif value is not None:
-            parts.append(str(value))
+            parts.append(_clean_search_text(str(value)))
     return " ".join(parts).lower()
 
 
@@ -89,14 +145,97 @@ def _clamp_score(value: int) -> int:
     return max(0, min(100, value))
 
 
-def score_job(
+def _clean_search_text(value: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", value)
+    return " ".join(text.split())
+
+
+def is_relevant_score(
+    match_score: int,
+    match_reasons: list[str],
+) -> bool:
+    """Return True when a score qualifies for saving under current MVP rules."""
+
+    if int(match_score) <= 0:
+        return False
+    normalized_reasons = [str(reason).lower() for reason in match_reasons]
+    return any(
+        reason.startswith(prefix)
+        for reason in normalized_reasons
+        for prefix in (*CORE_REASON_PREFIXES, ADJACENT_REASON_PREFIX)
+    )
+
+
+def _determine_relevance_tier(
+    match_score: int,
+    match_reasons: list[str],
+) -> str:
+    if int(match_score) <= 0:
+        return NOT_RELEVANT_TIER
+
+    normalized_reasons = [str(reason).lower() for reason in match_reasons]
+    if any(
+        reason.startswith(prefix)
+        for reason in normalized_reasons
+        for prefix in CORE_REASON_PREFIXES[:2]
+    ):
+        return CORE_TARGET_TIER
+    if any(reason.startswith(ADJACENT_REASON_PREFIX) for reason in normalized_reasons):
+        return ADJACENT_TARGET_TIER
+    if any(
+        reason.startswith(prefix)
+        for reason in normalized_reasons
+        for prefix in CORE_REASON_PREFIXES[2:]
+    ):
+        return CORE_TARGET_TIER
+    return NOT_RELEVANT_TIER
+
+
+def _has_technical_support_context(
+    title_text: str,
+    full_text: str,
+    matched_skills: list[str],
+) -> bool:
+    support_title_patterns = (
+        "support analyst",
+        "support engineer",
+        "support administrator",
+        "support specialist",
+        "it support",
+    )
+    if any(pattern in title_text for pattern in support_title_patterns):
+        return True
+    if matched_skills:
+        return True
+    return any(term in full_text for term in TECHNICAL_SUPPORT_CONTEXT_TERMS)
+
+
+def _filter_contextual_skill_matches(
+    title_text: str,
+    full_text: str,
+    matched_skills: list[str],
+) -> list[str]:
+    gated_skills = {"support", "troubleshooting"}
+    non_gated_matches = [skill for skill in matched_skills if skill not in gated_skills]
+    support_context = _has_technical_support_context(
+        title_text,
+        full_text,
+        non_gated_matches,
+    )
+    filtered_matches: list[str] = []
+    for skill in matched_skills:
+        if skill in gated_skills and not support_context:
+            continue
+        filtered_matches.append(skill)
+    return filtered_matches
+
+
+def _analyze_job_score(
     job: dict[str, Any],
     *,
-    keywords_path: Path = DEFAULT_KEYWORDS_PATH,
-    scoring_path: Path = DEFAULT_SCORING_PATH,
-) -> JobScoreResult:
-    """Score a normalized job object using deterministic keyword rules."""
-
+    keywords_path: Path,
+    scoring_path: Path,
+) -> dict[str, Any]:
     keywords = load_keywords_config(str(keywords_path))
     scoring = load_scoring_config(str(scoring_path))
     weights = scoring["weights"]
@@ -108,28 +247,42 @@ def score_job(
     match_score = 0
     match_reasons: list[str] = []
     risk_flags: list[str] = []
+    positive_keyword_matches: list[str] = []
+    negative_keyword_matches: list[str] = []
+    title_matches: list[str] = []
+    description_matches: list[str] = []
+    location_scope_signals: list[str] = []
+    support_signal_matches: list[str] = []
 
     target_roles = keywords.get("target_roles", [])
     title_role = _match_first(title_text, target_roles)
     if title_role:
         match_score += int(weights["role_in_title"])
+        title_matches.append(title_role)
+        positive_keyword_matches.append(title_role)
         match_reasons.append(f"title matches target role: {title_role}")
     else:
         text_role = _match_first(full_text, target_roles)
         if text_role:
             match_score += int(weights["role_in_text"])
+            description_matches.append(text_role)
+            positive_keyword_matches.append(text_role)
             match_reasons.append(f"description mentions target role: {text_role}")
 
-    matched_skills = _match_many(full_text, keywords.get("target_skills", {}))
+    matched_skills = _filter_contextual_skill_matches(
+        title_text,
+        full_text,
+        _match_many(full_text, keywords.get("target_skills", {})),
+    )
     if matched_skills:
         skill_points = min(
             len(matched_skills) * int(weights["skill_per_match"]),
             int(weights["skill_cap"]),
         )
         match_score += skill_points
-        match_reasons.append(
-            "matched skills: " + ", ".join(matched_skills)
-        )
+        positive_keyword_matches.extend(matched_skills)
+        description_matches.extend(matched_skills)
+        match_reasons.append("matched skills: " + ", ".join(matched_skills))
 
     matched_locations = [
         location
@@ -142,21 +295,73 @@ def score_job(
             int(weights["location_cap"]),
         )
         match_score += location_points
-        match_reasons.append(
-            "location signals: " + ", ".join(matched_locations)
-        )
+        location_scope_signals.extend(matched_locations)
+        match_reasons.append("location signals: " + ", ".join(matched_locations))
 
     support_lookup = {signal: [signal] for signal in scoring.get("support_signals", [])}
     matched_support = _match_many(full_text, support_lookup)
-    if matched_support:
+    if matched_support and _has_technical_support_context(
+        title_text,
+        full_text,
+        matched_skills,
+    ):
         support_points = min(
             len(matched_support) * int(weights["support_signal_bonus"]),
             int(weights["support_signal_cap"]),
         )
         match_score += support_points
+        support_signal_matches.extend(matched_support)
+        positive_keyword_matches.extend(matched_support)
+        description_matches.extend(matched_support)
+        match_reasons.append("support/ops signals: " + ", ".join(matched_support))
+
+    adjacent_roles = keywords.get("adjacent_roles", [])
+    conditional_adjacent_roles = keywords.get("conditional_adjacent_roles", [])
+    adjacent_context_terms = keywords.get("adjacent_technical_context", [])
+    adjacent_context_lookup = {
+        signal: [signal]
+        for signal in adjacent_context_terms
+    }
+    adjacent_context_matches = _match_many(full_text, adjacent_context_lookup)
+    has_conditional_adjacent_context = bool(
+        adjacent_context_matches or matched_skills or matched_support
+    )
+
+    title_adjacent_role = _match_first(title_text, adjacent_roles)
+    if title_adjacent_role:
+        match_score += int(weights["adjacent_role_in_title"])
+        title_matches.append(title_adjacent_role)
+        positive_keyword_matches.append(title_adjacent_role)
+        match_reasons.append(f"{ADJACENT_REASON_PREFIX}: {title_adjacent_role}")
+    else:
+        text_adjacent_role = _match_first(full_text, adjacent_roles)
+        if text_adjacent_role:
+            match_score += int(weights["adjacent_role_in_text"])
+            description_matches.append(text_adjacent_role)
+            positive_keyword_matches.append(text_adjacent_role)
+            match_reasons.append(f"{ADJACENT_REASON_PREFIX}: {text_adjacent_role}")
+
+    conditional_title_role = _match_first(title_text, conditional_adjacent_roles)
+    if conditional_title_role and has_conditional_adjacent_context:
+        match_score += int(weights["conditional_adjacent_role_bonus"])
+        title_matches.append(conditional_title_role)
+        positive_keyword_matches.append(conditional_title_role)
+        positive_keyword_matches.extend(adjacent_context_matches)
+        description_matches.extend(adjacent_context_matches)
         match_reasons.append(
-            "support/ops signals: " + ", ".join(matched_support)
+            f"{ADJACENT_REASON_PREFIX}: {conditional_title_role} (technical context)"
         )
+    elif has_conditional_adjacent_context:
+        conditional_text_role = _match_first(full_text, conditional_adjacent_roles)
+        if conditional_text_role:
+            match_score += int(weights["adjacent_role_in_text"])
+            description_matches.append(conditional_text_role)
+            description_matches.extend(adjacent_context_matches)
+            positive_keyword_matches.append(conditional_text_role)
+            positive_keyword_matches.extend(adjacent_context_matches)
+            match_reasons.append(
+                f"{ADJACENT_REASON_PREFIX}: {conditional_text_role} (technical context)"
+            )
 
     negative_lookup = {
         signal: [signal]
@@ -169,10 +374,103 @@ def score_job(
             int(weights["negative_cap"]),
         )
         match_score -= penalty
+        negative_keyword_matches.extend(matched_negatives)
         risk_flags.extend(f"negative signal: {signal}" for signal in matched_negatives)
 
-    return JobScoreResult(
-        match_score=_clamp_score(match_score),
-        match_reasons=match_reasons,
-        risk_flags=risk_flags,
+    final_score = _clamp_score(match_score)
+    relevance_tier = _determine_relevance_tier(final_score, match_reasons)
+    return {
+        "final_score": final_score,
+        "match_reasons": match_reasons,
+        "risk_flags": risk_flags,
+        "positive_keyword_matches": list(dict.fromkeys(positive_keyword_matches)),
+        "negative_keyword_matches": negative_keyword_matches,
+        "title_matches": title_matches,
+        "description_matches": list(dict.fromkeys(description_matches)),
+        "location_scope_signals": location_scope_signals,
+        "support_signal_matches": support_signal_matches,
+        "relevance_tier": relevance_tier,
+    }
+
+
+def score_job(
+    job: dict[str, Any],
+    *,
+    keywords_path: Path = DEFAULT_KEYWORDS_PATH,
+    scoring_path: Path = DEFAULT_SCORING_PATH,
+) -> JobScoreResult:
+    """Score a normalized job object using deterministic keyword rules."""
+    analysis = _analyze_job_score(
+        job,
+        keywords_path=keywords_path,
+        scoring_path=scoring_path,
     )
+    return JobScoreResult(
+        match_score=analysis["final_score"],
+        match_reasons=analysis["match_reasons"],
+        risk_flags=analysis["risk_flags"],
+        relevance_tier=analysis["relevance_tier"],
+    )
+
+
+def explain_job_score(
+    job: dict[str, Any],
+    *,
+    keywords_path: Path = DEFAULT_KEYWORDS_PATH,
+    scoring_path: Path = DEFAULT_SCORING_PATH,
+) -> dict[str, Any]:
+    """Explain how deterministic scoring evaluated a normalized job."""
+
+    analysis = _analyze_job_score(
+        job,
+        keywords_path=keywords_path,
+        scoring_path=scoring_path,
+    )
+    is_relevant = is_relevant_score(
+        analysis["final_score"],
+        analysis["match_reasons"],
+    )
+    relevance_tier = analysis["relevance_tier"]
+    if relevance_tier == CORE_TARGET_TIER:
+        reason_summary = (
+            "Saved as relevant because the job had a positive score and at least one "
+            "core non-location signal."
+        )
+    elif relevance_tier == ADJACENT_TARGET_TIER:
+        reason_summary = (
+            "Saved as an adjacent customer-facing technical fit because the role matched "
+            "the secondary relevance bucket."
+        )
+    elif analysis["final_score"] <= 0:
+        reason_summary = "Rejected because no positive scoring signals survived after penalties."
+    elif analysis["match_reasons"]:
+        reason_summary = (
+            "Rejected because the score came from weak or location-only signals and did not "
+            "include a core role, skill, or support/ops reason."
+        )
+    else:
+        reason_summary = "Rejected because the job did not match the current target role profile."
+
+    explanation = JobScoreExplanation(
+        title=str(job.get("title") or "").strip(),
+        company=str(job.get("company_name") or "").strip(),
+        location=str(job.get("location") or "").strip(),
+        final_score=analysis["final_score"],
+        threshold=(
+            "Relevant jobs must score above 0 and include at least one core or adjacent "
+            "scoring reason: title match, description role match, matched skills, "
+            "support/ops signals, or adjacent customer-facing technical fit."
+        ),
+        is_relevant=is_relevant,
+        relevance_tier=relevance_tier,
+        positive_keyword_matches=analysis["positive_keyword_matches"],
+        negative_keyword_matches=analysis["negative_keyword_matches"],
+        title_matches=analysis["title_matches"],
+        description_matches=analysis["description_matches"],
+        location_scope_signals=analysis["location_scope_signals"],
+        support_signal_matches=analysis["support_signal_matches"],
+        match_reasons=analysis["match_reasons"],
+        risk_flags=analysis["risk_flags"],
+        reason_summary=reason_summary,
+    )
+    return explanation.model_dump()

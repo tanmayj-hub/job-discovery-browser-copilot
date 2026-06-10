@@ -15,7 +15,7 @@ import yaml
 from browser.extraction import get_job_quality_signals, is_probable_job_listing
 from classifier.source_classifier import classify_source
 from collectors.router import collect_companies_routed
-from processing.score import score_job
+from processing.score import is_relevant_score, score_job
 from reports.source_observability import (
     compute_source_readiness,
     is_error_status,
@@ -163,21 +163,16 @@ def score_normalized_job(job: dict[str, Any]) -> dict[str, Any]:
     scored["match_score"] = score_result.match_score
     scored["match_reasons"] = score_result.match_reasons
     scored["risk_flags"] = score_result.risk_flags
+    scored["relevance_tier"] = score_result.relevance_tier
     return scored
 
 
 def is_relevant_scored_job(job: dict[str, Any]) -> bool:
     """Return True when a scored job has more than location-only relevance."""
 
-    if int(job.get("match_score", 0)) <= 0:
-        return False
-    reasons = [str(reason).lower() for reason in job.get("match_reasons", [])]
-    return any(
-        reason.startswith("title matches")
-        or reason.startswith("description mentions")
-        or reason.startswith("matched skills")
-        or reason.startswith("support/ops signals")
-        for reason in reasons
+    return is_relevant_score(
+        int(job.get("match_score", 0) or 0),
+        [str(reason) for reason in job.get("match_reasons", [])],
     )
 
 

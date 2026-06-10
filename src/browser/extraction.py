@@ -244,7 +244,10 @@ def _is_search_results_style_page(page: Page) -> bool:
     """Return True when the page is a results surface where location-scoped search can help."""
 
     url_text = page.url.lower()
-    return any(marker in url_text for marker in ("jobsearch", "search-results", "jobs/search"))
+    return any(
+        marker in url_text
+        for marker in ("jobsearch", "search-results", "jobs/search", "careers/search")
+    )
 
 
 def find_search_input(page: Page) -> Locator | None:
@@ -265,7 +268,12 @@ def _contains_forbidden_pre_extraction_term(query: str) -> bool:
     )
 
 
-def search_with_location_term(page: Page, location_term: str) -> str | None:
+def search_with_location_term(
+    page: Page,
+    location_term: str,
+    *,
+    allow_visible_results: bool = False,
+) -> str | None:
     """Fill a detected search input with one location-only discovery term."""
 
     search_input = find_search_input(page)
@@ -274,7 +282,11 @@ def search_with_location_term(page: Page, location_term: str) -> str | None:
         search_input is None
         or not query
         or _contains_forbidden_pre_extraction_term(query)
-        or (has_interactive_job_cards(page) and not _is_search_results_style_page(page))
+        or (
+            not allow_visible_results
+            and has_interactive_job_cards(page)
+            and not _is_search_results_style_page(page)
+        )
     ):
         return None
 

@@ -24,11 +24,15 @@ def get_collection_api():
     from collectors.browser_collector import (
         collect_browser_jobs,
         collect_single_company_with_browser,
+        load_audit_max_pages_per_source,
+        load_audit_scope_locations,
     )
 
     return {
         "collect_browser_jobs": collect_browser_jobs,
         "collect_single_company_with_browser": collect_single_company_with_browser,
+        "load_audit_max_pages_per_source": load_audit_max_pages_per_source,
+        "load_audit_scope_locations": load_audit_scope_locations,
     }
 
 
@@ -49,21 +53,31 @@ def get_audit_api():
         build_company_audit_pack,
         build_manual_audit_link_sheet,
         compare_audit_files,
+        compare_manual_expected_urls,
         create_manual_template,
         export_audit_sample,
+        find_job_for_score_explanation,
+        load_manual_expected_jobs,
         parse_company_filter,
         validate_audit_files,
         write_company_collection_diagnostic,
+        write_manual_url_recall_report,
+        write_score_explanation_report,
     )
 
     return {
         "build_company_audit_pack": build_company_audit_pack,
         "build_manual_audit_link_sheet": build_manual_audit_link_sheet,
+        "compare_manual_expected_urls": compare_manual_expected_urls,
         "compare_audit_files": compare_audit_files,
         "create_manual_template": create_manual_template,
         "export_audit_sample": export_audit_sample,
+        "find_job_for_score_explanation": find_job_for_score_explanation,
+        "load_manual_expected_jobs": load_manual_expected_jobs,
         "parse_company_filter": parse_company_filter,
         "validate_audit_files": validate_audit_files,
+        "write_manual_url_recall_report": write_manual_url_recall_report,
+        "write_score_explanation_report": write_score_explanation_report,
         "write_company_collection_diagnostic": write_company_collection_diagnostic,
     }
 
@@ -454,6 +468,80 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Markdown output path for the collection diagnostic.",
     )
+    audit_diagnose.add_argument(
+        "--export-scored-candidates",
+        type=Path,
+        default=None,
+        help="Optional CSV output path for scored candidates, including rejected rows.",
+    )
+    audit_diagnose.add_argument(
+        "--use-audit-scope",
+        action="store_true",
+        help="Use the Canada-only audit scope from config/discovery.yaml.",
+    )
+
+    audit_manual_urls = audit_subparsers.add_parser(
+        "compare-manual-urls",
+        help="Compare manually expected job URLs against saved and scored MVP results",
+    )
+    audit_manual_urls.add_argument(
+        "--input",
+        type=Path,
+        required=True,
+        help="Path to the manual expected jobs YAML fixture.",
+    )
+    audit_manual_urls.add_argument(
+        "--output",
+        type=Path,
+        default=PROJECT_ROOT / "docs" / "audits" / "manual-url-recall-audit.md",
+        help="Markdown output path for the manual URL recall audit report.",
+    )
+    audit_manual_urls.add_argument(
+        "--scored-candidates-dir",
+        type=Path,
+        default=PROJECT_ROOT / "data" / "exports" / "audits",
+        help="Directory containing per-company scored candidate exports.",
+    )
+
+    audit_explain = audit_subparsers.add_parser(
+        "explain-score",
+        help="Explain why a saved or rejected job did or did not qualify as relevant",
+    )
+    audit_explain.add_argument(
+        "--company",
+        type=str,
+        required=True,
+        help="Company name for the job to explain.",
+    )
+    audit_explain.add_argument(
+        "--title",
+        type=str,
+        default=None,
+        help="Optional exact job title match.",
+    )
+    audit_explain.add_argument(
+        "--url",
+        type=str,
+        default=None,
+        help="Optional exact job URL match.",
+    )
+    audit_explain.add_argument(
+        "--include-rejected",
+        action="store_true",
+        help="Also search the scored-candidates export for rejected jobs.",
+    )
+    audit_explain.add_argument(
+        "--scored-candidates",
+        type=Path,
+        default=None,
+        help="Optional scored-candidates CSV path to search for rejected jobs.",
+    )
+    audit_explain.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Markdown output path for the score explanation.",
+    )
     return parser
 
 
@@ -691,27 +779,91 @@ def main(argv: list[str] | None = None) -> int:
         output_path = args.output or (
             PROJECT_ROOT / "docs" / "audits" / f"{slug}-collection-diagnostic.md"
         )
+        scored_candidates_output_path = args.export_scored_candidates or (
+            PROJECT_ROOT / "data" / "exports" / "audits" / f"{slug}-scored-candidates.csv"
+        )
+        location_scope_override = None
+        max_pages_per_source_override = None
+        force_location_scope_search = False
+        if args.use_audit_scope:
+            location_scope_override = collection_api["load_audit_scope_locations"]()
+            max_pages_per_source_override = collection_api["load_audit_max_pages_per_source"]()
+            force_location_scope_search = True
         result = collection_api["collect_single_company_with_browser"](
             connection,
             company=company,
             headless=False,
             save_jobs=False,
             allowed_source_modes={"browser_allowed", "human_in_loop"},
+            location_scope_override=location_scope_override,
+            max_pages_per_source_override=max_pages_per_source_override,
+            force_location_scope_search=force_location_scope_search,
         )
         diagnostic = audit_api["write_company_collection_diagnostic"](
             output_path=output_path,
             company=company,
             collection_result=result,
+            scored_candidates_output_path=scored_candidates_output_path,
         )
         print(
             {
                 **diagnostic.to_dict(),
                 "jobs_discovered": result.get("jobs_discovered", 0),
                 "jobs_relevant": result.get("jobs_relevant", 0),
+                "scored_candidates_output_path": str(scored_candidates_output_path),
                 "pages_visited": result.get("pages_visited", []),
                 "pagination_stop_reason": result.get("pagination_stop_reason"),
             }
         )
+        return 0
+
+    if args.command == "audit" and args.audit_command == "compare-manual-urls":
+        fixture = audit_api["load_manual_expected_jobs"](args.input)
+        result = audit_api["compare_manual_expected_urls"](
+            connection,
+            companies=fixture,
+            scored_candidates_dir=args.scored_candidates_dir,
+        )
+        audit_api["write_manual_url_recall_report"](
+            args.output,
+            companies=fixture,
+            audit_records=result["records"],
+            summary=result["summary"],
+        )
+        print(
+            {
+                "companies": [item["company_name"] for item in fixture],
+                "record_count": len(result["records"]),
+                "summary": result["summary"],
+                "report_path": str(args.output),
+            }
+        )
+        return 0
+
+    if args.command == "audit" and args.audit_command == "explain-score":
+        if not args.title and not args.url:
+            raise ValueError("Provide --title or --url for audit explain-score.")
+        slug = _slugify_company_name(args.company)
+        scored_candidates_path = args.scored_candidates or (
+            PROJECT_ROOT / "data" / "exports" / "audits" / f"{slug}-scored-candidates.csv"
+        )
+        output_path = args.output or (
+            PROJECT_ROOT / "docs" / "audits" / f"{slug}-score-explanation.md"
+        )
+        job, source = audit_api["find_job_for_score_explanation"](
+            connection,
+            company_name=args.company,
+            title=args.title,
+            url=args.url,
+            scored_candidates_path=scored_candidates_path,
+            include_rejected=args.include_rejected,
+        )
+        explanation = audit_api["write_score_explanation_report"](
+            output_path=output_path,
+            job=job,
+            source=source,
+        )
+        print(explanation.to_dict())
         return 0
 
     raise ValueError(f"Unsupported command: {args.command}")

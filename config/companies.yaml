@@ -433,7 +433,7 @@ companies:
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://www.ibm.com/careers
+  careers_url: https://www.ibm.com/careers/search
 - name: CGI
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -888,7 +888,7 @@ companies:
 - name: Sun Life
   sector: Insurance & Wealth
   category: Insurance/Wealth
-  careers_url: https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs
+  careers_url: https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
   source_mode: human_in_loop
   status: Watching
   role_families:

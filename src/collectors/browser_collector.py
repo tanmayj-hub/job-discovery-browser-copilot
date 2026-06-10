@@ -26,7 +26,7 @@ from browser.interventions import (
 )
 from browser.session import BrowserSessionConfig, open_browser_session
 from classifier.source_classifier import classify_source
-from processing.score import score_job
+from processing.score import is_relevant_score, score_job
 from storage.db import (
     create_daily_run,
     finish_daily_run,
@@ -40,6 +40,7 @@ from storage.db import (
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DISCOVERY_CONFIG_PATH = PROJECT_ROOT / "config" / "discovery.yaml"
 DEFAULT_LOCATION_SCOPE = ("Canada", "Toronto", "Ontario", "Remote Canada", "Remote")
+DEFAULT_AUDIT_LOCATION_SCOPE = ("Canada",)
 DEFAULT_MAX_PAGES_PER_SOURCE = 10
 
 
@@ -135,6 +136,9 @@ def collect_single_company_with_browser(
     headless: bool = False,
     save_jobs: bool = False,
     allowed_source_modes: set[str] | None = None,
+    location_scope_override: tuple[str, ...] | None = None,
+    max_pages_per_source_override: int | None = None,
+    force_location_scope_search: bool = False,
 ) -> dict[str, Any]:
     """Collect one company through a dedicated browser session."""
 
@@ -149,6 +153,9 @@ def collect_single_company_with_browser(
             page=session.page,
             save_jobs=save_jobs,
             allowed_source_modes=allowed_source_modes,
+            location_scope_override=location_scope_override,
+            max_pages_per_source_override=max_pages_per_source_override,
+            force_location_scope_search=force_location_scope_search,
         )
 
 
@@ -159,14 +166,17 @@ def collect_company_jobs(
     page,
     save_jobs: bool = True,
     allowed_source_modes: set[str] | None = None,
+    location_scope_override: tuple[str, ...] | None = None,
+    max_pages_per_source_override: int | None = None,
+    force_location_scope_search: bool = False,
 ) -> dict[str, Any]:
     """Collect jobs for a single browser-allowed company."""
 
     company_name = str(company["name"])
     source_name = str(company.get("website_category") or company_name)
     careers_url = str(company.get("careers_url") or "").strip()
-    location_scope = load_source_scope_locations()
-    max_pages_per_source = load_browser_max_pages_per_source()
+    location_scope = location_scope_override or load_source_scope_locations()
+    max_pages_per_source = max_pages_per_source_override or load_browser_max_pages_per_source()
     max_cards_per_source = max(20, max_pages_per_source * 20)
 
     classification = classify_source(
@@ -263,6 +273,28 @@ def collect_company_jobs(
                 intervention_id=intervention_id,
             )
 
+        location_queries: list[str] = []
+        location_scope_used = _url_uses_location_scope(page.url or careers_url)
+        keyword_scope_used = False
+        if location_scope_used:
+            location_queries.append("Canada (URL filter)")
+        if (
+            force_location_scope_search
+            and find_search_input(page) is not None
+            and not location_scope_used
+        ):
+            for location_term in location_scope:
+                query = search_with_location_term(
+                    page,
+                    location_term,
+                    allow_visible_results=True,
+                )
+                if query is None:
+                    continue
+                location_scope_used = True
+                location_queries.append(query)
+                break
+
         extraction_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
             page,
             company_name=company_name,
@@ -272,14 +304,13 @@ def collect_company_jobs(
             max_pages=max_pages_per_source,
         )
         extracted_jobs = extraction_jobs
-        location_queries: list[str] = []
-        location_scope_used = _url_uses_location_scope(page.url or careers_url)
-        keyword_scope_used = False
-        if location_scope_used:
-            location_queries.append("Canada (URL filter)")
         if not extracted_jobs and find_search_input(page) is not None:
             for location_term in location_scope:
-                query = search_with_location_term(page, location_term)
+                query = search_with_location_term(
+                    page,
+                    location_term,
+                    allow_visible_results=force_location_scope_search,
+                )
                 if query is None:
                     continue
                 location_scope_used = True
@@ -486,6 +517,20 @@ def load_source_scope_locations(
     return normalized or DEFAULT_LOCATION_SCOPE
 
 
+def load_audit_scope_locations(
+    path: Path = DEFAULT_DISCOVERY_CONFIG_PATH,
+) -> tuple[str, ...]:
+    """Load Canada-only audit scope terms without changing production defaults."""
+
+    if not path.exists():
+        return DEFAULT_AUDIT_LOCATION_SCOPE
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    audit_scope = payload.get("audit_scope", {})
+    locations = audit_scope.get("locations", []) if isinstance(audit_scope, dict) else []
+    normalized = tuple(str(location).strip() for location in locations if str(location).strip())
+    return normalized or DEFAULT_AUDIT_LOCATION_SCOPE
+
+
 def load_browser_max_pages_per_source(
     path: Path = DEFAULT_DISCOVERY_CONFIG_PATH,
 ) -> int:
@@ -507,31 +552,51 @@ def load_browser_max_pages_per_source(
     return max(1, value)
 
 
+def load_audit_max_pages_per_source(
+    path: Path = DEFAULT_DISCOVERY_CONFIG_PATH,
+) -> int:
+    """Load audit pagination settings without changing production defaults."""
+
+    if not path.exists():
+        return DEFAULT_MAX_PAGES_PER_SOURCE
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    audit_scope = payload.get("audit_scope", {})
+    raw_value = (
+        audit_scope.get("max_pages_per_source")
+        if isinstance(audit_scope, dict)
+        else DEFAULT_MAX_PAGES_PER_SOURCE
+    )
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        return DEFAULT_MAX_PAGES_PER_SOURCE
+    return max(1, value)
+
+
 def _score_collected_job(job: dict[str, Any]) -> dict[str, Any]:
     scored = dict(job)
     score_result = score_job(scored)
     scored["match_score"] = score_result.match_score
     scored["match_reasons"] = score_result.match_reasons
     scored["risk_flags"] = score_result.risk_flags
+    scored["relevance_tier"] = score_result.relevance_tier
     return scored
 
 
 def _is_relevant_scored_job(job: dict[str, Any]) -> bool:
-    if int(job.get("match_score", 0)) <= 0:
-        return False
-    reasons = [str(reason).lower() for reason in job.get("match_reasons", [])]
-    return any(
-        reason.startswith("title matches")
-        or reason.startswith("description mentions")
-        or reason.startswith("matched skills")
-        or reason.startswith("support/ops signals")
-        for reason in reasons
+    return is_relevant_score(
+        int(job.get("match_score", 0) or 0),
+        [str(reason) for reason in job.get("match_reasons", [])],
     )
 
 
 def _url_uses_location_scope(url: str) -> bool:
     normalized = str(url or "").lower()
-    return "locationcountry=" in normalized or "country=ca" in normalized
+    return (
+        "locationcountry=" in normalized
+        or "location_country=" in normalized
+        or "country=ca" in normalized
+    )
 
 
 def _dedupe_collected_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:

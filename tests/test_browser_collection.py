@@ -13,8 +13,11 @@ from browser.interventions import (
 )
 from collectors.browser_collector import (
     _source_navigation_timeout_ms,
+    _url_uses_location_scope,
     collect_browser_jobs,
     collect_company_jobs,
+    load_audit_max_pages_per_source,
+    load_audit_scope_locations,
     load_browser_max_pages_per_source,
     load_source_scope_locations,
 )
@@ -192,6 +195,41 @@ browser:
     assert load_browser_max_pages_per_source(config_path) == 8
 
 
+def test_load_audit_scope_locations_uses_canada_only_audit_config(tmp_path: Path) -> None:
+    config_path = tmp_path / "discovery.yaml"
+    config_path.write_text(
+        """
+source_scope:
+  locations:
+    - Canada
+    - Toronto
+audit_scope:
+  locations:
+    - Canada
+""",
+        encoding="utf-8",
+    )
+
+    assert load_audit_scope_locations(config_path) == ("Canada",)
+
+
+def test_load_audit_max_pages_per_source_uses_audit_config(tmp_path: Path) -> None:
+    config_path = tmp_path / "discovery.yaml"
+    config_path.write_text(
+        """
+audit_scope:
+  locations:
+    - Canada
+  max_pages_per_source: 10
+browser:
+  max_pages_per_source: 8
+""",
+        encoding="utf-8",
+    )
+
+    assert load_audit_max_pages_per_source(config_path) == 10
+
+
 def test_source_navigation_timeout_extends_for_tech_mahindra() -> None:
     assert (
         _source_navigation_timeout_ms(
@@ -207,3 +245,10 @@ def test_source_navigation_timeout_extends_for_tech_mahindra() -> None:
         )
         == 15_000
     )
+
+
+def test_url_uses_location_scope_supports_workday_location_country_format() -> None:
+    assert _url_uses_location_scope(
+        "https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs"
+        "?Location_Country=a30a87ed25634629aa6c3958aa2b91ea"
+    ) is True
