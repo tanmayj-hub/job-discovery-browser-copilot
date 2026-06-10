@@ -802,6 +802,7 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
         "max_pages_per_source": 10,
         "pages_visited": ["https://careers.td.com/jobs"],
         "jobs_extracted_per_page": [2],
+        "page_html_snapshots": [],
         "pagination_stop_reason": "completed",
         "cookie_dismissed": "#truste-consent-button",
         "language_prompt_action": ".geo-btn-secondary-cancel",
@@ -882,6 +883,79 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
     assert "- Matching manual IBM jobIds found: none" in content
     assert "Software Engineer II, Salesforce" in content
     assert {row["is_relevant"] for row in exported_rows} == {"true", "false"}
+
+
+def test_write_company_collection_diagnostic_reports_manual_ibm_raw_html_anchor_coverage(
+    tmp_path: Path,
+) -> None:
+    output_path = tmp_path / "docs" / "audits" / "IBM-Consulting-collection-diagnostic.md"
+    company = {
+        "name": "IBM Consulting",
+        "careers_url": "https://www.ibm.com/careers/search",
+        "source_mode": "browser_allowed",
+    }
+    collection_result = {
+        "starting_url": "https://www.ibm.com/careers/search",
+        "final_url": "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada&p=2",
+        "source_mode": "browser_allowed",
+        "location_scope_used": True,
+        "location_scope": ["Canada"],
+        "location_queries": ["Canada (IBM location facet)"],
+        "location_filter_method": "ibm_location_facet",
+        "pagination_detected": True,
+        "max_pages_per_source": 10,
+        "pages_visited": [
+            "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada",
+            "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada&p=2",
+        ],
+        "jobs_extracted_per_page": [30, 30],
+        "page_html_snapshots": [
+            {
+                "url": "https://www.ibm.com/careers/search?field_keyword_05[0]=Canada&p=2",
+                "html": (
+                    "<main><a href='https://careers.ibm.com/en_US/careers/JobDetail"
+                    "?jobId=115116&amp;source=WEB_Search_NA'>"
+                    "Staff Site Reliability Engineer - Confluent Incident Management "
+                    "&amp; Reliability</a></main>"
+                ),
+            }
+        ],
+        "pagination_stop_reason": "next_disabled_or_missing",
+        "jobs_discovered": 0,
+        "jobs_scored": 0,
+        "jobs_relevant": 0,
+        "candidate_jobs": [],
+        "scored_jobs": [],
+        "relevant_jobs": [],
+    }
+
+    write_company_collection_diagnostic(
+        output_path=output_path,
+        company=company,
+        collection_result=collection_result,
+        manual_expected_jobs=[
+            {
+                "job_url": (
+                    "https://careers.ibm.com/en_US/careers/JobDetail"
+                    "?jobId=115116&source=WEB_Search_NA"
+                ),
+                "title": (
+                    "Staff Site Reliability Engineer - Confluent Incident "
+                    "Management & Reliability"
+                ),
+            }
+        ],
+        saved_jobs=[],
+    )
+
+    content = output_path.read_text(encoding="utf-8")
+
+    assert "| Manual URL | Manual Title | Raw HTML | Anchor href | Script/JSON |" in content
+    assert "Manual IBM jobIds still missing: 115116" in content
+    assert (
+        "| yes | yes | no | no | no | no | "
+        "job anchor present in DOM but extraction did not emit a candidate |"
+    ) in content
 
 
 def test_find_job_for_score_explanation_can_use_scored_candidates_export(tmp_path: Path) -> None:

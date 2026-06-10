@@ -11,6 +11,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from bs4 import BeautifulSoup
+
 from processing.score import explain_job_score
 from storage.db import get_jobs, normalize_job_text, normalize_job_url
 
@@ -477,6 +479,7 @@ def write_company_collection_diagnostic(
     collection_result: dict[str, Any],
     scored_candidates_output_path: Path | None = None,
     manual_expected_jobs: list[dict[str, Any]] | None = None,
+    saved_jobs: list[dict[str, Any]] | None = None,
 ) -> CompanyCollectionDiagnosticResult:
     """Write a focused one-company collection diagnostic report."""
 
@@ -500,6 +503,11 @@ def write_company_collection_diagnostic(
     jobs_per_page = [
         int(count) for count in collection_result.get("jobs_extracted_per_page", [])
     ]
+    page_html_snapshots = [
+        snapshot
+        for snapshot in collection_result.get("page_html_snapshots", [])
+        if isinstance(snapshot, dict)
+    ]
     location_queries = [
         str(item).strip()
         for item in collection_result.get("location_queries", [])
@@ -509,6 +517,13 @@ def write_company_collection_diagnostic(
     manual_expected_summary = _summarize_manual_expected_coverage(
         candidate_jobs,
         manual_expected_jobs or [],
+    )
+    manual_expected_diagnostics = _build_manual_expected_diagnostics(
+        manual_expected_jobs=manual_expected_jobs or [],
+        page_html_snapshots=page_html_snapshots,
+        candidate_jobs=candidate_jobs,
+        scored_jobs=scored_jobs,
+        saved_jobs=saved_jobs or [],
     )
     lines = [
         f"# {company_name} Collection Diagnostic",
@@ -580,6 +595,34 @@ def write_company_collection_diagnostic(
             "- Manual IBM jobIds still missing: "
             f"{', '.join(manual_expected_summary['missing_ibm_job_ids']) or 'none'}"
         )
+        lines.extend(
+            [
+                "",
+                (
+                    "| Manual URL | Manual Title | Raw HTML | Anchor href | Script/JSON | "
+                    "Extracted | Scored | Saved by MVP | Reason if not extracted |"
+                ),
+                "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+            ]
+        )
+        for item in manual_expected_diagnostics:
+            lines.append(
+                "| "
+                + " | ".join(
+                    [
+                        _escape_table_cell(item.get("manual_url")),
+                        _escape_table_cell(item.get("manual_title")),
+                        _escape_table_cell(item.get("found_in_raw_html")),
+                        _escape_table_cell(item.get("found_as_anchor_href")),
+                        _escape_table_cell(item.get("found_in_script_text")),
+                        _escape_table_cell(item.get("extracted_as_candidate")),
+                        _escape_table_cell(item.get("scored_candidate")),
+                        _escape_table_cell(item.get("saved_by_mvp")),
+                        _escape_table_cell(item.get("reason_if_not_extracted")),
+                    ]
+                )
+                + " |"
+            )
 
     lines.extend(["", "## Candidate Jobs Before Scoring"])
     if candidate_jobs:
@@ -692,6 +735,179 @@ def _summarize_manual_expected_coverage(
         "found_ibm_job_ids": sorted(found_ibm_job_ids),
         "missing_ibm_job_ids": sorted(missing_ibm_job_ids),
     }
+
+
+def _build_manual_expected_diagnostics(
+    *,
+    manual_expected_jobs: list[dict[str, Any]],
+    page_html_snapshots: list[dict[str, Any]],
+    candidate_jobs: list[dict[str, Any]],
+    scored_jobs: list[dict[str, Any]],
+    saved_jobs: list[dict[str, Any]],
+) -> list[dict[str, str]]:
+    diagnostics: list[dict[str, str]] = []
+    for expected_job in manual_expected_jobs:
+        manual_url = str(expected_job.get("job_url") or "").strip()
+        manual_title = str(expected_job.get("title") or "").strip()
+        raw_presence = _find_manual_job_in_page_snapshots(
+            manual_url=manual_url,
+            manual_title=manual_title,
+            page_html_snapshots=page_html_snapshots,
+        )
+        extracted_match = _find_matching_job_record(
+            manual_url,
+            candidate_jobs,
+            url_field="job_url",
+            manual_title=manual_title,
+        )
+        scored_match = _find_matching_job_record(
+            manual_url,
+            scored_jobs,
+            url_field="job_url",
+            manual_title=manual_title,
+        )
+        saved_match = _find_matching_job_record(
+            manual_url,
+            saved_jobs,
+            url_field="job_url",
+            manual_title=manual_title,
+        )
+        diagnostics.append(
+            {
+                "manual_url": manual_url,
+                "manual_title": manual_title,
+                "found_in_raw_html": _yes_no(raw_presence["found_in_raw_html"]),
+                "found_as_anchor_href": _yes_no(raw_presence["found_as_anchor_href"]),
+                "found_in_script_text": _yes_no(raw_presence["found_in_script_text"]),
+                "extracted_as_candidate": _yes_no(extracted_match is not None),
+                "scored_candidate": _yes_no(scored_match is not None),
+                "saved_by_mvp": _yes_no(saved_match is not None),
+                "reason_if_not_extracted": _reason_if_manual_job_not_extracted(
+                    raw_presence=raw_presence,
+                    extracted_match=extracted_match,
+                    scored_match=scored_match,
+                    saved_match=saved_match,
+                ),
+            }
+        )
+    return diagnostics
+
+
+def _find_manual_job_in_page_snapshots(
+    *,
+    manual_url: str,
+    manual_title: str,
+    page_html_snapshots: list[dict[str, Any]],
+) -> dict[str, bool]:
+    manual_identity = _url_identity(manual_url)
+    found_in_raw_html = False
+    found_as_anchor_href = False
+    found_in_script_text = False
+    normalized_title = _normalize_text(manual_title)
+
+    for snapshot in page_html_snapshots:
+        html = str(snapshot.get("html") or "")
+        if not html:
+            continue
+        soup = BeautifulSoup(html, "html.parser")
+
+        if _raw_html_matches_manual_job(html, manual_identity, normalized_title):
+            found_in_raw_html = True
+        if _anchor_matches_manual_job(soup, manual_identity, normalized_title):
+            found_as_anchor_href = True
+        if _script_matches_manual_job(soup, manual_identity, normalized_title):
+            found_in_script_text = True
+
+    return {
+        "found_in_raw_html": found_in_raw_html,
+        "found_as_anchor_href": found_as_anchor_href,
+        "found_in_script_text": found_in_script_text,
+    }
+
+
+def _raw_html_matches_manual_job(
+    html: str,
+    manual_identity: dict[str, str],
+    normalized_title: str,
+) -> bool:
+    markers = _manual_identity_markers(manual_identity)
+    if any(marker in html for marker in markers):
+        return True
+    if normalized_title:
+        return normalized_title in _normalize_text(html)
+    return False
+
+
+def _anchor_matches_manual_job(
+    soup: BeautifulSoup,
+    manual_identity: dict[str, str],
+    normalized_title: str,
+) -> bool:
+    for anchor in soup.select("a[href]"):
+        href = str(anchor.get("href") or "").strip()
+        if href and _url_identities_match(manual_identity, _url_identity(href)):
+            return True
+        anchor_text = _normalize_text(anchor.get_text(" ", strip=True))
+        if normalized_title and anchor_text == normalized_title:
+            return True
+    return False
+
+
+def _script_matches_manual_job(
+    soup: BeautifulSoup,
+    manual_identity: dict[str, str],
+    normalized_title: str,
+) -> bool:
+    markers = _manual_identity_markers(manual_identity)
+    for script in soup.select("script"):
+        raw = script.string or script.get_text(" ", strip=True)
+        if not raw:
+            continue
+        if any(marker in raw for marker in markers):
+            return True
+        if normalized_title and normalized_title in _normalize_text(raw):
+            return True
+    return False
+
+
+def _manual_identity_markers(manual_identity: dict[str, str]) -> list[str]:
+    markers: list[str] = []
+    if manual_identity["ibm_job_id"]:
+        markers.extend(
+            [
+                f"jobId={manual_identity['ibm_job_id']}",
+                f"jobId\\u003d{manual_identity['ibm_job_id']}",
+                manual_identity["ibm_job_id"],
+            ]
+        )
+    if manual_identity["workday_job_id"]:
+        markers.append(manual_identity["workday_job_id"])
+    canonical_url = manual_identity["canonical_url"]
+    if canonical_url:
+        markers.append(canonical_url)
+    return [marker for marker in markers if marker]
+
+
+def _reason_if_manual_job_not_extracted(
+    *,
+    raw_presence: dict[str, bool],
+    extracted_match: dict[str, Any] | None,
+    scored_match: dict[str, Any] | None,
+    saved_match: dict[str, Any] | None,
+) -> str:
+    if extracted_match is not None:
+        return "-"
+    if raw_presence["found_as_anchor_href"]:
+        return "job anchor present in DOM but extraction did not emit a candidate"
+    if raw_presence["found_in_script_text"]:
+        return "job identifier only appeared in script/embedded data"
+    if raw_presence["found_in_raw_html"]:
+        return "job identifier appeared in raw HTML but not in a matched anchor"
+    return "job not present in captured page HTML"
+
+
+def _yes_no(value: bool) -> str:
+    return "yes" if value else "no"
 
 
 def validate_audit_files(

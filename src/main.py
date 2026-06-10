@@ -817,13 +817,22 @@ def main(argv: list[str] | None = None) -> int:
             location_scope_override=location_scope_override,
             max_pages_per_source_override=max_pages_per_source_override,
             force_location_scope_search=force_location_scope_search,
+            capture_page_html=True,
         )
+        from storage.db import get_jobs
+
         diagnostic = audit_api["write_company_collection_diagnostic"](
             output_path=output_path,
             company=company,
             collection_result=result,
             scored_candidates_output_path=scored_candidates_output_path,
             manual_expected_jobs=manual_expected_jobs,
+            saved_jobs=[
+                job
+                for job in get_jobs(connection)
+                if str(job.get("company_name") or "").strip()
+                == str(company.get("name") or "").strip()
+            ],
         )
         print(
             {

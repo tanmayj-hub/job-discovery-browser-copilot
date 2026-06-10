@@ -245,6 +245,7 @@ class ExtractionDiagnostics:
     max_pages: int
     total_candidates_before_dedupe: int
     total_candidates_after_dedupe: int
+    page_html_snapshots: list[dict[str, str]]
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -1679,6 +1680,7 @@ def extract_visible_job_cards_with_diagnostics(
     source_mode: str,
     max_cards: int = 20,
     max_pages: int = 2,
+    capture_page_html: bool = False,
 ) -> tuple[list[dict[str, Any]], ExtractionDiagnostics]:
     """Extract plausible jobs and return pagination diagnostics for the pass."""
 
@@ -1691,12 +1693,14 @@ def extract_visible_job_cards_with_diagnostics(
             max_pages=max_pages,
             total_candidates_before_dedupe=0,
             total_candidates_after_dedupe=0,
+            page_html_snapshots=[],
         )
         return [], diagnostics
 
     candidates: list[dict[str, Any]] = []
     pages_visited: list[str] = []
     jobs_extracted_per_page: list[int] = []
+    page_html_snapshots: list[dict[str, str]] = []
     seen_job_identities: set[tuple[str, str]] = set()
     pagination_detected = False
     pagination_stop_reason = "single_page_only"
@@ -1722,6 +1726,8 @@ def extract_visible_job_cards_with_diagnostics(
     )
     pages_visited.append(current_url)
     jobs_extracted_per_page.append(len(current_jobs))
+    if capture_page_html:
+        page_html_snapshots.append({"url": current_url, "html": current_html})
     candidates.extend(current_jobs)
     seen_job_identities.update(_job_identity_key(job) for job in current_jobs)
 
@@ -1755,6 +1761,8 @@ def extract_visible_job_cards_with_diagnostics(
         )
         pages_visited.append(after_url)
         jobs_extracted_per_page.append(len(page_jobs))
+        if capture_page_html:
+            page_html_snapshots.append({"url": after_url, "html": after_html})
 
         new_jobs = [
             job for job in page_jobs if _job_identity_key(job) not in seen_job_identities
@@ -1776,6 +1784,7 @@ def extract_visible_job_cards_with_diagnostics(
         max_pages=max_pages,
         total_candidates_before_dedupe=len(candidates),
         total_candidates_after_dedupe=len(deduped),
+        page_html_snapshots=page_html_snapshots,
     )
     return deduped, diagnostics
 

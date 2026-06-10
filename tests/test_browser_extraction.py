@@ -666,6 +666,64 @@ def test_extract_visible_job_cards_handles_ibm_dense_pagination_no_new_job_ids()
     assert diagnostics.pagination_stop_reason == "no_new_job_urls"
 
 
+def test_extract_jobs_from_html_captures_live_like_ibm_card_and_dedupes_duplicate_job_ids() -> None:
+    html = """
+    <main>
+      <a href="https://www.ibm.com/privacy">Privacy</a>
+      <div class="bx--card-group__cards__col" role="region"
+           aria-label="Staff Site Reliability Engineer - Confluent Incident
+           Management &amp; Reliability">
+        <a href="https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&amp;source=WEB_Search_NA"
+           class="bx--card-group__card">
+          <div class="bx--card__content">
+            <div class="bx--card__eyebrow">Infrastructure &amp; Technology</div>
+            <div class="bx--card__heading">
+              Staff Site Reliability Engineer - Confluent Incident Management &amp; Reliability
+            </div>
+            <div class="ibm--card__copy__inner">Professional<br>Multiple Cities</div>
+          </div>
+        </a>
+      </div>
+      <div class="bx--card-group__cards__col" role="region"
+           aria-label="Staff Site Reliability Engineer - Confluent Incident
+           Management &amp; Reliability">
+        <a href="https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&amp;source=WEB_Search_NA"
+           class="bx--card-group__card">
+          <div class="bx--card__content">
+            <div class="bx--card__eyebrow">Infrastructure &amp; Technology</div>
+            <div class="bx--card__heading">
+              Staff Site Reliability Engineer - Confluent Incident Management &amp; Reliability
+            </div>
+            <div class="ibm--card__copy__inner">Professional<br>Multiple Cities</div>
+          </div>
+        </a>
+      </div>
+      <div class="bx--card-group__cards__col" role="region" aria-label="Careers Home">
+        <a href="https://www.ibm.com/careers/search" class="bx--card-group__card">
+          <div class="bx--card__content">
+            <div class="bx--card__heading">Careers Home</div>
+          </div>
+        </a>
+      </div>
+    </main>
+    """
+
+    jobs = extract_jobs_from_html(
+        html,
+        company_name="IBM Consulting",
+        source_name="IBM Consulting",
+        source_mode="browser_allowed",
+        base_url="https://www.ibm.com/careers/search?field_keyword_05[0]=Canada&p=2",
+        max_cards=50,
+    )
+
+    assert len(jobs) == 1
+    assert jobs[0]["job_url"] == (
+        "https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&source=WEB_Search_NA"
+    )
+    assert "Staff Site Reliability Engineer" in jobs[0]["title"]
+
+
 def test_search_with_location_term_does_not_use_role_or_skill_terms() -> None:
     page = FakeSearchPage()
 

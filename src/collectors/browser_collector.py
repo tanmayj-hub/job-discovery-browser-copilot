@@ -142,6 +142,7 @@ def collect_single_company_with_browser(
     location_scope_override: tuple[str, ...] | None = None,
     max_pages_per_source_override: int | None = None,
     force_location_scope_search: bool = False,
+    capture_page_html: bool = False,
 ) -> dict[str, Any]:
     """Collect one company through a dedicated browser session."""
 
@@ -159,6 +160,7 @@ def collect_single_company_with_browser(
             location_scope_override=location_scope_override,
             max_pages_per_source_override=max_pages_per_source_override,
             force_location_scope_search=force_location_scope_search,
+            capture_page_html=capture_page_html,
         )
 
 
@@ -172,6 +174,7 @@ def collect_company_jobs(
     location_scope_override: tuple[str, ...] | None = None,
     max_pages_per_source_override: int | None = None,
     force_location_scope_search: bool = False,
+    capture_page_html: bool = False,
 ) -> dict[str, Any]:
     """Collect jobs for a single browser-allowed company."""
 
@@ -326,6 +329,7 @@ def collect_company_jobs(
             source_mode=classification.source_mode,
             max_cards=max_cards_per_source,
             max_pages=max_pages_per_source,
+            capture_page_html=capture_page_html,
         )
         extracted_jobs = extraction_jobs
         if not extracted_jobs and find_search_input(page) is not None:
@@ -347,6 +351,7 @@ def collect_company_jobs(
                     source_mode=classification.source_mode,
                     max_cards=max_cards_per_source,
                     max_pages=max_pages_per_source,
+                    capture_page_html=capture_page_html,
                 )
                 extracted_jobs.extend(search_jobs)
             extracted_jobs = _dedupe_collected_jobs(extracted_jobs)
@@ -469,6 +474,7 @@ def collect_company_jobs(
             "pagination_stop_reason": extraction_diagnostics.pagination_stop_reason,
             "pages_visited": extraction_diagnostics.pages_visited,
             "jobs_extracted_per_page": extraction_diagnostics.jobs_extracted_per_page,
+            "page_html_snapshots": extraction_diagnostics.page_html_snapshots,
             "max_pages_per_source": max_pages_per_source,
             "jobs": extracted_jobs,
             "candidate_jobs": extracted_jobs,
