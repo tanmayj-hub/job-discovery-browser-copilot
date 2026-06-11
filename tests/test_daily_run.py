@@ -352,6 +352,53 @@ def test_daily_run_preserves_api_and_static_metadata_in_storage(tmp_path: Path) 
     assert jobs["Human Co"]["board_slug"] == "human"
 
 
+def test_daily_run_company_filter_limits_checked_sources(tmp_path: Path) -> None:
+    config_path = tmp_path / "companies.yaml"
+    db_path = tmp_path / "job_discovery.db"
+    exports_dir = tmp_path / "exports"
+    _write_companies_yaml(config_path)
+    seen_companies: list[str] = []
+
+    def sample_collector(
+        _connection,
+        companies: list[dict[str, object]],
+    ) -> list[dict[str, object]]:
+        company = companies[0]
+        seen_companies.append(str(company["name"]))
+        return [
+            {
+                "company_name": str(company["name"]),
+                "source_name": str(company.get("website_category") or company["name"]),
+                "status": "completed",
+                "jobs": [],
+            }
+        ]
+
+    collectors = {
+        "api_allowed": sample_collector,
+        "browser_allowed": sample_collector,
+        "human_in_loop": sample_collector,
+    }
+
+    result = run_daily_workflow(
+        config_path=config_path,
+        db_path=db_path,
+        exports_dir=exports_dir,
+        run_date=date(2026, 6, 3),
+        collectors=collectors,
+        company_names=["Browser Co"],
+    )
+
+    assert seen_companies == ["Browser Co"]
+    assert result.companies_checked == ["Browser Co"]
+    assert result.jobs_discovered == 0
+    assert result.companies_skipped == []
+
+    connection = initialize_database(db_path)
+    companies = {company["name"]: company for company in get_companies(connection)}
+    assert set(companies) == {"Browser Co"}
+
+
 def test_repeated_daily_run_does_not_duplicate_api_jobs(tmp_path: Path) -> None:
     config_path = tmp_path / "companies.yaml"
     db_path = tmp_path / "job_discovery.db"

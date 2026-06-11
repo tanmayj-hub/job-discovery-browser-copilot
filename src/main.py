@@ -122,6 +122,14 @@ def load_companies_config() -> list[dict[str, object]]:
     return companies if isinstance(companies, list) else []
 
 
+def parse_company_filter(raw: str | None) -> list[str]:
+    """Parse a comma-separated company filter into a clean list."""
+
+    if not raw:
+        return []
+    return [item.strip() for item in str(raw).split(",") if item.strip()]
+
+
 def seed_companies_if_needed(connection) -> None:
     """Populate companies into SQLite the first time the CLI runs."""
 
@@ -151,7 +159,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum number of companies to process.",
     )
 
-    subparsers.add_parser("daily-run", help="Run the full daily workflow")
+    daily_run_parser = subparsers.add_parser("daily-run", help="Run the full daily workflow")
+    daily_run_parser.add_argument(
+        "--company",
+        type=str,
+        default=None,
+        help="Optional comma-separated company filter for exact-name daily-run slices.",
+    )
 
     onboarding_parser = subparsers.add_parser(
         "onboard",
@@ -568,16 +582,19 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "daily-run":
+        companies = parse_company_filter(args.company)
         result = reports_api["run_daily_workflow"](
             config_path=COMPANIES_CONFIG_PATH,
             db_path=DATABASE_PATH,
             exports_dir=PROJECT_ROOT / "data" / "exports",
+            company_names=companies,
         )
         print(
             {
                 "run_date": result.run_date,
                 "companies_checked": len(result.companies_checked),
                 "companies_skipped": len(result.companies_skipped),
+                "company_filter": companies or "all",
                 "jobs_discovered": result.jobs_discovered,
                 "jobs_scored": result.jobs_scored,
                 "jobs_relevant": result.jobs_relevant,

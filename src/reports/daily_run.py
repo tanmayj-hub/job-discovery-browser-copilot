@@ -83,6 +83,16 @@ def load_companies_yaml(path: Path) -> list[dict[str, Any]]:
     return companies if isinstance(companies, list) else []
 
 
+def normalize_company_filter_names(company_names: list[str] | None) -> set[str]:
+    """Normalize an optional company filter for exact-name daily-run slices."""
+
+    return {
+        str(name).strip().lower()
+        for name in (company_names or [])
+        if str(name).strip()
+    }
+
+
 def _existing_company_map(connection) -> dict[str, dict[str, Any]]:
     return {company["name"]: company for company in get_companies(connection)}
 
@@ -658,6 +668,7 @@ def run_daily_workflow(
     exports_dir: Path,
     run_date: date | None = None,
     collectors: dict[str, CollectorFunc] | None = None,
+    company_names: list[str] | None = None,
 ) -> DailyRunResult:
     """Execute the end-to-end daily workflow."""
 
@@ -665,6 +676,13 @@ def run_daily_workflow(
     connection = initialize_database(db_path)
     existing_companies = _existing_company_map(connection)
     loaded_companies = load_companies_yaml(config_path)
+    selected_names = normalize_company_filter_names(company_names)
+    if selected_names:
+        loaded_companies = [
+            company
+            for company in loaded_companies
+            if str(company.get("name") or "").strip().lower() in selected_names
+        ]
     classified_companies = classify_company_sources(loaded_companies, existing_companies)
     upsert_companies(connection, classified_companies)
 
