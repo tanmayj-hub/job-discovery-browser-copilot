@@ -355,6 +355,9 @@ def _source_summary_defaults(company: dict[str, Any]) -> dict[str, Any]:
         "jobs_updated": 0,
         "jobs_unchanged": 0,
         "duplicates_skipped": 0,
+        "pages_visited": 0,
+        "pagination_stop_reason": None,
+        "intervention_reason": None,
         "error": None,
     }
 
@@ -381,6 +384,9 @@ def _enrich_source_summary(
             "jobs_updated": int(result.get("jobs_updated", 0) or 0),
             "jobs_unchanged": int(result.get("jobs_unchanged", 0) or 0),
             "duplicates_skipped": int(result.get("duplicates_skipped", 0) or 0),
+            "pages_visited": int(result.get("pages_visited", 0) or 0),
+            "pagination_stop_reason": result.get("pagination_stop_reason"),
+            "intervention_reason": result.get("intervention_reason"),
             "error": result.get("error"),
         }
     )

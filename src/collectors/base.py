@@ -48,6 +48,9 @@ class CollectorResult:
     intervention_required: bool = False
     location_scope_used: bool = False
     keyword_scope_used: bool = False
+    pages_visited: int = 0
+    pagination_stop_reason: str | None = None
+    intervention_reason: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

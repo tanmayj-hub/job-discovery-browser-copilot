@@ -85,6 +85,21 @@ def _as_collector_result(
     intervention_required: bool = False,
 ) -> CollectorResult:
     jobs = result.get("jobs", [])
+    raw_pages_visited = result.get("pages_visited", 0)
+    if isinstance(raw_pages_visited, list):
+        pages_visited = len(raw_pages_visited)
+    else:
+        try:
+            pages_visited = int(raw_pages_visited or 0)
+        except (TypeError, ValueError):
+            pages_visited = 0
+
+    intervention_reason = result.get("intervention_reason")
+    if intervention_reason is None:
+        signals = result.get("signals", [])
+        if isinstance(signals, list) and signals:
+            intervention_reason = str(signals[0]).strip() or None
+
     return CollectorResult(
         company_name=str(result.get("company_name") or ""),
         source_name=result.get("source_name"),
@@ -102,6 +117,11 @@ def _as_collector_result(
         intervention_required=intervention_required,
         location_scope_used=bool(result.get("location_scope_used", False)),
         keyword_scope_used=bool(result.get("keyword_scope_used", False)),
+        pages_visited=pages_visited,
+        pagination_stop_reason=(
+            str(result.get("pagination_stop_reason") or "").strip() or None
+        ),
+        intervention_reason=str(intervention_reason or "").strip() or None,
     )
 
 

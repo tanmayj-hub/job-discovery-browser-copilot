@@ -1,10 +1,6 @@
 source_scope:
   locations:
     - Canada
-    - Toronto
-    - Ontario
-    - Remote Canada
-    - Remote
 
 audit_scope:
   locations:
