@@ -1,0 +1,13 @@
+verified_companies:
+  - company_name: IBM Consulting
+    verified: true
+    verified_at: "2026-06-10"
+    scope: Canada
+    status: usable
+    notes: "Passed fresh daily-run and manual URL recall audit. Collection misses: 0."
+  - company_name: Sun Life
+    verified: true
+    verified_at: "2026-06-10"
+    scope: Canada
+    status: usable
+    notes: "Passed fresh daily-run and manual URL recall audit. Collection misses: 0. Some roles remain outside current scoring scope."

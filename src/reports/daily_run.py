@@ -54,6 +54,7 @@ class DailyRunResult:
     """Structured daily run summary."""
 
     run_date: str
+    run_scope: str
     companies_checked: list[str]
     companies_skipped: list[dict[str, str]]
     interventions_needed: list[dict[str, Any]]
@@ -443,6 +444,7 @@ def write_daily_report(
     path: Path,
     *,
     run_date: str,
+    run_scope: str,
     companies_checked: list[str],
     companies_skipped: list[dict[str, str]],
     interventions_needed: list[dict[str, Any]],
@@ -470,6 +472,7 @@ def write_daily_report(
         f"# Daily Job Discovery Report - {run_date}",
         "",
         "## Run Summary",
+        f"- Run scope: {run_scope}",
         f"- Companies checked: {len(companies_checked)}",
         f"- Companies skipped: {len(companies_skipped)}",
         f"- Jobs discovered before scoring: {jobs_discovered}",
@@ -669,6 +672,7 @@ def run_daily_workflow(
     run_date: date | None = None,
     collectors: dict[str, CollectorFunc] | None = None,
     company_names: list[str] | None = None,
+    run_scope: str = "all",
 ) -> DailyRunResult:
     """Execute the end-to-end daily workflow."""
 
@@ -864,6 +868,7 @@ def run_daily_workflow(
     write_daily_report(
         artifacts.report_path,
         run_date=effective_date.isoformat(),
+        run_scope=run_scope,
         companies_checked=companies_checked,
         companies_skipped=companies_skipped,
         interventions_needed=interventions_needed,
@@ -885,6 +890,7 @@ def run_daily_workflow(
 
     return DailyRunResult(
         run_date=effective_date.isoformat(),
+        run_scope=run_scope,
         companies_checked=companies_checked,
         companies_skipped=companies_skipped,
         interventions_needed=interventions_needed,

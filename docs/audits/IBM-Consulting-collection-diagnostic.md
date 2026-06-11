@@ -11,7 +11,7 @@
 
 ## Location Scope
 - Location scope used: True
-- Configured locations: Canada, Toronto, Ontario, Remote Canada, Remote
+- Configured locations: Canada
 - Location filter/search attempted: Canada (IBM location facet)
 - Exact filter method: ibm_location_facet
 
@@ -20,15 +20,16 @@
 - Next/load-more detection result: detected
 - Max pages per source: 10
 - Pages visited: 4
-- Jobs extracted per page: [30, 30, 30, 12]
+- Jobs extracted per page: [30, 30, 30, 15]
 - Pagination stop reason: next_disabled_or_missing
 
 ## Counts
-- Candidate jobs before scoring: 101
-- Jobs after scoring: 101
+- Candidate jobs before scoring: 103
+- Jobs after scoring: 103
 - Relevant jobs after scoring: 18
-- Unique IBM jobIds extracted: 101
-- Scored candidates CSV: data\exports\audits\IBM-Consulting-scored-candidates.csv
+- Unique IBM jobIds extracted: 103
+- Unique Workday job IDs extracted: 0
+- Scored candidates CSV: C:\projects\job-discovery-browser-copilot\data\exports\audits\IBM-Consulting-scored-candidates.csv
 
 ## Visited Pages
 - https://www.ibm.com/careers/search?field_keyword_05[0]=Canada
@@ -38,126 +39,130 @@
 
 ## Manual Expected Coverage
 - Manual expected URLs provided: 12
+- Matching manual expected URLs found: 12 / 12
+- Manual expected URLs still missing: 0
 - Matching manual IBM jobIds found: 109197, 109784, 111494, 111872, 113691, 115116, 116909, 118746, 119355, 87530, 92913, 99986
 - Manual IBM jobIds still missing: none
 
-| Manual URL | Manual Title | Raw HTML | Anchor href | Script/JSON | Extracted | Scored | Saved by MVP | Reason if not extracted |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=92913&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=113691&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=99986&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=116909&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=109197&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=111494&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=111872&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=87530&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=118746&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=119355&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
-| https://careers.ibm.com/en_US/careers/JobDetail?jobId=109784&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | - |
+| Manual URL | Manual Title | Raw HTML | Anchor href | Script/JSON | Extracted | Scored | Saved by MVP | Status | Reason |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=92913&source=WEB_Search_NA | - | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=113691&source=WEB_Search_NA | - | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=99986&source=WEB_Search_NA | - | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=116909&source=WEB_Search_NA | - | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=109197&source=WEB_Search_NA | - | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=111494&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | extracted_but_rejected_by_scoring | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=111872&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | extracted_but_rejected_by_scoring | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=87530&source=WEB_Search_NA | - | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&source=WEB_Search_NA | - | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=118746&source=WEB_Search_NA | - | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=119355&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | outside_scope | Rejected because no positive scoring signals survived after penalties. |
+| https://careers.ibm.com/en_US/careers/JobDetail?jobId=109784&source=WEB_Search_NA | - | yes | yes | no | yes | yes | no | extracted_but_rejected_by_scoring | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
 
 ## Candidate Jobs Before Scoring
 - Consulting Consultant SAP Finance Treasury Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=87892&source=WEB_Search_NA
-- Infrastructure & Technology Maximo Application Architect Professional Toronto, CA | Infrastructure & Technology Maximo Application Architect Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108765&source=WEB_Search_NA
 - Consulting Microsoft Dynamics 365 CE Technical Solution Architect Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=92913&source=WEB_Search_NA
-- Software Engineering Senior Engineer Manager - Confluent Experience Foundations Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114395&source=WEB_Search_NA
+- Infrastructure & Technology Maximo Application Architect Professional Toronto, CA | Infrastructure & Technology Maximo Application Architect Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108765&source=WEB_Search_NA
 - Consulting Advisory Delivery Consultant Professional Markham, CA | Consulting Advisory Delivery Consultant Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119288&source=WEB_Search_NA
+- Software Engineering Senior Engineer Manager - Confluent Experience Foundations Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114395&source=WEB_Search_NA
 - Infrastructure & Technology Application Architect - Asset Management Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=105886&source=WEB_Search_NA
 - Sales Customer Success Engineer - Automation - Application Development Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113691&source=WEB_Search_NA
 - Sales Customer Success Engineering - Data & AI (French speaking) Professional Montreal, CA | Sales Customer Success Engineering - Data & AI (French speaking) Professional Montreal, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=117241&source=WEB_Search_NA
+- Software Engineering Senior Architect SAP Data Migration Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=97537&source=WEB_Search_NA
+- Consulting Managing Consultant SAP Finance Project Systems Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=87889&source=WEB_Search_NA
+- Infrastructure & Technology Administrateur Infrastructure TI Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=99986&source=WEB_Search_NA
 - Infrastructure & Technology Intermediate Software Developer Professional Ottawa, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104588&source=WEB_Search_NA
 - Consulting Managing Consultant SAP C4 Service Cloud Billing Professional Vancouver, CA | Consulting Managing Consultant SAP C4 Service Cloud Billing Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113528&source=WEB_Search_NA
 - Sales Customer Success Engineer Professional Montreal, CA | Sales Customer Success Engineer Professional Montreal, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=116909&source=WEB_Search_NA
-- Consulting Managing Consultant SAP Finance Project Systems Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=87889&source=WEB_Search_NA
-- Software Engineering Senior Architect SAP Data Migration Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=97537&source=WEB_Search_NA
-- Infrastructure & Technology Administrateur Infrastructure TI Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=99986&source=WEB_Search_NA
 - Consulting Senior Managing Penetration Testing Consultant - X - Force Red Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115143&source=WEB_Search_NA
-- Infrastructure & Technology Technical Application Manager Professional No City, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=106163&source=WEB_Search_NA
+- Software Engineering Senior Architect SAP Data Migration Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=99711&source=WEB_Search_NA
 - Infrastructure & Technology Senior Application Developer Professional Ottawa, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=85016&source=WEB_Search_NA
-- Consulting Delivery Consultant - IBM Z DevOps Professional Markham, CA | Consulting Delivery Consultant - IBM Z DevOps Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109197&source=WEB_Search_NA
+- Data & Analytics AI & Automation Data Scientist Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | Data & Analytics AI & Automation Data Scientist Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=110910&source=WEB_Search_NA
+- Infrastructure & Technology Technical Application Manager Professional No City, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=106163&source=WEB_Search_NA
 - Consulting Managing Consultant SAP Data Migration (Utilities) Professional Vancouver, CA | Consulting Managing Consultant SAP Data Migration (Utilities) Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113518&source=WEB_Search_NA
 - Infrastructure & Technology Gestionnaire de projets Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111457&source=WEB_Search_NA
-- Data & Analytics AI & Automation Data Scientist Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | Data & Analytics AI & Automation Data Scientist Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=110910&source=WEB_Search_NA
 - Sales Brand Sales Specialist- Infrastructure Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115304&source=WEB_Search_NA
-- Software Engineering Senior Architect SAP Data Migration Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=99711&source=WEB_Search_NA
+- Consulting Delivery Consultant - IBM Z DevOps Professional Markham, CA | Consulting Delivery Consultant - IBM Z DevOps Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109197&source=WEB_Search_NA
 - Infrastructure & Technology Solution Architect Professional Toronto, CA | Infrastructure & Technology Solution Architect Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=87530&source=WEB_Search_NA
-- Consulting Customer Experience Consulting Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | Consulting Customer Experience Consulting Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111494&source=WEB_Search_NA
 - Consulting Salesforce Consulting & GTM Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | Consulting Salesforce Consulting & GTM Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111872&source=WEB_Search_NA
 - Software Engineering Senior Backend Engineer (Cryptography) - Hashicorp Vault Professional Markham, CA | Software Engineering Senior Backend Engineer (Cryptography) - Hashicorp Vault Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114044&source=WEB_Search_NA
 - Software Engineering Software Engineer II - HashiCorp Vault (Ecosystem) Professional Markham, CA | Software Engineering Software Engineer II - HashiCorp Vault (Ecosystem) Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114967&source=WEB_Search_NA
 - Enterprise Operations Recruitment Specialist (RPO) Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114287&source=WEB_Search_NA
-- Infrastructure & Technology Staff Site Reliability Engineer - Confluent Incident Management & Reliability Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&source=WEB_Search_NA
+- Consulting Customer Experience Consulting Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | Consulting Customer Experience Consulting Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111494&source=WEB_Search_NA
 - Consulting Senior Managing Consultant SAP Billing (Utilities) Professional Vancouver, CA | Consulting Senior Managing Consultant SAP Billing (Utilities) Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113513&source=WEB_Search_NA
 - Consulting Senior Managing Consultant SAP EAM (Utilities) Professional Vancouver, CA | Consulting Senior Managing Consultant SAP EAM (Utilities) Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113515&source=WEB_Search_NA
+- Infrastructure & Technology Staff Site Reliability Engineer - Confluent Incident Management & Reliability Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&source=WEB_Search_NA
 - Infrastructure & Technology Analyste Programmeur Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115138&source=WEB_Search_NA
+- Consulting Lead Delivery Consultant - IBM Sterling Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119707&source=WEB_Search_NA
+- Infrastructure & Technology Ingénieur développement optoélectronique Entry Level BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119977&source=WEB_Search_NA
 - Infrastructure & Technology Senior SAP Solution Architect (Utilities) Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=103589&source=WEB_Search_NA
 - Sales Technology Sales Specialist - Infrastructure Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=107046&source=WEB_Search_NA
 - Consulting Data Services Consultant Associate (September 2026 - Toronto or Calgary) Entry Level Multiple Cities | Consulting Data Services Consultant Associate (September 2026 - Toronto or Calgary) Entry Level Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115104&source=WEB_Search_NA
 - Sales Solutions Engineer - Hashicorp Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=118746&source=WEB_Search_NA
+- Sales Technology Sales Specialist – Integration Professional Calgary, CA | Sales Technology Sales Specialist – Integration Professional Calgary, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=98271&source=WEB_Search_NA
 - Consulting Senior Managing Consultant IS-Utilities Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=103592&source=WEB_Search_NA
-- Consulting AI & Automation Business Analyst Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | Consulting AI & Automation Business Analyst Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=112180&source=WEB_Search_NA
-- Sales Brand Sales Specialist, Data & AI Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113778&source=WEB_Search_NA
 - Consulting Advisory Delivery Consultant - Maximo Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111675&source=WEB_Search_NA
 - Infrastructure & Technology Maximo Technical Developer Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113979&source=WEB_Search_NA
+- Sales Brand Sales Specialist, Data & AI Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113778&source=WEB_Search_NA
 - Software Engineering Staff Software Engineer – Confluent Control Plane Core Infrastructure Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114397&source=WEB_Search_NA
 - Consulting Delivery Consultant - IBM Maximo, Tririga Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=118107&source=WEB_Search_NA
-- Sales Technology Sales Specialist – Integration Professional Calgary, CA | Sales Technology Sales Specialist – Integration Professional Calgary, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=98271&source=WEB_Search_NA
+- Consulting AI & Automation Business Analyst Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | Consulting AI & Automation Business Analyst Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=112180&source=WEB_Search_NA
+- Software Engineering AI Driven Skills Growth Developer Professional Markham, CA | Software Engineering AI Driven Skills Growth Developer Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108951&source=WEB_Search_NA
+- Consulting SuccessFactors Integration Expert Consultant Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=89169&source=WEB_Search_NA
+- Consulting Business Transformation Senior Managing Consultant Professional Toronto, CA | Consulting Business Transformation Senior Managing Consultant Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109011&source=WEB_Search_NA
 - Software Engineering Managing Consultant SAP Data and Analytics Professional Ottawa, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=92092&source=WEB_Search_NA
 - Consulting Managing Consultant SAP Military Planning and Operations Professional Ottawa, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=92083&source=WEB_Search_NA
-- Consulting Business Transformation Senior Managing Consultant Professional Toronto, CA | Consulting Business Transformation Senior Managing Consultant Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109011&source=WEB_Search_NA
-- Software Engineering AI Driven Skills Growth Developer Professional Markham, CA | Software Engineering AI Driven Skills Growth Developer Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108951&source=WEB_Search_NA
+- Enterprise Operations Procurement Category Manager – Corporate & Professional Services Professional Toronto, CA | Enterprise Operations Procurement Category Manager – Corporate & Professional Services Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=103000&source=WEB_Search_NA
 - Infrastructure & Technology Scientifique modélisation thermomécanique Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114032&source=WEB_Search_NA
 - Consulting Delivery Consultant - Filenet Professional Markham, CA | Consulting Delivery Consultant - Filenet Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115860&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer - Confluent Cloud Infrastructure & Platform Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=117259&source=WEB_Search_NA
-- Enterprise Operations Procurement Category Manager – Corporate & Professional Services Professional Toronto, CA | Enterprise Operations Procurement Category Manager – Corporate & Professional Services Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=103000&source=WEB_Search_NA
-- Consulting SuccessFactors Integration Expert Consultant Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=89169&source=WEB_Search_NA
 - Consulting Data Analyst Professional Bedford, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=118307&source=WEB_Search_NA
-- Consulting Federal Consulting Intern (Sept 2026 - 4 Months - Ottawa) Internship Ottawa, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111199&source=WEB_Search_NA
-- Software Engineering Senior Managing Consultant SAP Solution Architect/Consultant principal en architecture de solutions SAP Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=97080&source=WEB_Search_NA
-- Consulting Senior Managing Consultant SAP Procure to Pay Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111431&source=WEB_Search_NA
-- Software Engineering Machine Learning Developer Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | Software Engineering Machine Learning Developer Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=110911&source=WEB_Search_NA
-- Sales Technology Sales Leader Professional Toronto, CA | Sales Technology Sales Leader Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114322&source=WEB_Search_NA
-- Consulting Senior Managing Consultant SAP FI-CA Professional Vancouver, CA | Consulting Senior Managing Consultant SAP FI-CA Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113520&source=WEB_Search_NA
-- Sales Technology Sales Specialist - Consulting/SI Partner Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119355&source=WEB_Search_NA
+- Consulting 24x7 IT Security Services Specialist Professional Markham, CA | Consulting 24x7 IT Security Services Specialist Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119358&source=WEB_Search_NA
 - Software Engineering Advisory Architect SAP S/4 HANA (Basis) Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=88962&source=WEB_Search_NA
-- Sales Account Technical Leader Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=86737&source=WEB_Search_NA
-- Sales Platform Developer Professional Toronto, CA | Sales Platform Developer Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108768&source=WEB_Search_NA
-- Consulting Atlantic Consulting Intern (Sept 2026 - 4 Months - Halifax) Internship Bedford, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111159&source=WEB_Search_NA
+- Software Engineering Senior Managing Consultant SAP Solution Architect/Consultant principal en architecture de solutions SAP Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=97080&source=WEB_Search_NA
+- Software Engineering Machine Learning Developer Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | Software Engineering Machine Learning Developer Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=110911&source=WEB_Search_NA
+- Consulting Senior Managing Consultant SAP FI-CA Professional Vancouver, CA | Consulting Senior Managing Consultant SAP FI-CA Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113520&source=WEB_Search_NA
+- Consulting Federal Consulting Intern (Sept 2026 - 4 Months - Ottawa) Internship Ottawa, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111199&source=WEB_Search_NA
+- Consulting Senior Managing Consultant SAP Procure to Pay Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111431&source=WEB_Search_NA
+- Sales Technology Sales Leader Professional Toronto, CA | Sales Technology Sales Leader Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114322&source=WEB_Search_NA
+- Sales Technology Sales Specialist - Consulting/SI Partner Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119355&source=WEB_Search_NA
 - Sales Brand Technical Sales Specialist – Power & Cloud Professional Toronto, CA | Sales Brand Technical Sales Specialist – Power & Cloud Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109784&source=WEB_Search_NA
-- Software Engineering Backend Engineer (Cryptography)- Hashicorp Vault Professional Markham, CA | Software Engineering Backend Engineer (Cryptography)- Hashicorp Vault Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114042&source=WEB_Search_NA
+- Consulting Atlantic Consulting Intern (Sept 2026 - 4 Months - Halifax) Internship Bedford, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111159&source=WEB_Search_NA
+- Sales Account Technical Leader Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=86737&source=WEB_Search_NA
 - Infrastructure & Technology Analyste programmeur junior Entry Level BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113514&source=WEB_Search_NA
-- Consulting Senior Managing Consultant SAP Utilities-Device Management Professional Vancouver, CA | Consulting Senior Managing Consultant SAP Utilities-Device Management Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113529&source=WEB_Search_NA
-- Infrastructure & Technology Maximo Technical Developer Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114857&source=WEB_Search_NA
 - Infrastructure & Technology Maximo Technical Consultant/Architect Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114062&source=WEB_Search_NA
-- Consulting Advisory Delivery Consultant Professional Markham, CA | Consulting Advisory Delivery Consultant Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109212&source=WEB_Search_NA
-- Enterprise Operations Talent Acquisition Coordinator (RPO) Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114298&source=WEB_Search_NA
+- Software Engineering Backend Engineer (Cryptography)- Hashicorp Vault Professional Markham, CA | Software Engineering Backend Engineer (Cryptography)- Hashicorp Vault Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114042&source=WEB_Search_NA
+- Infrastructure & Technology Maximo Technical Developer Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114857&source=WEB_Search_NA
+- Consulting Senior Managing Consultant SAP Utilities-Device Management Professional Vancouver, CA | Consulting Senior Managing Consultant SAP Utilities-Device Management Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113529&source=WEB_Search_NA
+- Software Engineering Senior Software Engineer II - Confluent Cloud Platform Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=117263&source=WEB_Search_NA
 - Project Management SuccessFactors - Project Manager Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=112756&source=WEB_Search_NA
+- Enterprise Operations Talent Acquisition Coordinator (RPO) Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114298&source=WEB_Search_NA
+- Consulting Advisory Delivery Consultant Professional Markham, CA | Consulting Advisory Delivery Consultant Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109212&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer - Confluent Cloud Infrastructure & Platform Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=117266&source=WEB_Search_NA
 - Consulting SAP SuccessFactors Payroll Consultant Professional Toronto, CA | Consulting SAP SuccessFactors Payroll Consultant Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=83573&source=WEB_Search_NA
 - Infrastructure & Technology Technicien en génie physique ou génie métallurgique Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109805&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer II - HashiCorp Vault (Ecosystem) Professional Markham, CA | Software Engineering Senior Software Engineer II - HashiCorp Vault (Ecosystem) Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114969&source=WEB_Search_NA
+- Enterprise Operations Benefits Associate Professional Markham, CA | Enterprise Operations Benefits Associate Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119578&source=WEB_Search_NA
 - Consulting Senior Managing Consultant SAP C4 (Utilities) Professional Vancouver, CA | Consulting Senior Managing Consultant SAP C4 (Utilities) Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113522&source=WEB_Search_NA
 - Project Management Delivery Project Manager Professional Markham, CA | Project Management Delivery Project Manager Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=116387&source=WEB_Search_NA
 - Infrastructure & Technology Package Specialist-SAP HANA SCM MM Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119022&source=WEB_Search_NA
 - Consulting Senior Managing Consultant SAP Supply Chain (IM-LE) Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=87872&source=WEB_Search_NA
 - Infrastructure & Technology Technicien en génie chimique ou en chimie analytique ou en procédé Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109804&source=WEB_Search_NA
 - Software Engineering Application Modernization Developer Intern (Sept 2026 - 4 Months - Toronto or Montreal) Internship Multiple Cities | Software Engineering Application Modernization Developer Intern (Sept 2026 - 4 Months - Toronto or Montreal) Internship Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111878&source=WEB_Search_NA
-- Consulting Senior Managing Consultant SAP Supply Chain Professional Vancouver, CA | Consulting Senior Managing Consultant SAP Supply Chain Professional Vancouver, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113511&source=WEB_Search_NA
-- Infrastructure & Technology Administrateur infrastructure DB2 / MQ Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=97062&source=WEB_Search_NA
 - Sales Technology Sales Specialist - Automation (French Speaking) Professional Montreal, CA | Sales Technology Sales Specialist - Automation (French Speaking) Professional Montreal, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104952&source=WEB_Search_NA
+- Infrastructure & Technology Administrateur infrastructure DB2 / MQ Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=97062&source=WEB_Search_NA
 - Sales Strategic Account Manager Professional Toronto, CA | Sales Strategic Account Manager Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=118556&source=WEB_Search_NA
-- Infrastructure & Technology Architecte Intégration d’équipements Professional BROMONT, CA | Infrastructure & Technology Architecte Intégration d’équipements Professional BROMONT, CA Infrastructure & Technology Technicien génie électrique Professional B | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104532&source=WEB_Search_NA
-- Infrastructure & Technology Technicien génie électrique Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114339&source=WEB_Search_NA
-- Software Engineering Data Services Developer Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | Software Engineering Data Services Developer Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111232&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer - HashiCorp Secure Products Professional Markham, CA | Software Engineering Senior Software Engineer - HashiCorp Secure Products Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111538&source=WEB_Search_NA
-- Infrastructure & Technology Ingénierie d'approvisionnement Entry Level BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113958&source=WEB_Search_NA
-- Software Engineering Data Services Developer Associate (September 2026 - Toronto or Calgary) Entry Level Multiple Cities | Software Engineering Data Services Developer Associate (September 2026 - Toronto or Calgary) Entry Level Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115883&source=WEB_Search_NA
+- Software Engineering Data Services Developer Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | Software Engineering Data Services Developer Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111232&source=WEB_Search_NA
+- Infrastructure & Technology Technicien génie électrique Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114339&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer II - Confluent Cloud Platform Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115881&source=WEB_Search_NA
-- Enterprise Operations Canada Communications Professional Professional Multiple Cities | Enterprise Operations Canada Communications Professional Professional Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=116590&source=WEB_Search_NA
+- Software Engineering Data Services Developer Associate (September 2026 - Toronto or Calgary) Entry Level Multiple Cities | Software Engineering Data Services Developer Associate (September 2026 - Toronto or Calgary) Entry Level Multiple Cities | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115883&source=WEB_Search_NA
+- Infrastructure & Technology Ingénierie d'approvisionnement Entry Level BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113958&source=WEB_Search_NA
 - Consulting Maximo Technical Developer Professional Calgary, CA | Consulting Maximo Technical Developer Professional Calgary, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=118807&source=WEB_Search_NA
+- Infrastructure & Technology Architecte Intégration d’équipements Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104532&source=WEB_Search_NA
 - Infrastructure & Technology CPI en procédés pour les solutions d'assemblages de nouvelles générations Professional BROMONT, CA | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109801&source=WEB_Search_NA
-- Infrastructure & Technology Technical Architect Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=117996&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer - Confluent DevProd Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115513&source=WEB_Search_NA
+- Infrastructure & Technology Technical Architect Professional Multiple Cities | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=117996&source=WEB_Search_NA
 
 ## Scored Candidates
 - Infrastructure & Technology Staff Site Reliability Engineer - Confluent Incident Management & Reliability Professional Multiple Cities | score 38 | relevant=True | tier=core_target_fit | title matches target role: Site Reliability Engineer; support/ops signals: incident | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&source=WEB_Search_NA
@@ -172,12 +177,12 @@
 - Sales Customer Success Engineer - Automation - Application Development Professional Multiple Cities | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Customer Success Engineer | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113691&source=WEB_Search_NA
 - Infrastructure & Technology Maximo Technical Consultant/Architect Professional Multiple Cities | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Technical Consultant | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114062&source=WEB_Search_NA
 - Consulting Microsoft Dynamics 365 CE Technical Solution Architect Professional Multiple Cities | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Solution Architect | https://careers.ibm.com/en_US/careers/JobDetail?jobId=92913&source=WEB_Search_NA
+- Consulting Lead Delivery Consultant - IBM Sterling Professional Multiple Cities | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Delivery Consultant | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119707&source=WEB_Search_NA
 - Consulting Delivery Consultant - IBM Maximo, Tririga Professional Multiple Cities | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Delivery Consultant | https://careers.ibm.com/en_US/careers/JobDetail?jobId=118107&source=WEB_Search_NA
 - Consulting Advisory Delivery Consultant - Maximo Professional Multiple Cities | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Delivery Consultant | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111675&source=WEB_Search_NA
 - Infrastructure & Technology Senior SAP Solution Architect (Utilities) Professional Multiple Cities | score 9 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Solution Architect | https://careers.ibm.com/en_US/careers/JobDetail?jobId=103589&source=WEB_Search_NA
 - Infrastructure & Technology Administrateur infrastructure DB2 / MQ Professional BROMONT, CA | score 8 | relevant=True | tier=core_target_fit | support/ops signals: admin | https://careers.ibm.com/en_US/careers/JobDetail?jobId=97062&source=WEB_Search_NA
 - Infrastructure & Technology Administrateur Infrastructure TI Professional BROMONT, CA | score 8 | relevant=True | tier=core_target_fit | support/ops signals: admin | https://careers.ibm.com/en_US/careers/JobDetail?jobId=99986&source=WEB_Search_NA
-- Infrastructure & Technology Architecte Intégration d’équipements Professional BROMONT, CA | score 5 | relevant=True | tier=core_target_fit | location signals: Toronto, Markham, Canada; support/ops signals: operations | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104532&source=WEB_Search_NA
 - Software Engineering Software Engineer II - HashiCorp Vault (Ecosystem) Professional Markham, CA | score 4 | relevant=False | tier=not_relevant | location signals: Markham | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114967&source=WEB_Search_NA
 - Software Engineering Machine Learning Developer Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=110911&source=WEB_Search_NA
 - Software Engineering Data Services Developer Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111232&source=WEB_Search_NA
@@ -186,18 +191,19 @@
 - Software Engineering Application Modernization Developer Intern (Sept 2026 - 4 Months - Toronto or Montreal) Internship Multiple Cities | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111878&source=WEB_Search_NA
 - Software Engineering AI Driven Skills Growth Developer Professional Markham, CA | score 4 | relevant=False | tier=not_relevant | location signals: Markham | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108951&source=WEB_Search_NA
 - Sales Technology Sales Leader Professional Toronto, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114322&source=WEB_Search_NA
-- Sales Platform Developer Professional Toronto, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108768&source=WEB_Search_NA
 - Sales Brand Technical Sales Specialist – Power & Cloud Professional Toronto, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109784&source=WEB_Search_NA
 - Infrastructure & Technology Maximo Application Architect Professional Toronto, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108765&source=WEB_Search_NA
-- Enterprise Operations Canada Communications Professional Professional Multiple Cities | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://careers.ibm.com/en_US/careers/JobDetail?jobId=116590&source=WEB_Search_NA
+- Enterprise Operations Benefits Associate Professional Markham, CA | score 4 | relevant=False | tier=not_relevant | location signals: Markham | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119578&source=WEB_Search_NA
 - Data & Analytics AI & Automation Data Scientist Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=110910&source=WEB_Search_NA
 - Consulting Salesforce Consulting & GTM Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111872&source=WEB_Search_NA
 - Consulting SAP SuccessFactors Payroll Consultant Professional Toronto, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=83573&source=WEB_Search_NA
 - Consulting Data Services Consultant Associate (September 2026 - Toronto or Calgary) Entry Level Multiple Cities | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115104&source=WEB_Search_NA
 - Consulting Customer Experience Consulting Intern (Sept 2026 - 4 Months - Toronto) Internship Toronto, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111494&source=WEB_Search_NA
 - Consulting AI & Automation Business Analyst Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://careers.ibm.com/en_US/careers/JobDetail?jobId=112180&source=WEB_Search_NA
+- Consulting 24x7 IT Security Services Specialist Professional Markham, CA | score 4 | relevant=False | tier=not_relevant | location signals: Markham | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119358&source=WEB_Search_NA
 - Software Engineering Staff Software Engineer – Confluent Control Plane Core Infrastructure Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114397&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer II - HashiCorp Vault (Ecosystem) Professional Markham, CA | score 0 | relevant=False | tier=not_relevant | location signals: Markham | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114969&source=WEB_Search_NA
+- Software Engineering Senior Software Engineer II - Confluent Cloud Platform Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=117263&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer II - Confluent Cloud Platform Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115881&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer - HashiCorp Secure Products Professional Markham, CA | score 0 | relevant=False | tier=not_relevant | location signals: Markham | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111538&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer - Confluent DevProd Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115513&source=WEB_Search_NA
@@ -231,9 +237,11 @@
 - Infrastructure & Technology Maximo Technical Developer Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113979&source=WEB_Search_NA
 - Infrastructure & Technology Maximo Technical Developer Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114857&source=WEB_Search_NA
 - Infrastructure & Technology Intermediate Software Developer Professional Ottawa, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104588&source=WEB_Search_NA
+- Infrastructure & Technology Ingénieur développement optoélectronique Entry Level BROMONT, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119977&source=WEB_Search_NA
 - Infrastructure & Technology Ingénierie d'approvisionnement Entry Level BROMONT, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113958&source=WEB_Search_NA
 - Infrastructure & Technology Gestionnaire de projets Professional BROMONT, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111457&source=WEB_Search_NA
 - Infrastructure & Technology CPI en procédés pour les solutions d'assemblages de nouvelles générations Professional BROMONT, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109801&source=WEB_Search_NA
+- Infrastructure & Technology Architecte Intégration d’équipements Professional BROMONT, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104532&source=WEB_Search_NA
 - Infrastructure & Technology Application Architect - Asset Management Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=105886&source=WEB_Search_NA
 - Infrastructure & Technology Analyste programmeur junior Entry Level BROMONT, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113514&source=WEB_Search_NA
 - Infrastructure & Technology Analyste Programmeur Professional BROMONT, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115138&source=WEB_Search_NA
@@ -243,7 +251,6 @@
 - Consulting SuccessFactors Integration Expert Consultant Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=89169&source=WEB_Search_NA
 - Consulting Senior Managing Penetration Testing Consultant - X - Force Red Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115143&source=WEB_Search_NA
 - Consulting Senior Managing Consultant SAP Utilities-Device Management Professional Vancouver, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113529&source=WEB_Search_NA
-- Consulting Senior Managing Consultant SAP Supply Chain Professional Vancouver, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113511&source=WEB_Search_NA
 - Consulting Senior Managing Consultant SAP Supply Chain (IM-LE) Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=87872&source=WEB_Search_NA
 - Consulting Senior Managing Consultant SAP Procure to Pay Professional Multiple Cities | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111431&source=WEB_Search_NA
 - Consulting Senior Managing Consultant SAP FI-CA Professional Vancouver, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113520&source=WEB_Search_NA
@@ -267,11 +274,12 @@
 - Consulting Advisory Delivery Consultant Professional Markham, CA | score 28 | tier=adjacent_customer_facing_technical_fit | Consulting Advisory Delivery Consultant Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119288&source=WEB_Search_NA
 - Sales Customer Success Engineer - Automation - Application Development Professional Multiple Cities | score 24 | tier=adjacent_customer_facing_technical_fit | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113691&source=WEB_Search_NA
 - Sales Customer Success Engineering - Data & AI (French speaking) Professional Montreal, CA | score 24 | tier=adjacent_customer_facing_technical_fit | Sales Customer Success Engineering - Data & AI (French speaking) Professional Montreal, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=117241&source=WEB_Search_NA
-- Sales Customer Success Engineer Professional Montreal, CA | score 24 | tier=adjacent_customer_facing_technical_fit | Sales Customer Success Engineer Professional Montreal, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=116909&source=WEB_Search_NA
 - Infrastructure & Technology Administrateur Infrastructure TI Professional BROMONT, CA | score 8 | tier=core_target_fit | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=99986&source=WEB_Search_NA
+- Sales Customer Success Engineer Professional Montreal, CA | score 24 | tier=adjacent_customer_facing_technical_fit | Sales Customer Success Engineer Professional Montreal, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=116909&source=WEB_Search_NA
 - Consulting Delivery Consultant - IBM Z DevOps Professional Markham, CA | score 28 | tier=adjacent_customer_facing_technical_fit | Consulting Delivery Consultant - IBM Z DevOps Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109197&source=WEB_Search_NA
 - Infrastructure & Technology Solution Architect Professional Toronto, CA | score 28 | tier=adjacent_customer_facing_technical_fit | Infrastructure & Technology Solution Architect Professional Toronto, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=87530&source=WEB_Search_NA
 - Infrastructure & Technology Staff Site Reliability Engineer - Confluent Incident Management & Reliability Professional Multiple Cities | score 38 | tier=core_target_fit | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115116&source=WEB_Search_NA
+- Consulting Lead Delivery Consultant - IBM Sterling Professional Multiple Cities | score 24 | tier=adjacent_customer_facing_technical_fit | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119707&source=WEB_Search_NA
 - Infrastructure & Technology Senior SAP Solution Architect (Utilities) Professional Multiple Cities | score 9 | tier=adjacent_customer_facing_technical_fit | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=103589&source=WEB_Search_NA
 - Sales Solutions Engineer - Hashicorp Professional Multiple Cities | score 24 | tier=adjacent_customer_facing_technical_fit | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=118746&source=WEB_Search_NA
 - Consulting Advisory Delivery Consultant - Maximo Professional Multiple Cities | score 24 | tier=adjacent_customer_facing_technical_fit | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111675&source=WEB_Search_NA
@@ -280,7 +288,6 @@
 - Infrastructure & Technology Maximo Technical Consultant/Architect Professional Multiple Cities | score 24 | tier=adjacent_customer_facing_technical_fit | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114062&source=WEB_Search_NA
 - Consulting Advisory Delivery Consultant Professional Markham, CA | score 28 | tier=adjacent_customer_facing_technical_fit | Consulting Advisory Delivery Consultant Professional Markham, CA | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109212&source=WEB_Search_NA
 - Infrastructure & Technology Administrateur infrastructure DB2 / MQ Professional BROMONT, CA | score 8 | tier=core_target_fit | - | https://careers.ibm.com/en_US/careers/JobDetail?jobId=97062&source=WEB_Search_NA
-- Infrastructure & Technology Architecte Intégration d’équipements Professional BROMONT, CA | score 5 | tier=core_target_fit | Infrastructure & Technology Architecte Intégration d’équipements Professional BROMONT, CA Infrastructure & Technology Technicien génie électrique Professional B | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104532&source=WEB_Search_NA
 
 ## Rejected But Interesting Jobs
 - Software Engineering Software Engineer II - HashiCorp Vault (Ecosystem) Professional Markham, CA | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114967&source=WEB_Search_NA
@@ -290,13 +297,13 @@
 - Software Engineering Backend Engineer (Cryptography)- Hashicorp Vault Professional Markham, CA | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114042&source=WEB_Search_NA
 - Software Engineering Application Modernization Developer Intern (Sept 2026 - 4 Months - Toronto or Montreal) Internship Multiple Cities | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111878&source=WEB_Search_NA
 - Software Engineering AI Driven Skills Growth Developer Professional Markham, CA | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108951&source=WEB_Search_NA
-- Sales Platform Developer Professional Toronto, CA | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108768&source=WEB_Search_NA
 - Sales Brand Technical Sales Specialist – Power & Cloud Professional Toronto, CA | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109784&source=WEB_Search_NA
 - Infrastructure & Technology Maximo Application Architect Professional Toronto, CA | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=108765&source=WEB_Search_NA
-- Enterprise Operations Canada Communications Professional Professional Multiple Cities | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=116590&source=WEB_Search_NA
+- Enterprise Operations Benefits Associate Professional Markham, CA | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119578&source=WEB_Search_NA
 - Consulting AI & Automation Business Analyst Intern (Sept 2026 - 4 Months - Toronto, Calgary, Ottawa, or Montreal) Internship Multiple Cities | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=112180&source=WEB_Search_NA
 - Software Engineering Staff Software Engineer – Confluent Control Plane Core Infrastructure Professional Multiple Cities | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114397&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer II - HashiCorp Vault (Ecosystem) Professional Markham, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114969&source=WEB_Search_NA
+- Software Engineering Senior Software Engineer II - Confluent Cloud Platform Professional Multiple Cities | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=117263&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer II - Confluent Cloud Platform Professional Multiple Cities | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115881&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer - HashiCorp Secure Products Professional Markham, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111538&source=WEB_Search_NA
 - Software Engineering Senior Software Engineer - Confluent DevProd Professional Multiple Cities | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115513&source=WEB_Search_NA
@@ -322,9 +329,11 @@
 - Infrastructure & Technology Maximo Technical Developer Professional Multiple Cities | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113979&source=WEB_Search_NA
 - Infrastructure & Technology Maximo Technical Developer Professional Multiple Cities | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=114857&source=WEB_Search_NA
 - Infrastructure & Technology Intermediate Software Developer Professional Ottawa, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104588&source=WEB_Search_NA
+- Infrastructure & Technology Ingénieur développement optoélectronique Entry Level BROMONT, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=119977&source=WEB_Search_NA
 - Infrastructure & Technology Ingénierie d'approvisionnement Entry Level BROMONT, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113958&source=WEB_Search_NA
 - Infrastructure & Technology Gestionnaire de projets Professional BROMONT, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=111457&source=WEB_Search_NA
 - Infrastructure & Technology CPI en procédés pour les solutions d'assemblages de nouvelles générations Professional BROMONT, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=109801&source=WEB_Search_NA
+- Infrastructure & Technology Architecte Intégration d’équipements Professional BROMONT, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=104532&source=WEB_Search_NA
 - Infrastructure & Technology Application Architect - Asset Management Professional Multiple Cities | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=105886&source=WEB_Search_NA
 - Infrastructure & Technology Analyste programmeur junior Entry Level BROMONT, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=113514&source=WEB_Search_NA
 - Infrastructure & Technology Analyste Programmeur Professional BROMONT, CA | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.ibm.com/en_US/careers/JobDetail?jobId=115138&source=WEB_Search_NA

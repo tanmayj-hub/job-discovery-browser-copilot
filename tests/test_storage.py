@@ -432,6 +432,18 @@ def test_update_status(tmp_path: Path) -> None:
     assert stored_job["status"] == "reviewed"
 
 
+def test_update_status_accepts_applied(tmp_path: Path) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+    job_id = upsert_job(connection, _sample_job())
+
+    update_job_status(connection, job_id, "applied")
+    stored_job = get_job_by_id(connection, job_id)
+
+    assert stored_job is not None
+    assert stored_job["status"] == "applied"
+
+
 def test_update_status_rejects_invalid_value(tmp_path: Path) -> None:
     connection = initialize_database(tmp_path / "job_discovery.db")
     upsert_companies(connection, [_sample_company()])
@@ -443,6 +455,111 @@ def test_update_status_rejects_invalid_value(tmp_path: Path) -> None:
         pass
     else:
         raise AssertionError("Expected invalid status to raise ValueError")
+
+
+def test_initialize_database_migrates_existing_jobs_status_constraint_for_applied(
+    tmp_path: Path,
+) -> None:
+    db_path = tmp_path / "legacy_job_discovery.db"
+    connection = sqlite3.connect(db_path)
+    connection.execute("PRAGMA foreign_keys = ON")
+    connection.executescript(
+        """
+        CREATE TABLE companies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            sector TEXT NOT NULL,
+            category TEXT NOT NULL,
+            careers_url TEXT,
+            website_category TEXT,
+            ats_hint TEXT,
+            canada_hubs_notes TEXT,
+            role_families TEXT NOT NULL DEFAULT '[]',
+            keywords TEXT NOT NULL DEFAULT '[]',
+            priority TEXT,
+            monitoring_hint TEXT,
+            status TEXT,
+            source_mode TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE jobs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company_name TEXT NOT NULL,
+            title TEXT NOT NULL,
+            location TEXT,
+            job_url TEXT,
+            apply_url TEXT,
+            source_name TEXT,
+            source_mode TEXT NOT NULL,
+            description TEXT,
+            date_posted TEXT,
+            first_seen TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_seen TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            match_score INTEGER NOT NULL DEFAULT 0,
+            match_reasons TEXT NOT NULL DEFAULT '[]',
+            status TEXT NOT NULL DEFAULT 'new'
+                CHECK (status IN ('new', 'saved', 'rejected', 'reviewed', 'needs_manual_review')),
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (company_name) REFERENCES companies(name) ON DELETE CASCADE
+        );
+        CREATE TABLE interventions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_id INTEGER,
+            company_name TEXT,
+            intervention_type TEXT NOT NULL,
+            notes TEXT,
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            resolved_at TEXT,
+            FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE SET NULL
+        );
+        """
+    )
+    connection.execute(
+        """
+        INSERT INTO companies (name, sector, category, source_mode)
+        VALUES (
+            'Example Co',
+            'IT Consulting & Systems Integrators',
+            'Consulting/SI',
+            'browser_allowed'
+        )
+        """
+    )
+    connection.execute(
+        """
+        INSERT INTO jobs (
+            company_name,
+            title,
+            job_url,
+            source_mode,
+            match_reasons,
+            status
+        )
+        VALUES (
+            'Example Co',
+            'Cloud Engineer',
+            'https://careers.example.com/jobs/1',
+            'browser_allowed',
+            '[]',
+            'new'
+        )
+        """
+    )
+    connection.commit()
+    connection.close()
+
+    migrated = initialize_database(db_path)
+    update_job_status(migrated, 1, "applied")
+    stored_job = get_job_by_id(migrated, 1)
+    jobs_sql = migrated.execute(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'jobs'"
+    ).fetchone()["sql"]
+
+    assert stored_job is not None
+    assert stored_job["status"] == "applied"
+    assert "'applied'" in str(jobs_sql)
 
 
 def test_jobs_require_existing_company(tmp_path: Path) -> None:

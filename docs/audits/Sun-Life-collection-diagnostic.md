@@ -6,23 +6,29 @@
 - Final URL reached: https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Source mode: human_in_loop
 - ATS type: workday
+- Cookie banner action: none
+- Language prompt action: none
 
 ## Location Scope
 - Location scope used: True
 - Configured locations: Canada
 - Location filter/search attempted: Canada (URL filter)
+- Exact filter method: url_filter
 
 ## Pagination
 - Pagination detected: True
+- Next/load-more detection result: detected
 - Max pages per source: 10
-- Pages visited: 6
-- Jobs extracted per page: [20, 20, 20, 20, 20, 12]
+- Pages visited: 7
+- Jobs extracted per page: [20, 20, 20, 20, 20, 20, 2]
 - Pagination stop reason: next_disabled_or_missing
 
 ## Counts
-- Candidate jobs before scoring: 112
-- Jobs after scoring: 112
-- Relevant jobs after scoring: 2
+- Candidate jobs before scoring: 122
+- Jobs after scoring: 122
+- Relevant jobs after scoring: 3
+- Unique IBM jobIds extracted: 0
+- Unique Workday job IDs extracted: 122
 - Scored candidates CSV: C:\projects\job-discovery-browser-copilot\data\exports\audits\Sun-Life-scored-candidates.csv
 
 ## Visited Pages
@@ -32,8 +38,35 @@
 - https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- https://sunlife.wd3.myworkdayjobs.com/Experienced-Jobs?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+
+## Manual Expected Coverage
+- Manual expected URLs provided: 3
+- Matching manual expected URLs found: 3 / 3
+- Manual expected URLs still missing: 0
+- Matching manual Workday job IDs found: JR00106798, JR00123895-1, JR00124191
+- Manual Workday job IDs still missing: none
+
+| Manual URL | Manual Title | Raw HTML | Anchor href | Script/JSON | Extracted | Scored | Saved by MVP | Status | Reason |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/M365-Productivity---Collaboration-Engineer_JR00124191?Location_Country=a30a87ed25634629aa6c3958aa2b91ea | M365 Productivity & Collaboration Engineer | yes | yes | no | yes | yes | no | outside_scope | Rejected because no positive scoring signals survived after penalties. |
+| https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Container-Service-Delivery-Co-Ordinator--OpenShift---Kubernetes--_JR00123895-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea | Container Service Delivery Co-Ordinator (OpenShift / Kubernetes) | yes | yes | no | yes | yes | yes | saved_by_mvp | - |
+| https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Future-Opportunities_JR00106798?Location_Country=a30a87ed25634629aa6c3958aa2b91ea | Future Opportunities | yes | yes | no | yes | yes | no | outside_scope | Rejected because no positive scoring signals survived after penalties. |
 
 ## Candidate Jobs Before Scoring
+- Manager, Operational Risk | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager--Operational-Risk_JR00124874?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Manager Operational Risk and Resilience | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager-Operational-Risk-and-Resilience_JR00123845?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Sales Manager, Client Solutions Centre | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Sales-Manager--Client-Solutions-Centre_JR00124789?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Disability Payment Team Leader | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Disability-Payment-Team-Leader_JR00124841?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Senior Group Underwriter | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Senior-Group-Underwriter_JR00124809?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Senior Employee Relations Consultant | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Employee-Relations-Consultant_JR00124849-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Senior Business Analyst, Business Initiatives | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Business-Analyst--Business-Initiatives_JR00124736?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- API Platform Operations Engineer | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/API-Platform-Operations-Engineer_JR00120428?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Retirement Consultant | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Retirement-Consultant_JR00124479-2?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Creative Designer (Graphic & Video) | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Creative-Designer--Graphic---Video-_JR00124563-2?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Financial Services Consultant- Insurance | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Financial-Services-Consultant--Insurance_JR00123283?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- AVP, Head of Marketing, Retail & Institutional | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Sun-Life-Toronto-One-York/AVP--Head-of-Marketing--Retail---Institutional_JR00124860?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Financial Services Consultant - Client Relationship Team | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Financial-Services-Consultant---Client-Relationship-Team_JR00124900?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior Consultant, CX and Market Research | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Consultant--CX-and-Market-Research_JR00122216-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Financial Analyst | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Financial-Analyst_JR00124850?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Business Development Partner | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Victoria-British-Columbia/Business-Development-Partner_JR00117364?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
@@ -53,7 +86,6 @@
 - Manager, Financial Controls | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager--Financial-Controls_JR00124606?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Manager - Strategic Initiatives for Risk | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager---Strategic-Initiatives-for-Risk_JR00124738?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Technical Producer | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Technical-Producer_JR00124599?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
-- Digital Marketing Specialist | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Digital-Marketing-Specialist_JR00124470-3?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior Analyst – Data Governance | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Analyst---Data-Governance_JR00122972?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Lead Software Engineer - MLOps | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Principal-Software-Engineer---MLOps_JR00122985-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - M365 Productivity & Collaboration Engineer | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/M365-Productivity---Collaboration-Engineer_JR00124191?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
@@ -73,10 +105,8 @@
 - Assistant Vice President, Technology Lead, Group Retirement Services | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Assistant-Vice-President--Technology-Lead--Group-Retirement-Services_JR00123353?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Digital Product Manager | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Product-Manager_JR00123048?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Financial Analyst, Global Investment Financial Reporting and Analysis - SLC Management | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Financial-Analyst--Global-Investment-Financial-Reporting-and-Analysis---SLC-Management_JR00124578-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
-- Retirement Consultant | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Retirement-Consultant_JR00124479-2?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Wealth Sales Director (External Wholesaler) – Greater Toronto Area North (FSB) | Wealth Sales Director (External Wholesaler) – Greater Toronto Area North (FSB) | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Wealth-Sales-Director--External-Wholesaler----Greater-Toronto-Area-North--FSB-_JR00122222?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Security Platform Analyst | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/North-York-Ontario/Security-Platform-Analyst_JR00124432-2?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
-- Director, Tax, Retirement & Estate Planning | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Director--Tax--Retirement---Estate-Planning_JR00124072?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - SUN LIFE FINANCIAL ADVISOR | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Calgary-Alberta/SUN-LIFE-FINANCIAL-ADVISOR_JR00034437?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - SUN LIFE FINANCIAL ADVISOR | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Grande-Prairie-Alberta/SUN-LIFE-FINANCIAL-ADVISOR_JR00034438?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - SUN LIFE FINANCIAL ADVISOR | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Red-Deer-Alberta/SUN-LIFE-FINANCIAL-ADVISOR_JR00034440?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
@@ -149,6 +179,7 @@
 
 ## Scored Candidates
 - Director, Solutions Architect | score 9 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Solutions Architect | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Sun-Life-Toronto-One-York/Director--Solutions-Architect_JR00124361?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- API Platform Operations Engineer | score 8 | relevant=True | tier=core_target_fit | support/ops signals: operations | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/API-Platform-Operations-Engineer_JR00120428?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Container Service Delivery Co-Ordinator (OpenShift / Kubernetes) | score 4 | relevant=True | tier=core_target_fit | matched skills: Kubernetes | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Container-Service-Delivery-Co-Ordinator--OpenShift---Kubernetes--_JR00123895-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - ePharmacy Product Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/ePharmacy-Product-Manager_JR00124491-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Wealth Sales Director (External Wholesaler) – Greater Toronto Area North (FSB) | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Wealth-Sales-Director--External-Wholesaler----Greater-Toronto-Area-North--FSB-_JR00122222?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
@@ -160,10 +191,14 @@
 - Senior Software Engineer - Java | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/North-York-Ontario/Senior-Software-Engineer---Java_JR00120480?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior Red Team Operator | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterford-Waterford-Ireland/Senior-Red-Team-Operator_JR00123367?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior People Operations Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-People-Operations-Specialist_JR00124721?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Senior Group Underwriter | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Senior-Group-Underwriter_JR00124809?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Senior Employee Relations Consultant | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Employee-Relations-Consultant_JR00124849-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior Consultant, CX and Market Research | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Consultant--CX-and-Market-Research_JR00122216-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Senior Business Analyst, Business Initiatives | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Business-Analyst--Business-Initiatives_JR00124736?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior Analyst – Data Governance | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Analyst---Data-Governance_JR00122972?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior AI Engineer | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Senior-AI-Engineer_JR00120910?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Security Platform Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/North-York-Ontario/Security-Platform-Analyst_JR00124432-2?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Sales Manager, Client Solutions Centre | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Sales-Manager--Client-Solutions-Centre_JR00124789?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - SUN LIFE FINANCIAL ADVISOR | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Calgary-Alberta/SUN-LIFE-FINANCIAL-ADVISOR_JR00034437?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - SUN LIFE FINANCIAL ADVISOR | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Grande-Prairie-Alberta/SUN-LIFE-FINANCIAL-ADVISOR_JR00034438?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - SUN LIFE FINANCIAL ADVISOR | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Red-Deer-Alberta/SUN-LIFE-FINANCIAL-ADVISOR_JR00034440?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
@@ -224,10 +259,12 @@
 - Resource Team Leader | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Victoria-British-Columbia/Resource-Team-Leader_JR00124621-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Penetration Testing Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterford-Waterford-Ireland/Penetration-Testing-Analyst_JR00124161?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Managing Director, SLC Incentive Plans and Performance Analytics – SLC Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Wellesley-Hills-Massachusetts/Managing-Director--SLC-Compensation---SLC-Management_JR00100484-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Manager, Operational Risk | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager--Operational-Risk_JR00124874?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Manager, Global Client Experience and Insights | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager--Global-Client-Experience-and-Insights_JR00124378?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Manager, Financial Controls | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager--Financial-Controls_JR00124606?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Manager, Finance Automation | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager--Finance-Automation_JR00124107?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Manager, Corporate Risk Insurance | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager--Corporate-Risk-Insurance_JR00124082?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Manager Operational Risk and Resilience | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager-Operational-Risk-and-Resilience_JR00123845?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Manager - Strategic Initiatives for Risk | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Manager---Strategic-Initiatives-for-Risk_JR00124738?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - M365 Productivity & Collaboration Engineer | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/M365-Productivity---Collaboration-Engineer_JR00124191?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Lead Software Engineer - MLOps | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Principal-Software-Engineer---MLOps_JR00122985-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
@@ -236,20 +273,22 @@
 - Insurance Sales Director (Mandarin Speaking) | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/BC-Regional-Group-Office/Insurance-Sales-Director--Mandarin-Speaking-_JR00124678?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Insurance Review Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Insurance-Review-Manager_JR00124365?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Future Opportunities | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Future-Opportunities_JR00106798?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Financial Services Consultant- Insurance | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Financial-Services-Consultant--Insurance_JR00123283?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Financial Services Consultant - Client Relationship Team | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Financial-Services-Consultant---Client-Relationship-Team_JR00124900?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Financial Centre Administrator | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Scarborough-Ontario/Financial-Centre-Administrator_JR00124787?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Financial Analyst, Global Investment Financial Reporting and Analysis - SLC Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Financial-Analyst--Global-Investment-Financial-Reporting-and-Analysis---SLC-Management_JR00124578-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Financial Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Financial-Analyst_JR00124850?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Executive Assistant | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Executive-Assistant_JR00123877?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Engineering Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Engineering-Manager_JR00122038?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Disability Payment Team Leader | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Disability-Payment-Team-Leader_JR00124841?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Disability Claims - Bilingual Quality Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Disability-Claims---Bilingual-Quality-Analyst_JR00124802?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
-- Director, Tax, Retirement & Estate Planning | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Director--Tax--Retirement---Estate-Planning_JR00124072?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Director, Security Advisory Services | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Director--Security-Advisory-Services_JR00124377?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Director, Institutional Business Development & Client Relationship, Western Canada | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Vancouver-British-Columbia/Director--Institutional-Business-Development---Client-Relationship--Western-Canada_JR00124032?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Director, Advisor Recruitment | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Director--Advisor-Recruitment_JR00123981?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Director – Member Journey Owner, Group Retirement Services (GRS) | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Director---Member-Journey-Owner--Group-Retirement-Services--GRS-_JR00124454?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Director of Engineering | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Director-of-Engineering_JR00122037?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Digital Product Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Product-Manager_JR00123048?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
-- Digital Marketing Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Digital-Marketing-Specialist_JR00124470-3?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Creative Designer (Graphic & Video) | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Creative-Designer--Graphic---Video-_JR00124563-2?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Business Development Partner - Greater Calgary | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Calgary-Alberta/Business-Development-Partner---Greater-Calgary_JR00123897?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Business Development Partner | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Victoria-British-Columbia/Business-Development-Partner_JR00117364?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Business Development Partner | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Abbotsford-British-Columbia/Business-Development-Partner_JR00124326?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
@@ -260,8 +299,10 @@
 - Bilingual Customer Service Representative | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Montreal-Quebec/Bilingual-Customer-Service-Representative_JR00124292?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Assistant Vice President, Technology Lead, Group Retirement Services | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Assistant-Vice-President--Technology-Lead--Group-Retirement-Services_JR00123353?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - AVP, IT Audit | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/AVP--IT-Audit_JR00123499?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- AVP, Head of Marketing, Retail & Institutional | score 0 | relevant=False | tier=not_relevant | no core matches | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Sun-Life-Toronto-One-York/AVP--Head-of-Marketing--Retail---Institutional_JR00124860?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 
 ## Relevant Jobs After Scoring
+- API Platform Operations Engineer | score 8 | tier=core_target_fit | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/API-Platform-Operations-Engineer_JR00120428?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Director, Solutions Architect | score 9 | tier=adjacent_customer_facing_technical_fit | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Sun-Life-Toronto-One-York/Director--Solutions-Architect_JR00124361?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Container Service Delivery Co-Ordinator (OpenShift / Kubernetes) | score 4 | tier=core_target_fit | - | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Container-Service-Delivery-Co-Ordinator--OpenShift---Kubernetes--_JR00123895-1?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 
@@ -270,6 +311,7 @@
 - Software Engineer (Mainframe) | score 0 | Rejected because no positive scoring signals survived after penalties. | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Software-Engineer--Mainframe-_JR00123231?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior Software Engineer - Java | score 0 | Rejected because no positive scoring signals survived after penalties. | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/North-York-Ontario/Senior-Software-Engineer---Java_JR00120480?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior People Operations Specialist | score 0 | Rejected because no positive scoring signals survived after penalties. | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-People-Operations-Specialist_JR00124721?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+- Senior Business Analyst, Business Initiatives | score 0 | Rejected because no positive scoring signals survived after penalties. | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Business-Analyst--Business-Initiatives_JR00124736?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior Analyst – Data Governance | score 0 | Rejected because no positive scoring signals survived after penalties. | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Toronto-Ontario/Senior-Analyst---Data-Governance_JR00122972?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Senior AI Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/Waterloo-Ontario/Senior-AI-Engineer_JR00120910?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
 - Security Platform Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://sunlife.wd3.myworkdayjobs.com/en-US/Experienced-Jobs/job/North-York-Ontario/Security-Platform-Analyst_JR00124432-2?Location_Country=a30a87ed25634629aa6c3958aa2b91ea

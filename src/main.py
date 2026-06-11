@@ -15,6 +15,7 @@ if str(PACKAGE_DIR) not in sys.path:
     sys.path.insert(0, str(PACKAGE_DIR))
 
 COMPANIES_CONFIG_PATH = PROJECT_ROOT / "config" / "companies.yaml"
+VERIFIED_COMPANIES_CONFIG_PATH = PROJECT_ROOT / "config" / "verified_companies.yaml"
 DATABASE_PATH = PROJECT_ROOT / "data" / "job_discovery.db"
 
 
@@ -114,6 +115,20 @@ def get_storage_api():
     }
 
 
+def get_verified_companies_api():
+    """Load verified-company helpers after the src path is available."""
+
+    from verified_companies import (
+        get_usable_verified_company_names,
+        load_verified_company_records,
+    )
+
+    return {
+        "get_usable_verified_company_names": get_usable_verified_company_names,
+        "load_verified_company_records": load_verified_company_records,
+    }
+
+
 def load_companies_config() -> list[dict[str, object]]:
     """Load companies from YAML config."""
 
@@ -160,11 +175,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
 
     daily_run_parser = subparsers.add_parser("daily-run", help="Run the full daily workflow")
-    daily_run_parser.add_argument(
+    daily_run_scope = daily_run_parser.add_mutually_exclusive_group()
+    daily_run_scope.add_argument(
         "--company",
         type=str,
         default=None,
         help="Optional comma-separated company filter for exact-name daily-run slices.",
+    )
+    daily_run_scope.add_argument(
+        "--verified-only",
+        action="store_true",
+        help="Run only companies marked verified and usable in config/verified_companies.yaml.",
+    )
+    daily_run_scope.add_argument(
+        "--list-verified",
+        action="store_true",
+        help="List verified-company statuses without running collection.",
     )
 
     onboarding_parser = subparsers.add_parser(
@@ -563,6 +589,25 @@ def main(argv: list[str] | None = None) -> int:
     """Run the CLI."""
 
     args = build_parser().parse_args(argv)
+    if args.command == "daily-run" and args.list_verified:
+        verified_api = get_verified_companies_api()
+        records = verified_api["load_verified_company_records"](VERIFIED_COMPANIES_CONFIG_PATH)
+        if not records:
+            print({"verified_companies": [], "usable_companies": []})
+            return 0
+        for record in records:
+            print(
+                {
+                    "company_name": str(record.get("company_name") or "").strip(),
+                    "verified": bool(record.get("verified")),
+                    "status": str(record.get("status") or "").strip(),
+                    "scope": str(record.get("scope") or "").strip(),
+                    "verified_at": str(record.get("verified_at") or "").strip(),
+                    "notes": str(record.get("notes") or "").strip(),
+                }
+            )
+        return 0
+
     storage_api = get_storage_api()
     collection_api = get_collection_api()
     onboarding_api = get_onboarding_api()
@@ -582,16 +627,37 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "daily-run":
-        companies = parse_company_filter(args.company)
+        verified_api = get_verified_companies_api()
+        companies: list[str] = []
+        run_scope = "all"
+        if args.verified_only:
+            companies = verified_api["get_usable_verified_company_names"](
+                VERIFIED_COMPANIES_CONFIG_PATH
+            )
+            run_scope = "verified_only"
+            if not companies:
+                print(
+                    {
+                        "run_scope": run_scope,
+                        "verified_companies": [],
+                        "status": "no_usable_verified_companies",
+                    }
+                )
+                return 0
+        elif args.company:
+            companies = parse_company_filter(args.company)
+            run_scope = "company_filter"
         result = reports_api["run_daily_workflow"](
             config_path=COMPANIES_CONFIG_PATH,
             db_path=DATABASE_PATH,
             exports_dir=PROJECT_ROOT / "data" / "exports",
-            company_names=companies,
+            company_names=companies or None,
+            run_scope=run_scope,
         )
         print(
             {
                 "run_date": result.run_date,
+                "run_scope": result.run_scope,
                 "companies_checked": len(result.companies_checked),
                 "companies_skipped": len(result.companies_skipped),
                 "company_filter": companies or "all",

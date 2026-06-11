@@ -14,9 +14,19 @@ PACKAGE_DIR = Path(__file__).resolve().parent
 SRC_DIR = PACKAGE_DIR.parent
 BASE_DIR = SRC_DIR.parent
 COMPANIES_CONFIG_PATH = BASE_DIR / "config" / "companies.yaml"
+VERIFIED_COMPANIES_CONFIG_PATH = BASE_DIR / "config" / "verified_companies.yaml"
 STARTER_CAREER_URLS_PATH = BASE_DIR / "config" / "starter_career_urls.yaml"
 DATABASE_PATH = BASE_DIR / "data" / "job_discovery.db"
 EXPORTS_DIR = BASE_DIR / "data" / "exports"
+PENDING_APPLICATION_STATUSES = ("new", "saved", "reviewed", "needs_manual_review")
+JOB_STATUS_OPTIONS = [
+    "new",
+    "saved",
+    "applied",
+    "rejected",
+    "reviewed",
+    "needs_manual_review",
+]
 
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
@@ -92,6 +102,30 @@ def get_dashboard_api() -> dict[str, Any]:
         "filter_source_status_items": filter_source_status_items,
         "prepare_source_status_rows": prepare_source_status_rows,
         "score_and_save_manual_job": score_and_save_manual_job,
+    }
+
+
+def get_verified_api() -> dict[str, Any]:
+    """Load verified-company helpers after the src path is available."""
+
+    from dashboard.verified_view import (
+        derive_last_run_timestamp,
+        filter_jobs_to_latest_verified_run,
+        filter_jobs_to_verified_companies,
+        filter_source_rows_to_verified_companies,
+    )
+    from verified_companies import (
+        get_usable_verified_company_names,
+        load_verified_company_records,
+    )
+
+    return {
+        "derive_last_run_timestamp": derive_last_run_timestamp,
+        "filter_jobs_to_latest_verified_run": filter_jobs_to_latest_verified_run,
+        "filter_jobs_to_verified_companies": filter_jobs_to_verified_companies,
+        "filter_source_rows_to_verified_companies": filter_source_rows_to_verified_companies,
+        "get_usable_verified_company_names": get_usable_verified_company_names,
+        "load_verified_company_records": load_verified_company_records,
     }
 
 
@@ -186,6 +220,31 @@ def render_styles() -> None:
             overflow: hidden;
             background: rgba(255, 255, 255, 0.9);
         }
+        div[data-baseweb="select"] > div,
+        div[data-testid="stTextInputRootElement"] > div,
+        div[data-testid="stTextArea"] textarea {
+            border-radius: 14px;
+        }
+        div[data-testid="stButton"] button,
+        div[data-testid="stLinkButton"] a {
+            border-radius: 14px;
+            border: 1px solid #cfd9ca;
+            min-height: 2.75rem;
+            font-weight: 600;
+        }
+        button[kind="primary"] {
+            background: linear-gradient(135deg, #315942 0%, #44785a 100%);
+            color: white;
+        }
+        div[data-baseweb="tab-list"] {
+            gap: 0.35rem;
+        }
+        button[data-baseweb="tab"] {
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid #d7e0d3;
+            padding: 0.45rem 1rem;
+        }
         .detail-card {
             background: rgba(255, 255, 255, 0.92);
             border: 1px solid #dde5d9;
@@ -249,9 +308,12 @@ def prepare_jobs_table_rows(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "Sector": job.get("sector") or "-",
                 "Title": job["title"],
                 "Location": job.get("location") or "-",
+                "Relevance Tier": job.get("relevance_tier") or "-",
                 "Score": job.get("match_score", 0),
                 "Status": job.get("status") or "new",
                 "Source Mode": job.get("source_mode") or "-",
+                "Apply URL": job.get("apply_url") or job.get("job_url") or None,
+                "Job URL": job.get("job_url") or None,
                 "ATS Type": job.get("ats_type") or "-",
                 "Board Slug": job.get("board_slug") or "-",
                 "External ID": job.get("external_job_id") or "-",
@@ -264,11 +326,70 @@ def prepare_jobs_table_rows(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return rows
 
 
+def get_queue_label(status: object) -> str:
+    """Map job statuses into application workflow queues."""
+
+    normalized = str(status or "new").strip()
+    if normalized == "applied":
+        return "Applied"
+    if normalized == "rejected":
+        return "Rejected"
+    return "Pending"
+
+
+def prepare_jobs_column_config() -> dict[str, Any]:
+    """Return consistent Streamlit column configuration for job tables."""
+
+    return {
+        "ID": st.column_config.NumberColumn("ID", width="small"),
+        "Score": st.column_config.NumberColumn("Score", width="small"),
+        "Apply URL": st.column_config.LinkColumn("Apply", width="small", display_text="Apply"),
+        "Job URL": st.column_config.LinkColumn("Posting", width="small", display_text="Open"),
+        "Match Reasons": st.column_config.TextColumn("Match Reasons", width="large"),
+        "Risk Flags": st.column_config.TextColumn("Risk Flags", width="medium"),
+    }
+
+
+def filter_jobs_to_latest_verified_scope(
+    jobs: list[dict[str, Any]],
+    source_rows: list[dict[str, Any]],
+    verified_company_names: set[str],
+    *,
+    verified_only: bool,
+    latest_verified_run_only: bool,
+) -> list[dict[str, Any]]:
+    """Apply verified-company scope filters before per-table filters."""
+
+    scoped_jobs = jobs
+    verified_rows = source_rows
+    if verified_only:
+        verified_api = get_verified_api()
+        scoped_jobs = verified_api["filter_jobs_to_verified_companies"](
+            scoped_jobs,
+            verified_company_names,
+        )
+        verified_rows = verified_api["filter_source_rows_to_verified_companies"](
+            source_rows,
+            verified_company_names,
+        )
+    if verified_only and latest_verified_run_only:
+        verified_api = get_verified_api()
+        scoped_jobs = verified_api["filter_jobs_to_latest_verified_run"](
+            scoped_jobs,
+            verified_rows,
+            verified_company_names,
+        )
+    return scoped_jobs
+
+
 def filter_jobs(
     jobs: list[dict[str, Any]],
     *,
+    verified_only: bool,
+    verified_company_names: set[str],
     selected_company: str,
     selected_sector: str,
+    selected_tier: str,
     min_score: int,
     selected_status: str,
 ) -> list[dict[str, Any]]:
@@ -276,9 +397,14 @@ def filter_jobs(
 
     filtered: list[dict[str, Any]] = []
     for job in jobs:
+        company_name = str(job.get("company_name") or "")
+        if verified_only and company_name not in verified_company_names:
+            continue
         if selected_company != "All" and job["company_name"] != selected_company:
             continue
         if selected_sector != "All" and (job.get("sector") or "-") != selected_sector:
+            continue
+        if selected_tier != "All" and (job.get("relevance_tier") or "-") != selected_tier:
             continue
         if int(job.get("match_score", 0)) < min_score:
             continue
@@ -318,7 +444,10 @@ def render_job_details(
         )
     with meta_col:
         st.metric("Match Score", int(job.get("match_score", 0)))
-        st.write(f"Status: `{job.get('status', 'new')}`")
+        st.write(
+            f"Status: `{job.get('status', 'new')}`  |  "
+            f"Queue: `{get_queue_label(job.get('status'))}`"
+        )
 
     info_col1, info_col2, info_col3 = st.columns(3)
     with info_col1:
@@ -357,26 +486,50 @@ def render_job_details(
         if job.get("apply_url"):
             st.link_button("Open apply URL", job["apply_url"], use_container_width=True)
 
-    action_col1, action_col2, action_col3 = st.columns(3)
-    with action_col1:
-        if st.button("Mark saved", key=f"{key_prefix}_save_{job['id']}", use_container_width=True):
-            storage_api["update_job_status"](connection, job["id"], "saved")
-            st.rerun()
-    with action_col2:
+    quick_col1, quick_col2, quick_col3 = st.columns(3)
+    with quick_col1:
         if st.button(
-            "Mark rejected",
+            "Move to pending",
+            key=f"{key_prefix}_pending_{job['id']}",
+            use_container_width=True,
+        ):
+            storage_api["update_job_status"](connection, job["id"], "new")
+            st.rerun()
+    with quick_col2:
+        if st.button(
+            "Mark applied",
+            key=f"{key_prefix}_applied_{job['id']}",
+            use_container_width=True,
+        ):
+            storage_api["update_job_status"](connection, job["id"], "applied")
+            st.rerun()
+    with quick_col3:
+        if st.button(
+            "Move to rejected",
             key=f"{key_prefix}_reject_{job['id']}",
             use_container_width=True,
         ):
             storage_api["update_job_status"](connection, job["id"], "rejected")
             st.rerun()
-    with action_col3:
+
+    status_col1, status_col2 = st.columns([1.6, 1])
+    current_status = str(job.get("status") or "new")
+    if current_status not in JOB_STATUS_OPTIONS:
+        current_status = "new"
+    with status_col1:
+        selected_status = st.selectbox(
+            "Update status",
+            options=JOB_STATUS_OPTIONS,
+            index=JOB_STATUS_OPTIONS.index(current_status),
+            key=f"{key_prefix}_status_select_{job['id']}",
+        )
+    with status_col2:
         if st.button(
-            "Mark reviewed",
-            key=f"{key_prefix}_review_{job['id']}",
+            "Apply status change",
+            key=f"{key_prefix}_status_apply_{job['id']}",
             use_container_width=True,
         ):
-            storage_api["update_job_status"](connection, job["id"], "reviewed")
+            storage_api["update_job_status"](connection, job["id"], selected_status)
             st.rerun()
 
     st.markdown("</div>", unsafe_allow_html=True)
@@ -386,10 +539,19 @@ def render_jobs_tab(connection: Any) -> None:
     """Render the Jobs Found tab."""
 
     storage_api = get_storage_api()
+    verified_api = get_verified_api()
     jobs = storage_api["get_jobs"](connection)
+    source_rows = storage_api["get_source_status_rows"](connection)
+    verified_company_names = set(
+        verified_api["get_usable_verified_company_names"](VERIFIED_COMPANIES_CONFIG_PATH)
+    )
 
     render_section_heading("Jobs Found")
-    st.caption("Filter discovered jobs, review fit signals, and update status.")
+    st.caption(
+        "Filter discovered jobs, review fit signals, and update status. "
+        "The default view stays anchored to the latest verified run so stale history "
+        "does not mix with the current Canada-scoped queue."
+    )
 
     if not jobs:
         st.info(
@@ -398,29 +560,62 @@ def render_jobs_tab(connection: Any) -> None:
         )
         return
 
-    companies = ["All", *sorted({job["company_name"] for job in jobs})]
-    sectors = ["All", *sorted({job.get("sector") or "-" for job in jobs})]
-    statuses = ["All", *sorted({job.get("status", "new") for job in jobs})]
+    verified_only = st.checkbox(
+        "Verified companies only",
+        value=True,
+        help="Default to usable verified companies for the daily MVP workflow.",
+    )
+    latest_verified_run_only = st.checkbox(
+        "Latest verified run only",
+        value=True,
+        disabled=not verified_only,
+        help=(
+            "Hide stale historical rows so this view stays aligned to the most recent "
+            "verified run."
+        ),
+    )
+    scoped_jobs = filter_jobs_to_latest_verified_scope(
+        jobs,
+        source_rows,
+        verified_company_names,
+        verified_only=verified_only,
+        latest_verified_run_only=latest_verified_run_only,
+    )
+    company_pool = scoped_jobs
+    companies = ["All", *sorted({job["company_name"] for job in company_pool})]
+    sectors = ["All", *sorted({job.get("sector") or "-" for job in company_pool})]
+    tiers = ["All", *sorted({job.get("relevance_tier") or "-" for job in company_pool})]
+    statuses = ["All", *sorted({job.get("status", "new") for job in company_pool})]
 
-    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+    filter_col1, filter_col2, filter_col3, filter_col4, filter_col5 = st.columns(5)
     with filter_col1:
         selected_company = st.selectbox("Company", companies, key="jobs_company_filter")
     with filter_col2:
         selected_sector = st.selectbox("Sector", sectors, key="jobs_sector_filter")
     with filter_col3:
-        min_score = st.slider("Minimum score", min_value=0, max_value=100, value=0, step=5)
+        selected_tier = st.selectbox("Relevance tier", tiers, key="jobs_tier_filter")
     with filter_col4:
+        min_score = st.slider("Minimum score", min_value=0, max_value=100, value=0, step=5)
+    with filter_col5:
         selected_status = st.selectbox("Status", statuses, key="jobs_status_filter")
 
     filtered_jobs = filter_jobs(
-        jobs,
+        scoped_jobs,
+        verified_only=verified_only,
+        verified_company_names=verified_company_names,
         selected_company=selected_company,
         selected_sector=selected_sector,
+        selected_tier=selected_tier,
         min_score=min_score,
         selected_status=selected_status,
     )
     st.caption(f"{len(filtered_jobs)} jobs match the current filters.")
-    st.dataframe(prepare_jobs_table_rows(filtered_jobs), hide_index=True, use_container_width=True)
+    st.dataframe(
+        prepare_jobs_table_rows(filtered_jobs),
+        hide_index=True,
+        use_container_width=True,
+        column_config=prepare_jobs_column_config(),
+    )
 
     if not filtered_jobs:
         return
@@ -437,30 +632,126 @@ def render_jobs_tab(connection: Any) -> None:
     render_job_details(connection, selected_job, key_prefix="jobs_found")
 
 
-def render_saved_jobs_tab(connection: Any) -> None:
-    """Render the Saved Jobs tab."""
+def render_job_queue_panel(
+    connection: Any,
+    jobs: list[dict[str, Any]],
+    *,
+    empty_message: str,
+    selector_label: str,
+    key_prefix: str,
+) -> None:
+    """Render one queue panel inside the application tracker."""
 
-    storage_api = get_storage_api()
-    saved_jobs = storage_api["get_jobs"](connection, status="saved")
-
-    render_section_heading("Saved Jobs")
-    st.caption("Shortlist jobs that are worth manual follow-up.")
-
-    if not saved_jobs:
-        st.info("No jobs are marked as saved yet.")
+    st.caption(f"{len(jobs)} jobs in this queue.")
+    if not jobs:
+        st.info(empty_message)
         return
 
-    st.dataframe(prepare_jobs_table_rows(saved_jobs), hide_index=True, use_container_width=True)
-    selected_job_id = st.selectbox(
-        "Review saved job",
-        options=[job["id"] for job in saved_jobs],
-        format_func=lambda job_id: job_option_label(
-            next(job for job in saved_jobs if job["id"] == job_id),
-        ),
-        key="saved_jobs_selector",
+    st.dataframe(
+        prepare_jobs_table_rows(jobs),
+        hide_index=True,
+        use_container_width=True,
+        column_config=prepare_jobs_column_config(),
     )
-    selected_job = next(job for job in saved_jobs if job["id"] == selected_job_id)
-    render_job_details(connection, selected_job, key_prefix="saved_jobs")
+    selected_job_id = st.selectbox(
+        selector_label,
+        options=[job["id"] for job in jobs],
+        format_func=lambda job_id: job_option_label(
+            next(job for job in jobs if job["id"] == job_id),
+        ),
+        key=f"{key_prefix}_selector",
+    )
+    selected_job = next(job for job in jobs if job["id"] == selected_job_id)
+    render_job_details(connection, selected_job, key_prefix=key_prefix)
+
+
+def render_application_tracker_tab(connection: Any) -> None:
+    """Render the pending, applied, and rejected job workflow."""
+
+    storage_api = get_storage_api()
+    verified_api = get_verified_api()
+    jobs = storage_api["get_jobs"](connection)
+    source_rows = storage_api["get_source_status_rows"](connection)
+    verified_company_names = set(
+        verified_api["get_usable_verified_company_names"](VERIFIED_COMPANIES_CONFIG_PATH)
+    )
+
+    render_section_heading("Application Tracker")
+    st.caption(
+        "Work from one master pending queue, move finished applications to Applied, "
+        "and keep jobs you do not want in Rejected."
+    )
+
+    if not jobs:
+        st.info("No jobs are available yet.")
+        return
+
+    tracker_col1, tracker_col2 = st.columns(2)
+    with tracker_col1:
+        verified_only = st.checkbox(
+            "Verified companies only",
+            value=True,
+            key="tracker_verified_only",
+        )
+    with tracker_col2:
+        latest_verified_run_only = st.checkbox(
+            "Latest verified run only",
+            value=True,
+            key="tracker_latest_verified_only",
+            disabled=not verified_only,
+            help="Use the latest verified run as the default application queue.",
+        )
+
+    scoped_jobs = filter_jobs_to_latest_verified_scope(
+        jobs,
+        source_rows,
+        verified_company_names,
+        verified_only=verified_only,
+        latest_verified_run_only=latest_verified_run_only,
+    )
+    pending_jobs = [
+        job
+        for job in scoped_jobs
+        if str(job.get("status") or "new") in PENDING_APPLICATION_STATUSES
+    ]
+    applied_jobs = [job for job in scoped_jobs if str(job.get("status") or "") == "applied"]
+    rejected_jobs = [job for job in scoped_jobs if str(job.get("status") or "") == "rejected"]
+
+    metric_col1, metric_col2, metric_col3 = st.columns(3)
+    with metric_col1:
+        st.metric("Pending Applications", len(pending_jobs))
+    with metric_col2:
+        st.metric("Applied Jobs", len(applied_jobs))
+    with metric_col3:
+        st.metric("Rejected Jobs", len(rejected_jobs))
+
+    pending_tab, applied_tab, rejected_tab = st.tabs(
+        ["Pending Applications", "Applied Jobs", "Rejected Jobs"]
+    )
+    with pending_tab:
+        render_job_queue_panel(
+            connection,
+            pending_jobs,
+            empty_message="No pending jobs are waiting for application.",
+            selector_label="Review pending job",
+            key_prefix="pending_jobs",
+        )
+    with applied_tab:
+        render_job_queue_panel(
+            connection,
+            applied_jobs,
+            empty_message="No jobs are marked as applied yet.",
+            selector_label="Review applied job",
+            key_prefix="applied_jobs",
+        )
+    with rejected_tab:
+        render_job_queue_panel(
+            connection,
+            rejected_jobs,
+            empty_message="No jobs are in the rejected list yet.",
+            selector_label="Review rejected job",
+            key_prefix="rejected_jobs",
+        )
 
 
 def render_company_watchlist_tab(connection: Any) -> None:
@@ -950,7 +1241,7 @@ def render_manual_job_entry_tab(connection: Any) -> None:
         )
         status = st.selectbox(
             "Status",
-            options=["new", "saved", "rejected", "reviewed", "needs_manual_review"],
+            options=JOB_STATUS_OPTIONS,
             index=0,
             key="manual_job_status",
         )
@@ -1049,7 +1340,36 @@ def render_daily_summary_tab(connection: Any) -> None:
     intervention_history = storage_api["get_intervention_history"](connection)
     source_rows = storage_api["get_source_status_rows"](connection)
     dashboard_api = get_dashboard_api()
+    verified_api = get_verified_api()
     export_files = get_export_files()
+    verified_records = verified_api["load_verified_company_records"](VERIFIED_COMPANIES_CONFIG_PATH)
+    verified_company_names = set(
+        verified_api["get_usable_verified_company_names"](VERIFIED_COMPANIES_CONFIG_PATH)
+    )
+    verified_jobs = verified_api["filter_jobs_to_verified_companies"](jobs, verified_company_names)
+    verified_source_rows = verified_api["filter_source_rows_to_verified_companies"](
+        source_rows,
+        verified_company_names,
+    )
+    current_verified_jobs = verified_api["filter_jobs_to_latest_verified_run"](
+        verified_jobs,
+        verified_source_rows,
+        verified_company_names,
+    )
+    pending_verified_jobs = [
+        job
+        for job in current_verified_jobs
+        if str(job.get("status") or "new") in PENDING_APPLICATION_STATUSES
+    ]
+    applied_verified_jobs = [
+        job for job in current_verified_jobs if str(job.get("status") or "") == "applied"
+    ]
+    rejected_verified_jobs = [
+        job for job in current_verified_jobs if str(job.get("status") or "") == "rejected"
+    ]
+    last_run_timestamp = verified_api["derive_last_run_timestamp"](verified_source_rows)
+    latest_inserted = sum(int(row.get("jobs_inserted", 0) or 0) for row in verified_source_rows)
+    latest_updated = sum(int(row.get("jobs_updated", 0) or 0) for row in verified_source_rows)
 
     render_section_heading("Daily Summary")
     metric_col1, metric_col2, metric_col3, metric_col4, metric_col5, metric_col6 = st.columns(6)
@@ -1065,6 +1385,30 @@ def render_daily_summary_tab(connection: Any) -> None:
         st.metric("Pending Interventions", overview["interventions_pending"])
     with metric_col6:
         st.metric("Resolved History", overview["interventions_resolved_history"])
+
+    verified_metric_col1, verified_metric_col2, verified_metric_col3 = st.columns(3)
+    verified_metric_col4, verified_metric_col5 = st.columns(2)
+    with verified_metric_col1:
+        verified_count = len(
+            [item for item in verified_records if item.get("verified")]
+        )
+        st.metric("Verified Companies", verified_count)
+    with verified_metric_col2:
+        st.metric("Current Verified Jobs", len(current_verified_jobs))
+    with verified_metric_col3:
+        st.metric("Pending Queue", len(pending_verified_jobs))
+    with verified_metric_col4:
+        st.metric("Applied Queue", len(applied_verified_jobs))
+    with verified_metric_col5:
+        st.metric("Rejected Queue", len(rejected_verified_jobs))
+
+    verified_metric_col6, verified_metric_col7, verified_metric_col8 = st.columns(3)
+    with verified_metric_col6:
+        st.metric("New Jobs (Latest Run)", latest_inserted)
+    with verified_metric_col7:
+        st.metric("Updated Jobs (Latest Run)", latest_updated)
+    with verified_metric_col8:
+        st.metric("Last Run", last_run_timestamp or "-")
 
     source_metric_col1, source_metric_col2, source_metric_col3, source_metric_col4 = st.columns(4)
     source_metric_col5, source_metric_col6, source_metric_col7, source_metric_col8 = st.columns(4)
@@ -1085,7 +1429,7 @@ def render_daily_summary_tab(connection: Any) -> None:
     with source_metric_col8:
         st.metric("Errors", overview["source_errors"])
 
-    top_jobs = jobs[:8]
+    top_jobs = current_verified_jobs[:8] or jobs[:8]
     summary_col1, summary_col2 = st.columns([1.4, 1])
     with summary_col1:
         st.write("Top matched jobs")
@@ -1094,6 +1438,7 @@ def render_daily_summary_tab(connection: Any) -> None:
                 prepare_jobs_table_rows(top_jobs),
                 hide_index=True,
                 use_container_width=True,
+                column_config=prepare_jobs_column_config(),
             )
         else:
             st.info("No jobs have been collected yet.")
@@ -1123,6 +1468,21 @@ def render_daily_summary_tab(connection: Any) -> None:
             st.write(f"Latest export: `{latest.name}`")
         else:
             st.caption("No report or CSV exports yet.")
+
+    if verified_source_rows:
+        st.write("Verified company source health")
+        verified_health_rows = [
+            {
+                "Company": row.get("company_name") or "-",
+                "Source URL": row.get("source_url") or "-",
+                "Status": row.get("status") or "-",
+                "Discovered": int(row.get("jobs_discovered", 0) or 0),
+                "Relevant Saved": int(row.get("jobs_saved", 0) or 0),
+                "Intervention": row.get("latest_pending_reason") or "-",
+            }
+            for row in verified_source_rows
+        ]
+        st.dataframe(verified_health_rows, hide_index=True, use_container_width=True)
 
     if source_rows:
         st.write("Latest source outcomes")
@@ -1156,7 +1516,7 @@ def main() -> None:
         "Daily Summary",
         "Source Readiness",
         "Jobs Found",
-        "Saved Jobs",
+        "Application Tracker",
         "Company Watchlist",
         "Missing URLs",
         "Manual Job Entry",
@@ -1175,8 +1535,8 @@ def main() -> None:
         render_source_readiness_tab(connection)
     elif selected_section == "Jobs Found":
         render_jobs_tab(connection)
-    elif selected_section == "Saved Jobs":
-        render_saved_jobs_tab(connection)
+    elif selected_section == "Application Tracker":
+        render_application_tracker_tab(connection)
     elif selected_section == "Company Watchlist":
         render_company_watchlist_tab(connection)
     elif selected_section == "Missing URLs":

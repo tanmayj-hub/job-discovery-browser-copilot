@@ -24,6 +24,7 @@ from reports.source_observability import (
 JOB_STATUS_VALUES = {
     "new",
     "saved",
+    "applied",
     "rejected",
     "reviewed",
     "needs_manual_review",
@@ -137,6 +138,16 @@ def _table_columns(connection: sqlite3.Connection, table_name: str) -> set[str]:
         row["name"]
         for row in connection.execute(f"PRAGMA table_info({table_name})").fetchall()
     }
+
+
+def _table_sql(connection: sqlite3.Connection, table_name: str) -> str:
+    row = connection.execute(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
+        (table_name,),
+    ).fetchone()
+    if row is None:
+        return ""
+    return str(row["sql"] or "")
 
 
 def _row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
@@ -339,6 +350,137 @@ def migrate_database(connection: sqlite3.Connection) -> None:
             WHERE last_updated_at IS NULL OR last_updated_at = ''
             """,
         )
+    _ensure_jobs_status_supports_applied(connection)
+
+
+def _ensure_jobs_status_supports_applied(connection: sqlite3.Connection) -> None:
+    """Rebuild the jobs table when older SQLite files still reject `applied`."""
+
+    jobs_sql = _table_sql(connection, "jobs").lower()
+    if "'applied'" in jobs_sql:
+        return
+
+    connection.commit()
+    connection.execute("PRAGMA foreign_keys = OFF")
+    connection.execute(
+        """
+        CREATE TABLE jobs_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company_name TEXT NOT NULL,
+            title TEXT NOT NULL,
+            location TEXT,
+            job_url TEXT,
+            apply_url TEXT,
+            source_name TEXT,
+            source_mode TEXT NOT NULL,
+            description TEXT,
+            date_posted TEXT,
+            external_job_id TEXT,
+            ats_type TEXT,
+            board_slug TEXT,
+            raw_payload_json TEXT,
+            content_hash TEXT,
+            first_seen TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            last_seen TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            first_seen_at TEXT,
+            last_seen_at TEXT,
+            last_updated_at TEXT,
+            match_score INTEGER NOT NULL DEFAULT 0,
+            match_reasons TEXT NOT NULL DEFAULT '[]',
+            risk_flags TEXT NOT NULL DEFAULT '[]',
+            status TEXT NOT NULL DEFAULT 'new'
+                CHECK (
+                    status IN (
+                        'new',
+                        'saved',
+                        'applied',
+                        'rejected',
+                        'reviewed',
+                        'needs_manual_review'
+                    )
+                ),
+            created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (company_name) REFERENCES companies(name) ON DELETE CASCADE
+        )
+        """
+    )
+    connection.execute(
+        """
+        INSERT INTO jobs_new (
+            id,
+            company_name,
+            title,
+            location,
+            job_url,
+            apply_url,
+            source_name,
+            source_mode,
+            description,
+            date_posted,
+            external_job_id,
+            ats_type,
+            board_slug,
+            raw_payload_json,
+            content_hash,
+            first_seen,
+            last_seen,
+            first_seen_at,
+            last_seen_at,
+            last_updated_at,
+            match_score,
+            match_reasons,
+            risk_flags,
+            status,
+            created_at,
+            updated_at
+        )
+        SELECT
+            id,
+            company_name,
+            title,
+            location,
+            job_url,
+            apply_url,
+            source_name,
+            source_mode,
+            description,
+            date_posted,
+            external_job_id,
+            ats_type,
+            board_slug,
+            raw_payload_json,
+            content_hash,
+            first_seen,
+            last_seen,
+            first_seen_at,
+            last_seen_at,
+            last_updated_at,
+            match_score,
+            match_reasons,
+            risk_flags,
+            status,
+            created_at,
+            updated_at
+        FROM jobs
+        """
+    )
+    connection.execute("DROP TABLE jobs")
+    connection.execute("ALTER TABLE jobs_new RENAME TO jobs")
+    connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_company_name ON jobs(company_name)")
+    connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_status ON jobs(status)")
+    connection.execute("CREATE INDEX IF NOT EXISTS idx_jobs_job_url ON jobs(job_url)")
+    connection.execute(
+        """
+        CREATE INDEX IF NOT EXISTS idx_jobs_external_identity
+        ON jobs(company_name, ats_type, board_slug, external_job_id)
+        """
+    )
+    connection.execute(
+        "CREATE INDEX IF NOT EXISTS idx_jobs_external_job_id ON jobs(external_job_id)"
+    )
+    connection.commit()
+    connection.execute("PRAGMA foreign_keys = ON")
 
 
 def _default_action_required(reason: str | None) -> str:

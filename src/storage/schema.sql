@@ -77,7 +77,9 @@ CREATE TABLE IF NOT EXISTS jobs (
     match_reasons TEXT NOT NULL DEFAULT '[]',
     risk_flags TEXT NOT NULL DEFAULT '[]',
     status TEXT NOT NULL DEFAULT 'new'
-        CHECK (status IN ('new', 'saved', 'rejected', 'reviewed', 'needs_manual_review')),
+        CHECK (
+            status IN ('new', 'saved', 'applied', 'rejected', 'reviewed', 'needs_manual_review')
+        ),
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (company_name) REFERENCES companies(name) ON DELETE CASCADE
