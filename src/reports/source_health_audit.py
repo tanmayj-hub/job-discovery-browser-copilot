@@ -13,12 +13,19 @@ from reports.source_observability import build_source_remediation, is_error_stat
 SOURCE_HEALTH_FIELDS = [
     "company_name",
     "source_url",
+    "source_url_used",
     "source_mode",
     "ats_type",
     "status",
+    "source_scope_status",
+    "source_scope_confirmed",
+    "source_scope_method",
+    "source_scope_reason",
     "candidates_discovered",
     "candidates_scored",
     "relevant_saved",
+    "non_canada_rejected",
+    "unknown_location_relevant",
     "inserted",
     "updated",
     "unchanged",
@@ -71,6 +78,8 @@ def classify_source_health_row(row: Mapping[str, Any]) -> dict[str, Any]:
     pagination_stop_reason = str(row.get("pagination_stop_reason") or "").strip()
     intervention_reason = str(row.get("intervention_reason") or "").strip()
     location_scope_used = bool(row.get("location_scope_used", False))
+    source_scope_status = str(row.get("source_scope_status") or "").strip()
+    source_scope_confirmed = bool(row.get("source_scope_confirmed", False))
     remediation = build_source_remediation(row)
 
     issue_category = "monitor"
@@ -91,6 +100,14 @@ def classify_source_health_row(row: Mapping[str, Any]) -> dict[str, Any]:
         issue_category = "paused_or_error"
         recommended_action = remediation["suggested_action"]
         attention_score = 95
+    elif source_scope_status == "needs_user_canada_url":
+        issue_category = "needs_user_canada_url"
+        recommended_action = remediation["suggested_action"]
+        attention_score = 92
+    elif source_scope_status in {"canada_scope_unconfirmed", "filter_blocked"}:
+        issue_category = "canada_scope_unconfirmed"
+        recommended_action = remediation["suggested_action"]
+        attention_score = 90
     elif candidates_discovered == 0 and status in SUCCESS_STATUSES:
         issue_category = "zero_discovery"
         recommended_action = (
@@ -119,7 +136,7 @@ def classify_source_health_row(row: Mapping[str, Any]) -> dict[str, Any]:
             "jobs may exist beyond the current safe pagination limit."
         )
         attention_score = 65
-    elif status in SUCCESS_STATUSES and not location_scope_used:
+    elif status in SUCCESS_STATUSES and (not location_scope_used or not source_scope_confirmed):
         issue_category = "broad_scope_limit"
         recommended_action = (
             "This source did not confirm Canada-only scoping in the automated flow. "
@@ -178,6 +195,13 @@ def build_source_health_rows(
                 or source_row.get("source_url")
                 or company.get("careers_url")
             ),
+            "source_url_used": (
+                routing.get("source_url_used")
+                or source_row.get("source_url_used")
+                or routing.get("source_url")
+                or source_row.get("source_url")
+                or company.get("careers_url")
+            ),
             "source_mode": (
                 routing.get("source_mode")
                 or source_row.get("source_mode")
@@ -211,6 +235,24 @@ def build_source_health_rows(
                 or source_row.get("jobs_saved")
                 or 0
             ),
+            "source_scope_status": (
+                routing.get("source_scope_status")
+                or source_row.get("source_scope_status")
+            ),
+            "source_scope_confirmed": bool(
+                routing.get(
+                    "source_scope_confirmed",
+                    source_row.get("source_scope_confirmed", False),
+                )
+            ),
+            "source_scope_method": (
+                routing.get("source_scope_method")
+                or source_row.get("source_scope_method")
+            ),
+            "source_scope_reason": (
+                routing.get("source_scope_reason")
+                or source_row.get("source_scope_reason")
+            ),
             "inserted": int(
                 routing.get("jobs_inserted")
                 or source_row.get("jobs_inserted")
@@ -229,6 +271,16 @@ def build_source_health_rows(
             "duplicates_skipped": int(
                 routing.get("duplicates_skipped")
                 or source_row.get("duplicates_skipped")
+                or 0
+            ),
+            "non_canada_rejected": int(
+                routing.get("non_canada_rejected")
+                or source_row.get("non_canada_rejected")
+                or 0
+            ),
+            "unknown_location_relevant": int(
+                routing.get("unknown_location_relevant")
+                or source_row.get("unknown_location_relevant")
                 or 0
             ),
             "pages_visited": _pages_visited_count(routing.get("pages_visited")),
@@ -422,23 +474,27 @@ def write_source_health_csv(path: Path, rows: Sequence[Mapping[str, Any]]) -> No
 def _render_company_table(rows: Sequence[Mapping[str, Any]]) -> list[str]:
     lines = [
         (
-            "| Company | Source URL | Mode | ATS | Status | Pages | Candidates | "
-            "Scored | Relevant Saved | Inserted | Updated | Unchanged | "
-            "Pagination Stop | Intervention | Suspicious | Recommended Action |"
+            "| Company | Source URL | Used URL | Mode | ATS | Status | Scope | "
+            "Method | Pages | Candidates | Scored | Relevant Saved | Non-Canada "
+            "Rejected | Inserted | Updated | Unchanged | Pagination Stop | "
+            "Intervention | Suspicious | Recommended Action |"
         ),
         (
-            "| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | "
-            "---: | ---: | --- | --- | ---: | --- |"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | ---: | ---: | "
+            "---: | ---: | ---: | ---: | ---: | ---: | --- | --- | ---: | --- |"
         ),
     ]
     for row in rows:
         lines.append(
             f"| {row.get('company_name') or '-'} | {row.get('source_url') or '-'} | "
-            f"{row.get('source_mode') or '-'} | {row.get('ats_type') or '-'} | "
-            f"{row.get('status') or '-'} | {int(row.get('pages_visited', 0) or 0)} | "
+            f"{row.get('source_url_used') or '-'} | {row.get('source_mode') or '-'} | "
+            f"{row.get('ats_type') or '-'} | {row.get('status') or '-'} | "
+            f"{row.get('source_scope_status') or '-'} | {row.get('source_scope_method') or '-'} | "
+            f"{int(row.get('pages_visited', 0) or 0)} | "
             f"{int(row.get('candidates_discovered', 0) or 0)} | "
             f"{int(row.get('candidates_scored', 0) or 0)} | "
             f"{int(row.get('relevant_saved', 0) or 0)} | "
+            f"{int(row.get('non_canada_rejected', 0) or 0)} | "
             f"{int(row.get('inserted', 0) or 0)} | "
             f"{int(row.get('updated', 0) or 0)} | "
             f"{int(row.get('unchanged', 0) or 0)} | "

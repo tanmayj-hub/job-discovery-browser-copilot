@@ -1,259 +1,40 @@
-# BMO Collection Diagnostic
+# BMO Verified Run Status
 
-## Source
-- Company: BMO
-- Starting URL: https://jobs.bmo.com/global/en/home
-- Final URL reached: https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=90&s=1
-- Source mode: browser_allowed
-- ATS type: -
-- Cookie banner action: allow -> allow -> allow
-- Language prompt action: none
+## Outcome
+- Run date: 2026-06-12
+- Verification decision: `needs_review`
+- Trusted source URL: `https://jobs.bmo.com/ca/en/search-results`
+- Source scope status: `canada_scope_unconfirmed`
+- Canada scope confirmed before pagination: `False`
+- Source scope method: `manual_audit_url`
+- Broad diagnostic collection used for verification: `False`
 
-## Location Scope
-- Location scope used: True
-- Configured locations: Canada
-- Location filter/search attempted: Canada
-- Exact filter method: location_search_input
+## Trusted Run Result
+- `python -m src.main daily-run --company "BMO"`
+- Companies checked: `1`
+- Companies skipped: `1`
+- Jobs discovered: `0`
+- Jobs scored: `0`
+- Jobs saved: `0`
+- Pagination stop reason: `scope_not_confirmed_before_pagination`
+- Non-Canada jobs rejected by safety gate: `0`
 
-## Pagination
-- Pagination detected: True
-- Next/load-more detection result: detected
-- Max pages per source: 10
-- Pages visited: 10
-- Jobs extracted per page: [11, 13, 13, 13, 13, 13, 13, 13, 13, 13]
-- Pagination stop reason: max_pages_reached
+## Separate Diagnostic Review
+- `python -m src.main audit diagnose-company-collection --company "BMO"`
+- Diagnostic source scope status: `canada_scope_unconfirmed`
+- Broad diagnostic collection: `True`
+- Pages visited: `10`
+- Candidate jobs discovered: `104`
+- Relevant jobs after scoring: `0`
+- Observed behavior: the `/ca/en/search-results` page still exposed mixed `ENCA` and `ENUS` job URLs, so the locale path alone is not strong enough to trust as a Canada-only listing.
 
-## Counts
-- Candidate jobs before scoring: 101
-- Jobs after scoring: 101
-- Relevant jobs after scoring: 4
-- Unique IBM jobIds extracted: 0
-- Unique Workday job IDs extracted: 0
-- Scored candidates CSV: data\exports\audits\BMO-scored-candidates.csv
+## Manual Audit Alignment
+- Manual career page reviewed: `https://jobs.bmo.com/ca/en/search-results`
+- Manual filter used: `Canada`
+- Pages checked manually: first `10`
+- Manual note: no relevant jobs were found in the first 10 Canada-scoped pages.
 
-## Visited Pages
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=10&s=1
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=20&s=1
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=30&s=1
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=40&s=1
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=50&s=1
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=60&s=1
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=70&s=1
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=80&s=1
-- https://jobs.bmo.com/global/en/search-results?keywords=Canada&from=90&s=1
-
-## Candidate Jobs Before Scoring
-- Regional Director of Supervision (Western Canada) | Calgary, AB T2A 2K2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016683EXTERNALENCA/Regional-Director-of-Supervision-Western-Canada
-- Managing Director - Chief Compliance Officer, Capital Markets Canada | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260010164EXTERNALENCA/Managing-Director-Chief-Compliance-Officer-Capital-Markets-Canada
-- Business Development Manager, British Columbia & Yukon Region | Vancouver, BC V6M 1Z2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260011719EXTERNALENCA/Business-Development-Manager-British-Columbia-Yukon-Region
-- Manager, Business Compliance | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR250020790EXTERNALENCA/Manager-Business-Compliance
-- Personal Banking Associate | Renfrew, ON K7V 1R1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015806EXTERNALENCA/Personal-Banking-Associate
-- Senior Analyst | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016398EXTERNALENCA/Senior-Analyst
-- Manager, Everyday Banking Lifecycle | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015820EXTERNALENCA/Manager-Everyday-Banking-Lifecycle
-- Director of Network Operations | Barrie, ON L4N 0M4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017084EXTERNALENCA/Director-of-Network-Operations
-- Senior Counsel Derivatives, Global Asset Management | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR250026046EXTERNALENCA/Senior-Counsel-Derivatives-Global-Asset-Management
-- Investment Specialist - BMO Investorline (Bilingual in French and English) WFH | REMOTE/TELETRAVAIL, SK X0X 0X0, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016814EXTERNALENCA/Investment-Specialist-BMO-Investorline-Bilingual-in-French-and-English-WFH
-- Cookie Settings | - | https://jobs.bmo.com/global/en/cookiesettings
-- Bilingual Associate - Corporate Cards (Virtual) | REMOTE/TELETRAVAIL, PE X0X 0X0, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260001526EXTERNALENCA/Bilingual-Associate-Corporate-Cards-Virtual
-- Mutual Funds Representative, Virtual, Bilingual - New or Recent Graduate | REMOTE/TELETRAVAIL, ON L4X 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260013848EXTERNALENCA/Mutual-Funds-Representative-Virtual-Bilingual-New-or-Recent-Graduate
-- Investment Specialist - BMO Investorline (Bilingual in French and English) WFH | REMOTE/TELETRAVAIL, MB R3X 0X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014644EXTERNALENCA/Investment-Specialist-BMO-Investorline-Bilingual-in-French-and-English-WFH
-- Investment Specialist, BMO InvestorLine (Mandarin/Cantonse) Remote | REMOTE/TELETRAVAIL, MB R3X 0X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260006652EXTERNALENCA/Investment-Specialist-BMO-InvestorLine-Mandarin-Cantonse-Remote
-- Mortgage Retention and Sales (Bilingual in French and English) WFH | REMOTE/TELETRAVAIL, MB R3X 0X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260001813EXTERNALENCA/Mortgage-Retention-and-Sales-Bilingual-in-French-and-English-WFH
-- Investment Specialist-Mutual Funds, Investment Centre - Remote | REMOTE/TELETRAVAIL, AB T1X 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260002172EXTERNALENCA/Investment-Specialist-Mutual-Funds-Investment-Centre-Remote
-- Investment Specialist, BMO Investorline (English, Mandarin, Cantonese) | REMOTE/TELETRAVAIL, AB T1X 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014642EXTERNALENCA/Investment-Specialist-BMO-Investorline-English-Mandarin-Cantonese
-- Investment Specialist - BMO Investorline (Bilingual in French and English) WFH | REMOTE/TELETRAVAIL, BC V1X 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260005827EXTERNALENCA/Investment-Specialist-BMO-Investorline-Bilingual-in-French-and-English-WFH
-- Bilingual Investment Specialist-Mutual Funds, BMO Investment Centre (French and English) | REMOTE/TELETRAVAIL, SK X0X 0X0, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260002136EXTERNALENCA/Bilingual-Investment-Specialist-Mutual-Funds-BMO-Investment-Centre-French-and-English
-- Mutual Funds Representative (Virtual, Bilingual - French and English) | REMOTE/TELETRAVAIL, ON L4X 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260005334EXTERNALENCA/Mutual-Funds-Representative-Virtual-Bilingual-French-and-English
-- Investment Specialist, BMO Investorline | REMOTE/TELETRAVAIL, BC V1X 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260011568EXTERNALENCA/Investment-Specialist-BMO-Investorline
-- Senior Compliance Manager - Regulatory Engagement | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260009047EXTERNALENCA/Senior-Compliance-Manager-Regulatory-Engagement
-- Investment Specialist, BMO InvestorLine Remote | REMOTE/TELETRAVAIL, BC V1X 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007313EXTERNALENCA/Investment-Specialist-BMO-InvestorLine-Remote
-- Investment Specialist, BMO Investorline (New or Recent Grad) WFH | REMOTE/TELETRAVAIL, QC H1X 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014964EXTERNALENCA/Investment-Specialist-BMO-Investorline-New-or-Recent-Grad-WFH
-- Banquier en succession, Bilingue, RISR certifie | REMOTE/TELETRAVAIL, QC H1X 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260009215EXTERNALENCA/Banquier-en-succession-Bilingue-RISR-certifie
-- Investment Specialist, BMO Investorline | REMOTE/TELETRAVAIL, SK X0X 0X0, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014649EXTERNALENCA/Investment-Specialist-BMO-Investorline
-- Personal Banking Associate | Vancouver, BC V6M 1Z2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015173EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Ajax, ON L1T 3H4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015742EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Delta, BC V4L 2A4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015791EXTERNALENCA/Personal-Banking-Associate
-- Personal Banker Associate | MONTREAL, QC H2Y 1L6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014980EXTERNALENCA/Personal-Banker-Associate
-- Personal Banking Associate | Vancouver, BC V6M 1Z2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015633EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Thunder Bay, ON P7C 4P7, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015409EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Kitchener, ON N2M 3C2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016486EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Edmonton, AB T5T 4W4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016651EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Guelph, ON N1H 6K9, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016799EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016441EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | MONTREAL, QC H2Y 1L6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014938EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017430EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | High River, AB T1V 2B1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015852EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Mission, BC V2V 1A7, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014465EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Drumheller, AB T0J 0Y0, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260002582EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Fort Smith, NT X0E 0P0, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014143EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Terrace, BC V8G 1R4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260012440EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016600EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Windsor, ON N9E 1E2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017139EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016747EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Guelph, ON N1H 6K9, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016646EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Burlington, ON L7R 3N2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016981EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | MONTREAL, QC H2Y 1L6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260006719EXTERNALENCA/Personal-Banking-Associate
-- Personal banking associate | St-Hyacinthe, QC J2S 7R8, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015062EXTERNALENCA/Personal-banking-associate
-- Personal Banking Associate | Gander, NL A1V 1Y9, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017549EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Laval, QC H7S 1Y9, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260006718EXTERNALENCA/Personal-Banking-Associate
-- Director, Institutional ETF & Solutions Distribution, GAM | Calgary, AB T2A 2K2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007239EXTERNALENCA/Director-Institutional-ETF-Solutions-Distribution-GAM
-- Personal Banking Associate | Lloydminster, AB T9V 0V7, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017516EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Brampton, ON L6Z 1Y4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015087EXTERNALENCA/Personal-Banking-Associate
-- Director, Wealth Data Governance | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015977EXTERNALENCA/Director-Wealth-Data-Governance
-- Personal Banking Associate | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015421EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Olds, AB T4H 0A2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015967EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Assoiciate | Calgary, AB T2A 2K2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015860EXTERNALENCA/Personal-Banking-Assoiciate
-- PERSONAL BANKING ASSOCIATE | Winnipeg, MB R3P 0N5, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016351EXTERNALENCA/PERSONAL-BANKING-ASSOCIATE
-- Personal Banking Associate | Granby, QC J2G 2W7, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016671EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Granby, QC J2G 2W7, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016667EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016888EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Toronto, ON M8X 1C4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016599EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Burnaby, BC V5C 2K2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016926EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Vegreville, AB T9C 1R2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016166EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Vancouver, BC V6M 1Z2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014823EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Regina, SK S4P 2G3, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016869EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | London, ON N6J 2M8, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017163EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Kitchener, ON N2M 3C2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016489EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Victoria, BC V8P 5J5, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017229EXTERNALENCA/Personal-Banking-Associate
-- Managing Director, National Accounts | MONTREAL, QC H2Y 1L6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260005466EXTERNALENCA/Managing-Director-National-Accounts
-- Personal Banking Associate | Port Perry, ON L9L 1H7, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016106EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | MONTREAL, QC H2Y 1L6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014376EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Winnipeg, MB R3P 0N5, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017240EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | St-Bruno-de-Montarville, QC J3V 3T7, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017408EXTERNALENCA/Personal-Banking-Associate
-- Conseiller(e) en service bancaire | Verdun, QC H3E 1T8, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260012480EXTERNALENCA/Conseiller-e-en-service-bancaire
-- Personal Banker | Winnipeg, MB R3P 0N5, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260013367EXTERNALENCA/Personal-Banker
-- Personal Banker | VILLE DE QUEBEC, QC H1Y 1Y9, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260011963EXTERNALENCA/Personal-Banker
-- Personal Banker | Mont-Royal, QC H3P 3E9, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260013396EXTERNALENCA/Personal-Banker
-- personal banker | MONTREAL, QC H2Y 1L6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016067EXTERNALENCA/personal-banker
-- Personal Banker | Richmond, BC V6X 2C1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016564EXTERNALENCA/Personal-Banker
-- Personal Banking Associate | Vaughan, ON L4K 4L8, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016803EXTERNALENCA/Personal-Banking-Associate
-- Personal Banker - New BMO Gilmore Station Branch | Vancouver, BC V6M 1Z2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015638EXTERNALENCA/Personal-Banker-New-BMO-Gilmore-Station-Branch
-- Personal Banker | Repentigny, QC J6A 8K3, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260010861EXTERNALENCA/Personal-Banker
-- Personal Banker | Port Perry, ON L9L 1H7, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016113EXTERNALENCA/Personal-Banker
-- Personal Banker | Kelowna, BC V1W 3S9, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017087EXTERNALENCA/Personal-Banker
-- Personal Banking Associate | North Bay, ON P1B 1A8, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016495EXTERNALENCA/Personal-Banking-Associate
-- Personal Banker | Vancouver, BC V6M 1Z2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015764EXTERNALENCA/Personal-Banker
-- Personal Banker | Oakville, ON L6H 3H6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017303EXTERNALENCA/Personal-Banker
-- Personal Banking Associate | Hamilton, ON L8K 1H1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007843EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | Candiac, QC J5R 0E5, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017447EXTERNALENCA/Personal-Banking-Associate
-- Personal Banker | Burnaby, BC V5C 2K2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014610EXTERNALENCA/Personal-Banker
-- Personal Banker | Winnipeg, MB R3P 0N5, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015783EXTERNALENCA/Personal-Banker
-- Conseiller en service bancaire | Terrebonne, QC J6W 3Z5, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260012754EXTERNALENCA/Conseiller-en-service-bancaire
-- Personal Banking Associate | MONTREAL, QC H2Y 1L6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007935EXTERNALENCA/Personal-Banking-Associate
-- Personal Banker | Ste-Agathe-des-Monts, QC J8C 2V6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016167EXTERNALENCA/Personal-Banker
-- Personal Banker | Calgary, AB T2A 2K2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014357EXTERNALENCA/Personal-Banker
-- Personal Banker | MONTREAL, QC H2Y 1L6, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007512EXTERNALENCA/Personal-Banker
-- Personal Banker | SAINTE-THERESE, QC J7E 1X1, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260013513EXTERNALENCA/Personal-Banker
-
-## Scored Candidates
-- Director of Network Operations | score 9 | relevant=True | tier=core_target_fit | matched skills: networking, support; location signals: Toronto, Canada; support/ops signals: support, operations | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017084EXTERNALENCA/Director-of-Network-Operations
-- Personal Banking Associate | score 8 | relevant=True | tier=core_target_fit | matched skills: IAM; location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015409EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016441EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017430EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016600EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016747EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015421EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016888EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016599EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 8 | relevant=True | tier=core_target_fit | matched skills: Terraform; location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017447EXTERNALENCA/Personal-Banking-Associate
-- Mutual Funds Representative, Virtual, Bilingual - New or Recent Graduate | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260013848EXTERNALENCA/Mutual-Funds-Representative-Virtual-Bilingual-New-or-Recent-Graduate
-- Mutual Funds Representative (Virtual, Bilingual - French and English) | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260005334EXTERNALENCA/Mutual-Funds-Representative-Virtual-Bilingual-French-and-English
-- Mortgage Retention and Sales (Bilingual in French and English) WFH | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260001813EXTERNALENCA/Mortgage-Retention-and-Sales-Bilingual-in-French-and-English-WFH
-- Investment Specialist-Mutual Funds, Investment Centre - Remote | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260002172EXTERNALENCA/Investment-Specialist-Mutual-Funds-Investment-Centre-Remote
-- Investment Specialist, BMO Investorline (New or Recent Grad) WFH | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014964EXTERNALENCA/Investment-Specialist-BMO-Investorline-New-or-Recent-Grad-WFH
-- Investment Specialist, BMO Investorline (English, Mandarin, Cantonese) | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014642EXTERNALENCA/Investment-Specialist-BMO-Investorline-English-Mandarin-Cantonese
-- Investment Specialist, BMO Investorline | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260011568EXTERNALENCA/Investment-Specialist-BMO-Investorline
-- Investment Specialist, BMO Investorline | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014649EXTERNALENCA/Investment-Specialist-BMO-Investorline
-- Investment Specialist, BMO InvestorLine Remote | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007313EXTERNALENCA/Investment-Specialist-BMO-InvestorLine-Remote
-- Investment Specialist, BMO InvestorLine (Mandarin/Cantonse) Remote | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260006652EXTERNALENCA/Investment-Specialist-BMO-InvestorLine-Mandarin-Cantonse-Remote
-- Investment Specialist - BMO Investorline (Bilingual in French and English) WFH | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016814EXTERNALENCA/Investment-Specialist-BMO-Investorline-Bilingual-in-French-and-English-WFH
-- Investment Specialist - BMO Investorline (Bilingual in French and English) WFH | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014644EXTERNALENCA/Investment-Specialist-BMO-Investorline-Bilingual-in-French-and-English-WFH
-- Investment Specialist - BMO Investorline (Bilingual in French and English) WFH | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260005827EXTERNALENCA/Investment-Specialist-BMO-Investorline-Bilingual-in-French-and-English-WFH
-- Bilingual Investment Specialist-Mutual Funds, BMO Investment Centre (French and English) | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260002136EXTERNALENCA/Bilingual-Investment-Specialist-Mutual-Funds-BMO-Investment-Centre-French-and-English
-- Bilingual Associate - Corporate Cards (Virtual) | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260001526EXTERNALENCA/Bilingual-Associate-Corporate-Cards-Virtual
-- Banquier en succession, Bilingue, RISR certifie | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260009215EXTERNALENCA/Banquier-en-succession-Bilingue-RISR-certifie
-- personal banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016067EXTERNALENCA/personal-banker
-- Personal banking associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015062EXTERNALENCA/Personal-banking-associate
-- Personal Banking Assoiciate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015860EXTERNALENCA/Personal-Banking-Assoiciate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015806EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015173EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015742EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015791EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015633EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016486EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016651EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016799EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014938EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015852EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014465EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260002582EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014143EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260012440EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017139EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016646EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016981EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260006719EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017549EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260006718EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017516EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015087EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015967EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016926EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016166EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014823EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016869EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017163EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016489EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017229EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016106EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014376EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017240EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017408EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016803EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016495EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007843EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007935EXTERNALENCA/Personal-Banking-Associate
-- Personal Banker Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014980EXTERNALENCA/Personal-Banker-Associate
-- Personal Banker - New BMO Gilmore Station Branch | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015638EXTERNALENCA/Personal-Banker-New-BMO-Gilmore-Station-Branch
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260013367EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260011963EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260013396EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016564EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260010861EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016113EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017087EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015764EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017303EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014610EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015783EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016167EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260014357EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007512EXTERNALENCA/Personal-Banker
-- Personal Banker | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260013513EXTERNALENCA/Personal-Banker
-- PERSONAL BANKING ASSOCIATE | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016351EXTERNALENCA/PERSONAL-BANKING-ASSOCIATE
-- Conseiller(e) en service bancaire | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260012480EXTERNALENCA/Conseiller-e-en-service-bancaire
-- Conseiller en service bancaire | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260012754EXTERNALENCA/Conseiller-en-service-bancaire
-- Regional Director of Supervision (Western Canada) | score 1 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Canada; support/ops signals: support | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016683EXTERNALENCA/Regional-Director-of-Supervision-Western-Canada
-- Senior Counsel Derivatives, Global Asset Management | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR250026046EXTERNALENCA/Senior-Counsel-Derivatives-Global-Asset-Management
-- Senior Compliance Manager - Regulatory Engagement | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260009047EXTERNALENCA/Senior-Compliance-Manager-Regulatory-Engagement
-- Senior Analyst | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada, Remote | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016398EXTERNALENCA/Senior-Analyst
-- Personal Banking Associate | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016671EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016667EXTERNALENCA/Personal-Banking-Associate
-- Managing Director, National Accounts | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260005466EXTERNALENCA/Managing-Director-National-Accounts
-- Managing Director - Chief Compliance Officer, Capital Markets Canada | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260010164EXTERNALENCA/Managing-Director-Chief-Compliance-Officer-Capital-Markets-Canada
-- Manager, Everyday Banking Lifecycle | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada, Hybrid | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015820EXTERNALENCA/Manager-Everyday-Banking-Lifecycle
-- Manager, Business Compliance | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR250020790EXTERNALENCA/Manager-Business-Compliance
-- Director, Wealth Data Governance | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015977EXTERNALENCA/Director-Wealth-Data-Governance
-- Director, Institutional ETF & Solutions Distribution, GAM | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260007239EXTERNALENCA/Director-Institutional-ETF-Solutions-Distribution-GAM
-- Cookie Settings | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/global/en/cookiesettings
-- Business Development Manager, British Columbia & Yukon Region | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260011719EXTERNALENCA/Business-Development-Manager-British-Columbia-Yukon-Region
-
-## Relevant Jobs After Scoring
-- Regional Director of Supervision (Western Canada) | score 1 | tier=core_target_fit | Calgary, AB T2A 2K2, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016683EXTERNALENCA/Regional-Director-of-Supervision-Western-Canada
-- Director of Network Operations | score 9 | tier=core_target_fit | Barrie, ON L4N 0M4, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017084EXTERNALENCA/Director-of-Network-Operations
-- Personal Banking Associate | score 8 | tier=core_target_fit | Thunder Bay, ON P7C 4P7, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260015409EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 8 | tier=core_target_fit | Candiac, QC J5R 0E5, Canada | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260017447EXTERNALENCA/Personal-Banking-Associate
-
-## Rejected But Interesting Jobs
-- Senior Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.bmo.com/global/en/job/BOMOGLOBALR260016398EXTERNALENCA/Senior-Analyst
+## Decision
+- BMO stays out of the verified-only slice.
+- `config/verified_companies.yaml` remains `verified: false` and `status: needs_review`.
+- Next action: keep using the source-scope diagnostic path until BMO exposes a stable Canada-only URL or a public pre-pagination Canada filter that the MVP can confirm deterministically.

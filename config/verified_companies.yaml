@@ -7,22 +7,22 @@ verified_companies:
     notes: "Passed fresh daily-run with stable Canada-filtered Workday URL, 83 discovered jobs, 1 relevant saved, and no suspicious rows or blocking interventions."
   - company_name: BMO
     verified: false
-    verified_at: "2026-06-11"
+    verified_at: "2026-06-12"
     scope: Canada
     status: needs_review
-    notes: "Fresh run was productive and stable, but the production flow still does not confirm a stable Canada-only source URL or equivalent location-scope signal."
+    notes: "Trusted run on 2026-06-12 stopped before pagination because https://jobs.bmo.com/ca/en/search-results is still canada_scope_unconfirmed. A separate diagnostic run found 104 Canada-locale candidates across 10 pages, but that evidence is broad diagnostic only and cannot promote BMO into verified-only."
   - company_name: IBM Consulting
     verified: true
-    verified_at: "2026-06-10"
+    verified_at: "2026-06-12"
     scope: Canada
     status: usable
-    notes: "Passed fresh daily-run and manual URL recall audit. Collection misses: 0."
+    notes: "Passed fresh daily-run on 2026-06-12 using the official IBM Canada-filtered search URL, with Canada scope confirmed before pagination, 101 discovered jobs, 11 relevant saved, and no blocking interventions."
   - company_name: Manulife
-    verified: false
-    verified_at: "2026-06-11"
+    verified: true
+    verified_at: "2026-06-12"
     scope: Canada
-    status: needs_review
-    notes: "Fresh run completed cleanly and saved relevant jobs, but Canada-only scope is not yet confirmed by a stable public URL or production-level location scope signal."
+    status: usable
+    notes: "Passed fresh daily-run on 2026-06-12 from the official Canada-filtered Workday URL, with Canada scope confirmed before pagination, 144 discovered jobs, 9 relevant saved, and 0 non-Canada rejections. Manual next-slice audit showed 0 collection misses: 1 saved_by_mvp, 1 extracted_but_rejected_by_scoring, and 2 outside_scope."
   - company_name: Sun Life
     verified: true
     verified_at: "2026-06-10"

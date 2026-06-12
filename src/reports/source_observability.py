@@ -11,6 +11,10 @@ ERROR_STATUSES = {"error", "api_error", "parse_error", "unsupported_source_mode"
 SKIPPED_STATUSES = {
     "manual_only",
     "needs_url",
+    "needs_user_canada_url",
+    "canada_scope_unconfirmed",
+    "filter_blocked",
+    "manual_intervention_required",
     "api_collector_not_implemented",
     "avoid",
     "skipped",
@@ -74,9 +78,19 @@ def compute_source_readiness(source: Mapping[str, Any]) -> str:
     source_mode = str(source.get("source_mode") or "").strip()
     collector = str(source.get("collector") or source.get("last_collector") or "").strip()
     intervention_required = bool(source.get("intervention_required", False))
+    source_scope_status = str(source.get("source_scope_status") or "").strip()
+    source_scope_confirmed = bool(source.get("source_scope_confirmed", False))
 
     if is_error_status(status):
         return "error"
+    if source_scope_status == "needs_user_canada_url" or status == "needs_user_canada_url":
+        return "needs_user_canada_url"
+    if source_scope_status in {
+        "canada_scope_unconfirmed",
+        "filter_blocked",
+        "manual_intervention_required",
+    } or status in {"canada_scope_unconfirmed", "filter_blocked", "manual_intervention_required"}:
+        return "needs_canada_scope"
     if status == "api_collector_not_implemented":
         return "api_not_implemented"
     if status == "needs_url" or source_mode == "needs_url":
@@ -87,6 +101,8 @@ def compute_source_readiness(source: Mapping[str, Any]) -> str:
         return "needs_human"
     if collector == "static_jsonld" and is_success_status(status):
         return "ready_static_jsonld"
+    if is_success_status(status) and not source_scope_confirmed and source_scope_status:
+        return "needs_canada_scope"
     if collector in BROWSER_COLLECTORS and is_success_status(status):
         return "ready_browser"
     if source_mode == "api_allowed":
@@ -107,6 +123,8 @@ def build_source_remediation(source: Mapping[str, Any]) -> dict[str, str]:
     ).strip()
     status = str(source.get("status") or source.get("last_status") or "").strip()
     source_mode = str(source.get("source_mode") or "").strip()
+    source_scope_status = str(source.get("source_scope_status") or "").strip()
+    source_scope_method = str(source.get("source_scope_method") or "").strip()
     readiness = str(
         source.get("readiness_label") or compute_source_readiness(source)
     ).strip()
@@ -121,6 +139,27 @@ def build_source_remediation(source: Mapping[str, Any]) -> dict[str, str]:
             "suggested_action": (
                 "Add or correct the public careers URL, then reclassify the source."
             ),
+        }
+    if readiness == "needs_user_canada_url" or source_scope_status == "needs_user_canada_url":
+        return {
+            "remediation_label": "canada_url_needed",
+            "suggested_action": (
+                "Provide or confirm an official Canada-scoped careers URL before this "
+                "source can enter the trusted run flow."
+            ),
+        }
+    if readiness == "needs_canada_scope" or source_scope_status in {
+        "canada_scope_unconfirmed",
+        "filter_blocked",
+        "manual_intervention_required",
+    }:
+        method_note = f" Current method: {source_scope_method}." if source_scope_method else ""
+        return {
+            "remediation_label": "canada_scope_review",
+            "suggested_action": (
+                "Confirm Canada scope before pagination or keep this source in review-only "
+                f"mode.{method_note}"
+            ).strip(),
         }
     if readiness == "manual_only" or status == "manual_only" or source_mode == "manual_only":
         return {

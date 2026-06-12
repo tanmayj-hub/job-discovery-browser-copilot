@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from types import SimpleNamespace
 
 from browser.extraction import extract_location
 from browser.interventions import (
@@ -12,6 +13,10 @@ from browser.interventions import (
     detect_browser_barriers,
 )
 from collectors.browser_collector import (
+    SOURCE_SCOPE_CONFIRMED,
+    _apply_source_scope_job_safety_gate,
+    _build_source_scope_status,
+    _initial_source_scope_status,
     _source_navigation_timeout_ms,
     _url_uses_location_scope,
     collect_browser_jobs,
@@ -258,3 +263,170 @@ def test_url_uses_location_scope_supports_ibm_canada_query_param() -> None:
     assert _url_uses_location_scope(
         "https://www.ibm.com/careers/search?field_keyword_05%5B0%5D=Canada&p=2"
     ) is True
+
+
+def test_initial_source_scope_status_detects_confirmed_workday_canada_url() -> None:
+    status = _initial_source_scope_status(
+        "https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs"
+        "?Location_Country=a30a87ed25634629aa6c3958aa2b91ea"
+    )
+
+    assert status.confirmed is True
+    assert status.status == "canada_scope_confirmed"
+    assert status.method == "url_filter"
+
+
+def test_initial_source_scope_status_marks_bmo_locale_url_unconfirmed() -> None:
+    status = _initial_source_scope_status("https://jobs.bmo.com/ca/en/search-results")
+
+    assert status.confirmed is False
+    assert status.status == "canada_scope_unconfirmed"
+    assert status.method == "manual_audit_url"
+
+
+def test_initial_source_scope_status_marks_broad_listing_unconfirmed() -> None:
+    status = _initial_source_scope_status("https://careers.example.com/jobs")
+
+    assert status.confirmed is False
+    assert status.status == "canada_scope_unconfirmed"
+    assert status.method == "broad_unconfirmed"
+
+
+def test_apply_source_scope_job_safety_gate_rejects_explicit_us_locations() -> None:
+    source_scope = _build_source_scope_status(
+        status=SOURCE_SCOPE_CONFIRMED,
+        confirmed=True,
+        method="url_filter",
+        reason="Canada URL confirmed.",
+        source_url_used="https://example.com/jobs?country=Canada",
+    )
+    rejected_job = {"title": "Cloud Engineer", "location": "Chicago, IL", "risk_flags": []}
+    allowed_jobs, rejected_count, unknown_count = _apply_source_scope_job_safety_gate(
+        [
+            rejected_job,
+            {"title": "DevOps Engineer", "location": "Toronto, Ontario, Canada"},
+            {"title": "Linux Administrator", "location": ""},
+        ],
+        source_scope_status=source_scope,
+    )
+
+    assert [job["title"] for job in allowed_jobs] == [
+        "DevOps Engineer",
+        "Linux Administrator",
+    ]
+    assert rejected_count == 1
+    assert unknown_count == 1
+    assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]
+
+
+class _FakeLocator:
+    def inner_text(self, timeout: int | None = None) -> str:
+        _ = timeout
+        return "Public careers page"
+
+
+class _FakePage:
+    def __init__(self, url: str) -> None:
+        self.url = url
+
+    def goto(self, url: str, wait_until: str, timeout: int) -> None:
+        _ = wait_until, timeout
+        self.url = url
+
+    def wait_for_timeout(self, timeout_ms: int) -> None:
+        _ = timeout_ms
+
+    def content(self) -> str:
+        return "<main>Public careers page</main>"
+
+    def locator(self, selector: str) -> _FakeLocator:
+        _ = selector
+        return _FakeLocator()
+
+
+def test_collect_company_jobs_blocks_unconfirmed_scope_before_extraction(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    company = _browser_company(careers_url="https://jobs.bmo.com/ca/en/search-results")
+    upsert_companies(connection, [company])
+
+    monkeypatch.setattr("collectors.browser_collector.dismiss_cookie_banner", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.dismiss_ibm_language_prompt",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.navigate_to_job_search_page",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.detect_browser_barriers",
+        lambda **kwargs: [],
+    )
+    monkeypatch.setattr("collectors.browser_collector.find_search_input", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.extract_visible_job_cards_with_diagnostics",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("should not extract")),
+    )
+
+    result = collect_company_jobs(
+        connection,
+        company=company,
+        page=_FakePage(str(company["careers_url"])),
+    )
+
+    assert result["status"] == "canada_scope_unconfirmed"
+    assert result["pagination_stop_reason"] == "scope_not_confirmed_before_pagination"
+    assert result["source_scope_confirmed"] is False
+    assert result["source_scope_method"] == "manual_audit_url"
+
+
+def test_collect_company_jobs_allows_broad_collection_only_for_diagnostics(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    company = _browser_company(careers_url="https://jobs.bmo.com/ca/en/search-results")
+    upsert_companies(connection, [company])
+
+    monkeypatch.setattr("collectors.browser_collector.dismiss_cookie_banner", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.dismiss_ibm_language_prompt",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.navigate_to_job_search_page",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.detect_browser_barriers",
+        lambda **kwargs: [],
+    )
+    monkeypatch.setattr("collectors.browser_collector.find_search_input", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.extract_visible_job_cards_with_diagnostics",
+        lambda *args, **kwargs: (
+            [],
+            SimpleNamespace(
+                pagination_detected=False,
+                pagination_stop_reason="no_jobs_found",
+                pages_visited=["https://jobs.bmo.com/ca/en/search-results"],
+                jobs_extracted_per_page=[0],
+                page_html_snapshots=[],
+            ),
+        ),
+    )
+
+    result = collect_company_jobs(
+        connection,
+        company=company,
+        page=_FakePage(str(company["careers_url"])),
+        allow_broad_diagnostic_collection=True,
+    )
+
+    assert result["status"] == "completed"
+    assert result["source_scope_confirmed"] is False
+    assert result["broad_diagnostic_collection"] is True
+    assert "diagnostic run" in str(result["source_scope_reason"])

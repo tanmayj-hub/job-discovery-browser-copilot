@@ -91,7 +91,7 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://jobs.bmo.com/global/en/home
+  careers_url: https://jobs.bmo.com/ca/en/search-results
 - name: CIBC
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -433,7 +433,7 @@ companies:
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://www.ibm.com/careers/search
+  careers_url: https://www.ibm.com/careers/search?field_keyword_05%5B0%5D=Canada
 - name: CGI
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -869,8 +869,8 @@ companies:
 - name: Manulife
   sector: Insurance & Wealth
   category: Insurance/Wealth
-  careers_url: https://careers.manulife.com/global/en/search-results
-  source_mode: browser_allowed
+  careers_url: https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs?Location_Country=a30a87ed25634629aa6c3958aa2b91ea
+  source_mode: human_in_loop
   status: Watching
   role_families:
   - Cloud / DevOps / Platform / SRE / Infra
@@ -881,7 +881,8 @@ companies:
   - sre
   - kubernetes
   - terraform
-  website_category: careers.
+  website_category: workday
+  ats_hint: workday
   canada_hubs_notes: Toronto, Waterloo, Montreal, Winnipeg (varies)
   priority: High
   monitoring_hint: Often Workday/Custom ATS

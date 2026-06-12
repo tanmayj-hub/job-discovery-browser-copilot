@@ -5,7 +5,11 @@ from pathlib import Path
 
 import yaml
 
-from reports.daily_run import is_actionable_job, run_daily_workflow
+from reports.daily_run import (
+    _apply_canada_location_safety_gate,
+    is_actionable_job,
+    run_daily_workflow,
+)
 from storage.db import (
     get_companies,
     get_jobs,
@@ -699,3 +703,43 @@ def test_daily_run_rejects_existing_non_actionable_new_jobs(tmp_path: Path) -> N
 
     assert len(stored_jobs) == 1
     assert stored_jobs[0]["status"] == "rejected"
+
+
+def test_canada_location_safety_gate_rejects_explicit_us_rows() -> None:
+    source_key = ("BMO", "company-careers")
+    rejected_job = {
+        "company_name": "BMO",
+        "source_name": "company-careers",
+        "title": "Cloud Engineer",
+        "location": "San Ramon, CA",
+        "risk_flags": [],
+        "_source_key": source_key,
+    }
+    filtered_jobs, rejected_by_source, unknown_by_source = _apply_canada_location_safety_gate(
+        [
+            rejected_job,
+            {
+                "company_name": "BMO",
+                "source_name": "company-careers",
+                "title": "Platform Engineer",
+                "location": "Toronto, Ontario, Canada",
+                "_source_key": source_key,
+            },
+            {
+                "company_name": "BMO",
+                "source_name": "company-careers",
+                "title": "Linux Administrator",
+                "location": "",
+                "_source_key": source_key,
+            },
+        ],
+        {source_key: {"source_scope_status": "canada_scope_confirmed"}},
+    )
+
+    assert [job["title"] for job in filtered_jobs] == [
+        "Platform Engineer",
+        "Linux Administrator",
+    ]
+    assert rejected_by_source[source_key] == 1
+    assert unknown_by_source[source_key] == 1
+    assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]

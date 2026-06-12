@@ -119,6 +119,15 @@ def test_initialize_database_adds_source_observability_columns(tmp_path: Path) -
         "last_success_at",
         "consecutive_failures",
         "readiness_label",
+        "source_scope_name",
+        "source_scope_status",
+        "source_scope_confirmed",
+        "source_scope_method",
+        "source_scope_reason",
+        "source_url_used",
+        "broad_diagnostic_collection",
+        "non_canada_rejected",
+        "unknown_location_relevant",
     }.issubset(columns)
 
 
@@ -897,6 +906,15 @@ def test_record_source_observation_persists_latest_status(tmp_path: Path) -> Non
         jobs_saved=1,
         jobs_inserted=1,
         duplicates_skipped=1,
+        source_scope_name="Canada",
+        source_scope_status="canada_scope_confirmed",
+        source_scope_confirmed=True,
+        source_scope_method="url_filter",
+        source_scope_reason="Confirmed via official Canada-filtered URL.",
+        source_url_used="https://careers.example.com/jobs?country=Canada",
+        broad_diagnostic_collection=False,
+        non_canada_rejected=1,
+        unknown_location_relevant=1,
     )
 
     source = get_source_status_rows(connection)[0]
@@ -908,6 +926,15 @@ def test_record_source_observation_persists_latest_status(tmp_path: Path) -> Non
     assert source["jobs_saved"] == 1
     assert source["duplicates_skipped"] == 1
     assert source["readiness_label"] == "ready_api"
+    assert source["source_scope_name"] == "Canada"
+    assert source["source_scope_status"] == "canada_scope_confirmed"
+    assert source["source_scope_confirmed"] is True
+    assert source["source_scope_method"] == "url_filter"
+    assert source["source_scope_reason"] == "Confirmed via official Canada-filtered URL."
+    assert source["source_url_used"] == "https://careers.example.com/jobs?country=Canada"
+    assert source["broad_diagnostic_collection"] is False
+    assert source["non_canada_rejected"] == 1
+    assert source["unknown_location_relevant"] == 1
     assert source["last_success_at"] is not None
 
 

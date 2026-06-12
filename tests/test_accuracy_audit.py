@@ -795,6 +795,12 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
         "final_url": "https://careers.td.com/jobs",
         "source_mode": "human_in_loop",
         "ats_type": "workday",
+        "source_url_used": "https://careers.td.com/jobs?country=Canada",
+        "source_scope_status": "canada_scope_confirmed",
+        "source_scope_confirmed": True,
+        "source_scope_method": "url_filter",
+        "source_scope_reason": "The source URL contains an explicit Canada filter signal.",
+        "broad_diagnostic_collection": False,
         "location_scope_used": True,
         "location_scope": ["Canada", "Toronto"],
         "location_queries": ["Canada (URL filter)"],
@@ -810,6 +816,8 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
         "jobs_discovered": 2,
         "jobs_scored": 2,
         "jobs_relevant": 1,
+        "non_canada_rejected": 0,
+        "unknown_location_relevant": 0,
         "candidate_jobs": [
             {
                 "company_name": "TD",
@@ -880,6 +888,9 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
     assert "## Rejected But Interesting Jobs" in content
     assert "- Cookie banner action: #truste-consent-button" in content
     assert "- Language prompt action: .geo-btn-secondary-cancel" in content
+    assert "- Source scope status: canada_scope_confirmed" in content
+    assert "- Canada scope confirmed before pagination: True" in content
+    assert "- Decision: ready_for_verified_review" in content
     assert "- Jobs extracted per page: [2]" in content
     assert "- Matching manual expected URLs found: 1 / 1" in content
     assert "- Manual expected URLs still missing: 0" in content
@@ -1054,6 +1065,34 @@ def test_load_manual_expected_jobs_reads_structured_fixture() -> None:
         "Sun Life",
     ]
     assert len(companies[0]["expected_jobs"]) == 4
+
+
+def test_load_manual_expected_jobs_accepts_plain_url_strings(tmp_path: Path) -> None:
+    fixture_path = tmp_path / "manual_expected_jobs.yaml"
+    fixture_path.write_text(
+        """
+companies:
+  - company_name: BMO
+    expected_jobs:
+      - didnt find any relevant jobs in the first 10 pages
+  - company_name: Manulife
+    notes: Senior roles are useful for recall checking.
+    expected_jobs:
+      - https://example.com/jobs/1
+      - https://example.com/jobs/2
+""",
+        encoding="utf-8",
+    )
+
+    companies = load_manual_expected_jobs(fixture_path)
+
+    assert companies[0]["expected_jobs"] == []
+    assert "didnt find any relevant jobs" in companies[0]["notes"]
+    assert companies[1]["expected_jobs"] == [
+        {"job_url": "https://example.com/jobs/1", "title": "", "notes": ""},
+        {"job_url": "https://example.com/jobs/2", "title": "", "notes": ""},
+    ]
+    assert "Senior roles are useful for recall checking." in companies[1]["notes"]
 
 
 def test_ibm_url_identity_extracts_job_id() -> None:

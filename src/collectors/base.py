@@ -51,6 +51,15 @@ class CollectorResult:
     pages_visited: int = 0
     pagination_stop_reason: str | None = None
     intervention_reason: str | None = None
+    source_scope_name: str | None = None
+    source_scope_status: str | None = None
+    source_scope_confirmed: bool = False
+    source_scope_method: str | None = None
+    source_scope_reason: str | None = None
+    source_url_used: str | None = None
+    broad_diagnostic_collection: bool = False
+    non_canada_rejected: int = 0
+    unknown_location_relevant: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

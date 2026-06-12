@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import yaml
 from playwright.sync_api import Error as PlaywrightError
@@ -45,6 +47,70 @@ DEFAULT_DISCOVERY_CONFIG_PATH = PROJECT_ROOT / "config" / "discovery.yaml"
 DEFAULT_LOCATION_SCOPE = ("Canada", "Toronto", "Ontario", "Remote Canada", "Remote")
 DEFAULT_AUDIT_LOCATION_SCOPE = ("Canada",)
 DEFAULT_MAX_PAGES_PER_SOURCE = 10
+CANADA_SCOPE_NAME = "Canada"
+SOURCE_SCOPE_CONFIRMED = "canada_scope_confirmed"
+SOURCE_SCOPE_UNCONFIRMED = "canada_scope_unconfirmed"
+SOURCE_SCOPE_NEEDS_USER_URL = "needs_user_canada_url"
+SOURCE_SCOPE_FILTER_BLOCKED = "filter_blocked"
+SOURCE_SCOPE_MANUAL_INTERVENTION = "manual_intervention_required"
+US_STATE_ABBREVIATIONS = (
+    "AL",
+    "AK",
+    "AZ",
+    "AR",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY",
+)
+US_CITY_STATE_PATTERN = re.compile(
+    r"\b[a-z0-9 .'/&()-]+,\s*(?:"
+    + "|".join(state.lower() for state in US_STATE_ABBREVIATIONS)
+    + r")\b"
+)
 
 
 @dataclass(slots=True)
@@ -57,6 +123,30 @@ class BrowserCollectionConfig:
     slow_mo_ms: int = 0
     db_path: Path | None = None
     location_scope: tuple[str, ...] = DEFAULT_LOCATION_SCOPE
+
+
+@dataclass(slots=True)
+class SourceScopeStatus:
+    """Structured Canada-scope status for one collection attempt."""
+
+    scope_name: str = CANADA_SCOPE_NAME
+    status: str = SOURCE_SCOPE_UNCONFIRMED
+    confirmed: bool = False
+    method: str = "unknown"
+    reason: str = ""
+    source_url_used: str = ""
+    broad_diagnostic_collection: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "source_scope_name": self.scope_name,
+            "source_scope_status": self.status,
+            "source_scope_confirmed": self.confirmed,
+            "source_scope_method": self.method,
+            "source_scope_reason": self.reason,
+            "source_url_used": self.source_url_used,
+            "broad_diagnostic_collection": self.broad_diagnostic_collection,
+        }
 
 
 def _source_navigation_timeout_ms(
@@ -106,6 +196,7 @@ def collect_companies_with_browser(
     headless: bool = False,
     save_jobs: bool = True,
     allowed_source_modes: set[str] | None = None,
+    allow_broad_diagnostic_collection: bool = False,
 ) -> list[dict[str, Any]]:
     """Collect jobs for a provided company batch using one headed browser session."""
 
@@ -127,6 +218,7 @@ def collect_companies_with_browser(
                     page=session.page,
                     save_jobs=save_jobs,
                     allowed_source_modes=allowed_source_modes,
+                    allow_broad_diagnostic_collection=allow_broad_diagnostic_collection,
                 )
             )
     return results
@@ -143,6 +235,7 @@ def collect_single_company_with_browser(
     max_pages_per_source_override: int | None = None,
     force_location_scope_search: bool = False,
     capture_page_html: bool = False,
+    allow_broad_diagnostic_collection: bool = False,
 ) -> dict[str, Any]:
     """Collect one company through a dedicated browser session."""
 
@@ -161,6 +254,7 @@ def collect_single_company_with_browser(
             max_pages_per_source_override=max_pages_per_source_override,
             force_location_scope_search=force_location_scope_search,
             capture_page_html=capture_page_html,
+            allow_broad_diagnostic_collection=allow_broad_diagnostic_collection,
         )
 
 
@@ -175,6 +269,7 @@ def collect_company_jobs(
     max_pages_per_source_override: int | None = None,
     force_location_scope_search: bool = False,
     capture_page_html: bool = False,
+    allow_broad_diagnostic_collection: bool = False,
 ) -> dict[str, Any]:
     """Collect jobs for a single browser-allowed company."""
 
@@ -194,6 +289,7 @@ def collect_company_jobs(
             "website_category": company.get("website_category"),
         }
     )
+    initial_scope_status = _initial_source_scope_status(careers_url)
     update_company_source(
         connection,
         company_name=company_name,
@@ -217,6 +313,7 @@ def collect_company_jobs(
             "location_scope_used": False,
             "keyword_scope_used": False,
             "jobs": [],
+            **initial_scope_status.to_dict(),
         }
 
     run_id = create_daily_run(
@@ -252,6 +349,7 @@ def collect_company_jobs(
                 dismissed_language_steps.append(navigated_language)
         dismissed_cookie = " -> ".join(dismissed_cookie_steps) or None
         dismissed_language_prompt = " -> ".join(dismissed_language_steps) or None
+        source_scope_status = _initial_source_scope_status(page.url or careers_url)
 
         initial_html = page.content()
         initial_text = page.locator("body").inner_text(timeout=3_000)
@@ -281,33 +379,42 @@ def collect_company_jobs(
                 company_name=company_name,
                 source_name=source_name,
             )
-            return build_intervention_result(
+            intervention_result = build_intervention_result(
                 company_name=company_name,
                 source_name=source_name,
                 signals=early_barriers,
                 intervention_id=intervention_id,
             )
+            intervention_result.update(initial_scope_status.to_dict())
+            return intervention_result
 
         location_queries: list[str] = []
-        location_scope_used = _url_uses_location_scope(page.url or careers_url)
+        location_scope_used = bool(source_scope_status.confirmed)
         keyword_scope_used = False
-        if location_scope_used:
+        if source_scope_status.confirmed:
             if is_ibm_careers_search_url(page.url or careers_url):
                 location_queries.append("Canada (IBM URL filter)")
                 location_filter_method = "ibm_canada_url_filter"
             else:
                 location_queries.append("Canada (URL filter)")
                 location_filter_method = "url_filter"
-        if not location_scope_used:
+        if not source_scope_status.confirmed:
             ibm_filter_query = apply_ibm_canada_filter(page, location_scope)
             if ibm_filter_query:
-                location_scope_used = True
                 location_queries.append(ibm_filter_query)
                 location_filter_method = "ibm_location_facet"
+                source_scope_status = _build_source_scope_status(
+                    status=SOURCE_SCOPE_CONFIRMED,
+                    confirmed=True,
+                    method="ui_filter",
+                    reason="IBM's public Canada facet was applied before pagination.",
+                    source_url_used=page.url or careers_url,
+                )
+                location_scope_used = True
         if (
             force_location_scope_search
             and find_search_input(page) is not None
-            and not location_scope_used
+            and not source_scope_status.confirmed
         ):
             for location_term in location_scope:
                 query = search_with_location_term(
@@ -317,10 +424,95 @@ def collect_company_jobs(
                 )
                 if query is None:
                     continue
-                location_scope_used = True
                 location_queries.append(query)
                 location_filter_method = "location_search_input"
+                if _url_uses_location_scope(page.url or careers_url):
+                    source_scope_status = _build_source_scope_status(
+                        status=SOURCE_SCOPE_CONFIRMED,
+                        confirmed=True,
+                        method="ui_filter",
+                        reason=(
+                            "The source exposed an explicit Canada-scoped results URL after "
+                            "applying a public location filter."
+                        ),
+                        source_url_used=page.url or careers_url,
+                    )
+                    location_scope_used = True
+                else:
+                    source_scope_status = _build_source_scope_status(
+                        status=SOURCE_SCOPE_UNCONFIRMED,
+                        confirmed=False,
+                        method="broad_unconfirmed",
+                        reason=(
+                            "A location search term was entered, but the source still did not "
+                            "expose a confirmable Canada-scoped URL before pagination."
+                        ),
+                        source_url_used=page.url or careers_url,
+                    )
                 break
+
+        if not source_scope_status.confirmed and not allow_broad_diagnostic_collection:
+            blocked_status = source_scope_status
+            blocked_result = {
+                "company_name": company_name,
+                "source_name": source_name,
+                "source_mode": classification.source_mode,
+                "ats_type": classification.ats_type,
+                "status": blocked_status.status,
+                "jobs_seen": 0,
+                "jobs_new": 0,
+                "jobs_discovered": 0,
+                "jobs_scored": 0,
+                "jobs_relevant": 0,
+                "jobs_saved": 0,
+                "starting_url": starting_url,
+                "final_url": page.url or navigated_url or careers_url,
+                "location_scope_used": False,
+                "location_scope": list(location_scope),
+                "location_queries": location_queries,
+                "location_filter_method": location_filter_method,
+                "keyword_scope_used": keyword_scope_used,
+                "query": None,
+                "navigated_url": navigated_url,
+                "cookie_dismissed": dismissed_cookie,
+                "language_prompt_action": dismissed_language_prompt,
+                "pagination_detected": False,
+                "pagination_stop_reason": "scope_not_confirmed_before_pagination",
+                "pages_visited": [page.url or careers_url] if (page.url or careers_url) else [],
+                "jobs_extracted_per_page": [],
+                "page_html_snapshots": [],
+                "max_pages_per_source": max_pages_per_source,
+                "jobs": [],
+                "candidate_jobs": [],
+                "scored_jobs": [],
+                "relevant_jobs": [],
+                "non_canada_rejected": 0,
+                "unknown_location_relevant": 0,
+                **blocked_status.to_dict(),
+            }
+            finish_daily_run(
+                connection,
+                run_id,
+                status=blocked_status.status,
+                jobs_seen=0,
+                jobs_new=0,
+                notes=blocked_status.reason,
+            )
+            mark_source_checked(
+                connection,
+                company_name=company_name,
+                source_name=source_name,
+            )
+            return blocked_result
+
+        if not source_scope_status.confirmed and allow_broad_diagnostic_collection:
+            source_scope_status = _diagnostic_scope_status(
+                source_scope_status,
+                reason=(
+                    f"{source_scope_status.reason} Broad collection continued only for a "
+                    "diagnostic run and must not be treated as verification evidence."
+                ),
+            )
 
         extraction_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
             page,
@@ -341,9 +533,20 @@ def collect_company_jobs(
                 )
                 if query is None:
                     continue
-                location_scope_used = True
                 location_queries.append(query)
                 location_filter_method = "location_search_input"
+                if _url_uses_location_scope(page.url or careers_url):
+                    source_scope_status = _build_source_scope_status(
+                        status=SOURCE_SCOPE_CONFIRMED,
+                        confirmed=True,
+                        method="ui_filter",
+                        reason=(
+                            "The source exposed an explicit Canada-scoped results URL after "
+                            "applying a public location filter."
+                        ),
+                        source_url_used=page.url or careers_url,
+                    )
+                    location_scope_used = True
                 search_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
                     page,
                     company_name=company_name,
@@ -402,12 +605,14 @@ def collect_company_jobs(
                 company_name=company_name,
                 source_name=source_name,
             )
-            return build_intervention_result(
+            intervention_result = build_intervention_result(
                 company_name=company_name,
                 source_name=source_name,
                 signals=late_barriers,
                 intervention_id=intervention_id,
             )
+            intervention_result.update(source_scope_status.to_dict())
+            return intervention_result
 
         jobs_new = 0
         scored_jobs = [_score_collected_job(job) for job in extracted_jobs]
@@ -416,6 +621,12 @@ def collect_company_jobs(
             for job in scored_jobs
             if is_probable_job_listing(job, base_url=careers_url) and _is_relevant_scored_job(job)
         ]
+        relevant_jobs, non_canada_rejected, unknown_location_relevant = (
+            _apply_source_scope_job_safety_gate(
+                relevant_jobs,
+                source_scope_status=source_scope_status,
+            )
+        )
         if save_jobs:
             for job in relevant_jobs:
                 existing = None
@@ -438,7 +649,9 @@ def collect_company_jobs(
                 "browser collection completed; "
                 f"location_queries={location_queries or 'none'}; "
                 f"location_filter_method={location_filter_method}; "
-                f"keyword_scope_used={keyword_scope_used}"
+                f"keyword_scope_used={keyword_scope_used}; "
+                f"source_scope_status={source_scope_status.status}; "
+                f"source_scope_method={source_scope_status.method}"
             ),
         )
         mark_source_checked(
@@ -480,6 +693,9 @@ def collect_company_jobs(
             "candidate_jobs": extracted_jobs,
             "scored_jobs": scored_jobs,
             "relevant_jobs": relevant_jobs,
+            "non_canada_rejected": non_canada_rejected,
+            "unknown_location_relevant": unknown_location_relevant,
+            **source_scope_status.to_dict(),
         }
     except PlaywrightError as exc:
         create_browser_intervention(
@@ -510,6 +726,7 @@ def collect_company_jobs(
             "keyword_scope_used": False,
             "error": str(exc),
             "jobs": [],
+            **initial_scope_status.to_dict(),
         }
     except Exception as exc:  # noqa: BLE001
         create_browser_intervention(
@@ -540,6 +757,7 @@ def collect_company_jobs(
             "keyword_scope_used": False,
             "error": str(exc),
             "jobs": [],
+            **initial_scope_status.to_dict(),
         }
 
 
@@ -639,6 +857,128 @@ def _url_uses_location_scope(url: str) -> bool:
         or "field_keyword_05%5b0%5d=canada" in normalized
         or "country=ca" in normalized
     )
+
+
+def _url_looks_like_canada_locale_only(url: str) -> bool:
+    parsed = urlparse(str(url or "").strip().lower())
+    return "/ca/en/" in parsed.path or parsed.path.startswith("/ca/")
+
+
+def _build_source_scope_status(
+    *,
+    status: str,
+    confirmed: bool,
+    method: str,
+    reason: str,
+    source_url_used: str,
+    broad_diagnostic_collection: bool = False,
+) -> SourceScopeStatus:
+    return SourceScopeStatus(
+        status=status,
+        confirmed=confirmed,
+        method=method,
+        reason=reason,
+        source_url_used=source_url_used,
+        broad_diagnostic_collection=broad_diagnostic_collection,
+    )
+
+
+def _initial_source_scope_status(url: str) -> SourceScopeStatus:
+    normalized_url = str(url or "").strip()
+    if not normalized_url:
+        return _build_source_scope_status(
+            status=SOURCE_SCOPE_NEEDS_USER_URL,
+            confirmed=False,
+            method="unknown",
+            reason="No official careers URL is configured for this source.",
+            source_url_used="",
+        )
+    if _url_uses_location_scope(normalized_url):
+        return _build_source_scope_status(
+            status=SOURCE_SCOPE_CONFIRMED,
+            confirmed=True,
+            method="url_filter",
+            reason="The source URL contains an explicit Canada filter signal.",
+            source_url_used=normalized_url,
+        )
+    if _url_looks_like_canada_locale_only(normalized_url):
+        return _build_source_scope_status(
+            status=SOURCE_SCOPE_UNCONFIRMED,
+            confirmed=False,
+            method="manual_audit_url",
+            reason=(
+                "The source URL uses a Canada locale path, but that alone does not prove "
+                "the job listing itself is location-scoped to Canada."
+            ),
+            source_url_used=normalized_url,
+        )
+    return _build_source_scope_status(
+        status=SOURCE_SCOPE_UNCONFIRMED,
+        confirmed=False,
+        method="broad_unconfirmed",
+        reason=(
+            "The source started from a broad or global listing without an explicit "
+            "Canada filter."
+        ),
+        source_url_used=normalized_url,
+    )
+
+
+def _diagnostic_scope_status(scope_status: SourceScopeStatus, *, reason: str) -> SourceScopeStatus:
+    return _build_source_scope_status(
+        status=scope_status.status,
+        confirmed=scope_status.confirmed,
+        method=scope_status.method,
+        reason=reason,
+        source_url_used=scope_status.source_url_used,
+        broad_diagnostic_collection=True,
+    )
+
+
+def _is_explicit_non_canada_location(location: str | None) -> bool:
+    normalized = str(location or "").strip().lower()
+    if not normalized:
+        return False
+    if any(
+        marker in normalized
+        for marker in (
+            "united states",
+            "united states of america",
+            " usa",
+            ", usa",
+            "u.s.",
+        )
+    ):
+        return True
+    return bool(US_CITY_STATE_PATTERN.search(normalized))
+
+
+def _apply_source_scope_job_safety_gate(
+    jobs: list[dict[str, Any]],
+    *,
+    source_scope_status: SourceScopeStatus,
+) -> tuple[list[dict[str, Any]], int, int]:
+    if not source_scope_status.confirmed:
+        return jobs, 0, 0
+
+    allowed_jobs: list[dict[str, Any]] = []
+    non_canada_rejected = 0
+    unknown_location_relevant = 0
+    for job in jobs:
+        location_text = str(job.get("location") or "").strip()
+        if _is_explicit_non_canada_location(location_text):
+            risk_flags = list(job.get("risk_flags") or [])
+            if "outside_location_scope" not in risk_flags:
+                risk_flags.append("outside_location_scope")
+            if "non_canada_location" not in risk_flags:
+                risk_flags.append("non_canada_location")
+            job["risk_flags"] = risk_flags
+            non_canada_rejected += 1
+            continue
+        if not location_text:
+            unknown_location_relevant += 1
+        allowed_jobs.append(job)
+    return allowed_jobs, non_canada_rejected, unknown_location_relevant
 
 
 def _dedupe_collected_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:

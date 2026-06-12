@@ -296,6 +296,32 @@ def migrate_database(connection: sqlite3.Connection) -> None:
         connection.execute(
             "ALTER TABLE sources ADD COLUMN duplicates_skipped INTEGER NOT NULL DEFAULT 0"
         )
+    if source_columns and "source_scope_name" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN source_scope_name TEXT")
+    if source_columns and "source_scope_status" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN source_scope_status TEXT")
+    if source_columns and "source_scope_confirmed" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN source_scope_confirmed INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "source_scope_method" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN source_scope_method TEXT")
+    if source_columns and "source_scope_reason" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN source_scope_reason TEXT")
+    if source_columns and "source_url_used" not in source_columns:
+        connection.execute("ALTER TABLE sources ADD COLUMN source_url_used TEXT")
+    if source_columns and "broad_diagnostic_collection" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN broad_diagnostic_collection INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "non_canada_rejected" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN non_canada_rejected INTEGER NOT NULL DEFAULT 0"
+        )
+    if source_columns and "unknown_location_relevant" not in source_columns:
+        connection.execute(
+            "ALTER TABLE sources ADD COLUMN unknown_location_relevant INTEGER NOT NULL DEFAULT 0"
+        )
     if source_columns and "last_success_at" not in source_columns:
         connection.execute("ALTER TABLE sources ADD COLUMN last_success_at TEXT")
     if source_columns and "consecutive_failures" not in source_columns:
@@ -1202,6 +1228,15 @@ def get_source_status_rows(connection: sqlite3.Connection) -> list[dict[str, Any
             sources.jobs_updated,
             sources.jobs_unchanged,
             sources.duplicates_skipped,
+            sources.source_scope_name,
+            sources.source_scope_status,
+            sources.source_scope_confirmed,
+            sources.source_scope_method,
+            sources.source_scope_reason,
+            sources.source_url_used,
+            sources.broad_diagnostic_collection,
+            sources.non_canada_rejected,
+            sources.unknown_location_relevant,
             sources.last_success_at,
             sources.last_checked,
             sources.consecutive_failures,
@@ -1233,6 +1268,12 @@ def get_source_status_rows(connection: sqlite3.Connection) -> list[dict[str, Any
         record["fallback_used"] = _to_python_bool(record.get("fallback_used", 0))
         record["intervention_required"] = _to_python_bool(
             record.get("intervention_required", 0)
+        )
+        record["source_scope_confirmed"] = _to_python_bool(
+            record.get("source_scope_confirmed", 0)
+        )
+        record["broad_diagnostic_collection"] = _to_python_bool(
+            record.get("broad_diagnostic_collection", 0)
         )
         record["status"] = record.get("last_status")
         record["collector"] = record.get("last_collector")
@@ -1624,6 +1665,15 @@ def record_source_observation(
     jobs_updated: int = 0,
     jobs_unchanged: int = 0,
     duplicates_skipped: int = 0,
+    source_scope_name: str | None = None,
+    source_scope_status: str | None = None,
+    source_scope_confirmed: bool = False,
+    source_scope_method: str | None = None,
+    source_scope_reason: str | None = None,
+    source_url_used: str | None = None,
+    broad_diagnostic_collection: bool = False,
+    non_canada_rejected: int = 0,
+    unknown_location_relevant: int = 0,
 ) -> None:
     """Persist the latest source-level routing and collection outcome."""
 
@@ -1645,6 +1695,8 @@ def record_source_observation(
             "collector": collector,
             "status": normalized_status,
             "intervention_required": intervention_required,
+            "source_scope_status": source_scope_status,
+            "source_scope_confirmed": source_scope_confirmed,
         }
     )
 
@@ -1688,6 +1740,15 @@ def record_source_observation(
             jobs_updated,
             jobs_unchanged,
             duplicates_skipped,
+            source_scope_name,
+            source_scope_status,
+            source_scope_confirmed,
+            source_scope_method,
+            source_scope_reason,
+            source_url_used,
+            broad_diagnostic_collection,
+            non_canada_rejected,
+            unknown_location_relevant,
             last_success_at,
             consecutive_failures,
             readiness_label,
@@ -1695,7 +1756,8 @@ def record_source_observation(
             updated_at
         )
         VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
             CURRENT_TIMESTAMP,
             CURRENT_TIMESTAMP
         )
@@ -1718,6 +1780,15 @@ def record_source_observation(
             jobs_updated = excluded.jobs_updated,
             jobs_unchanged = excluded.jobs_unchanged,
             duplicates_skipped = excluded.duplicates_skipped,
+            source_scope_name = excluded.source_scope_name,
+            source_scope_status = excluded.source_scope_status,
+            source_scope_confirmed = excluded.source_scope_confirmed,
+            source_scope_method = excluded.source_scope_method,
+            source_scope_reason = excluded.source_scope_reason,
+            source_url_used = excluded.source_url_used,
+            broad_diagnostic_collection = excluded.broad_diagnostic_collection,
+            non_canada_rejected = excluded.non_canada_rejected,
+            unknown_location_relevant = excluded.unknown_location_relevant,
             last_success_at = excluded.last_success_at,
             consecutive_failures = excluded.consecutive_failures,
             readiness_label = excluded.readiness_label,
@@ -1745,6 +1816,15 @@ def record_source_observation(
             int(jobs_updated),
             int(jobs_unchanged),
             int(duplicates_skipped),
+            source_scope_name,
+            source_scope_status,
+            _to_db_bool(source_scope_confirmed),
+            source_scope_method,
+            source_scope_reason,
+            source_url_used,
+            _to_db_bool(broad_diagnostic_collection),
+            int(non_canada_rejected),
+            int(unknown_location_relevant),
             last_success_at,
             consecutive_failures,
             readiness_label,

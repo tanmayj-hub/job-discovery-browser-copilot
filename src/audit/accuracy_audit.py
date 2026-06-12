@@ -238,6 +238,21 @@ def parse_company_filter(raw: str | None) -> list[str]:
     return [item.strip() for item in str(raw).split(",") if item.strip()]
 
 
+def _normalize_loaded_manual_expected_job(item: object) -> dict[str, Any] | None:
+    if isinstance(item, dict):
+        return dict(item)
+    text = str(item or "").strip()
+    if not text:
+        return None
+    if text.startswith(("https://", "http://")):
+        return {
+            "job_url": text,
+            "title": "",
+            "notes": "",
+        }
+    return None
+
+
 def load_manual_expected_jobs(path: Path) -> list[dict[str, Any]]:
     """Load the structured manual expected job fixture."""
 
@@ -245,7 +260,31 @@ def load_manual_expected_jobs(path: Path) -> list[dict[str, Any]]:
 
     payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     companies = payload.get("companies", [])
-    return companies if isinstance(companies, list) else []
+    if not isinstance(companies, list):
+        return []
+
+    normalized_companies: list[dict[str, Any]] = []
+    for raw_company in companies:
+        if not isinstance(raw_company, dict):
+            continue
+        company = dict(raw_company)
+        normalized_expected_jobs: list[dict[str, Any]] = []
+        extra_notes: list[str] = []
+        for item in raw_company.get("expected_jobs", []) or []:
+            normalized_job = _normalize_loaded_manual_expected_job(item)
+            if normalized_job is not None:
+                normalized_expected_jobs.append(normalized_job)
+                continue
+            note_text = str(item or "").strip()
+            if note_text:
+                extra_notes.append(note_text)
+        company["expected_jobs"] = normalized_expected_jobs
+        existing_notes = str(company.get("notes") or "").strip()
+        combined_notes = " ".join([part for part in [existing_notes, *extra_notes] if part]).strip()
+        if combined_notes:
+            company["notes"] = combined_notes
+        normalized_companies.append(company)
+    return normalized_companies
 
 
 def export_audit_sample(
@@ -534,6 +573,24 @@ def write_company_collection_diagnostic(
         for item in collection_result.get("location_queries", [])
         if str(item).strip()
     ]
+    source_scope_status = str(collection_result.get("source_scope_status") or "").strip()
+    source_scope_confirmed = bool(collection_result.get("source_scope_confirmed", False))
+    source_scope_method = str(collection_result.get("source_scope_method") or "").strip()
+    source_scope_reason = str(collection_result.get("source_scope_reason") or "").strip()
+    source_url_used = str(
+        collection_result.get("source_url_used")
+        or collection_result.get("final_url")
+        or collection_result.get("starting_url")
+        or company.get("careers_url")
+        or ""
+    ).strip()
+    broad_diagnostic_collection = bool(
+        collection_result.get("broad_diagnostic_collection", False)
+    )
+    non_canada_rejected = int(collection_result.get("non_canada_rejected", 0) or 0)
+    unknown_location_relevant = int(
+        collection_result.get("unknown_location_relevant", 0) or 0
+    )
     extracted_identifiers = _collect_company_url_identities(candidate_jobs)
     manual_expected_summary = _summarize_manual_expected_coverage(
         candidate_jobs,
@@ -546,6 +603,26 @@ def write_company_collection_diagnostic(
         scored_jobs=scored_jobs,
         saved_jobs=saved_jobs or [],
     )
+    verification_decision = "needs_review"
+    verification_reason = "Canada source scope was not confirmed before pagination."
+    if broad_diagnostic_collection:
+        verification_decision = "diagnostic_only"
+        verification_reason = (
+            "Broad collection was allowed only for diagnostics and must not be treated "
+            "as trusted verification evidence."
+        )
+    elif source_scope_confirmed:
+        verification_decision = "ready_for_verified_review"
+        verification_reason = (
+            "Canada source scope was confirmed before pagination and no diagnostic-only "
+            "fallback was required."
+        )
+        if non_canada_rejected > 0:
+            verification_decision = "needs_review"
+            verification_reason = (
+                "The source scope looked confirmed, but the non-Canada safety gate still "
+                "had to reject explicit out-of-scope jobs."
+            )
     lines = [
         f"# {company_name} Collection Diagnostic",
         "",
@@ -563,6 +640,14 @@ def write_company_collection_diagnostic(
         f"- ATS type: {collection_result.get('ats_type') or company.get('ats_hint') or '-'}",
         f"- Cookie banner action: {collection_result.get('cookie_dismissed') or 'none'}",
         f"- Language prompt action: {collection_result.get('language_prompt_action') or 'none'}",
+        "",
+        "## Source Scope Validation",
+        f"- Source URL used: {source_url_used or '-'}",
+        f"- Source scope status: {source_scope_status or '-'}",
+        f"- Canada scope confirmed before pagination: {source_scope_confirmed}",
+        f"- Source scope method: {source_scope_method or '-'}",
+        f"- Source scope reason: {source_scope_reason or '-'}",
+        f"- Broad diagnostic collection: {broad_diagnostic_collection}",
         "",
         "## Location Scope",
         f"- Location scope used: {bool(collection_result.get('location_scope_used', False))}",
@@ -592,6 +677,8 @@ def write_company_collection_diagnostic(
         f"- Candidate jobs before scoring: {collection_result.get('jobs_discovered', 0)}",
         f"- Jobs after scoring: {collection_result.get('jobs_scored', 0)}",
         f"- Relevant jobs after scoring: {collection_result.get('jobs_relevant', 0)}",
+        f"- Explicit non-Canada jobs rejected by safety gate: {non_canada_rejected}",
+        f"- Relevant jobs with unknown/blank location text: {unknown_location_relevant}",
         f"- Unique IBM jobIds extracted: {len(extracted_identifiers['ibm_job_ids'])}",
         f"- Unique Workday job IDs extracted: {len(extracted_identifiers['workday_job_ids'])}",
         (
@@ -605,6 +692,10 @@ def write_company_collection_diagnostic(
         lines.extend(f"- {url}" for url in pages_visited)
     else:
         lines.append("- None")
+
+    lines.extend(["", "## Verification Decision"])
+    lines.append(f"- Decision: {verification_decision}")
+    lines.append(f"- Reason: {verification_reason}")
 
     if manual_expected_jobs:
         lines.extend(["", "## Manual Expected Coverage"])

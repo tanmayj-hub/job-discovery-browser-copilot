@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import re
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -39,6 +40,73 @@ CollectorFunc = Callable[[Any, list[dict[str, Any]]], list[Any]]
 
 ELIGIBLE_SOURCE_MODES = {"api_allowed", "browser_allowed", "human_in_loop"}
 SKIPPED_SOURCE_MODES = {"needs_url", "manual_only", "avoid"}
+SKIPPED_SOURCE_STATUSES = {
+    "manual_only",
+    "needs_url",
+    "api_collector_not_implemented",
+    "canada_scope_unconfirmed",
+    "needs_user_canada_url",
+    "filter_blocked",
+    "manual_intervention_required",
+}
+US_STATE_ABBREVIATIONS = (
+    "AL",
+    "AK",
+    "AZ",
+    "AR",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "HI",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY",
+)
+US_CITY_STATE_PATTERN = re.compile(
+    r"\b[a-z0-9 .'/&()-]+,\s*(?:"
+    + "|".join(state.lower() for state in US_STATE_ABBREVIATIONS)
+    + r")\b"
+)
 
 
 @dataclass(slots=True)
@@ -193,6 +261,56 @@ def is_actionable_job(job: dict[str, Any]) -> bool:
     return is_probable_job_listing(job, base_url=job.get("job_url") or None)
 
 
+def _is_explicit_non_canada_location(location: object) -> bool:
+    normalized = str(location or "").strip().lower()
+    if not normalized:
+        return False
+    if any(
+        marker in normalized
+        for marker in (
+            "united states",
+            "united states of america",
+            " usa",
+            ", usa",
+            "u.s.",
+        )
+    ):
+        return True
+    return bool(US_CITY_STATE_PATTERN.search(normalized))
+
+
+def _apply_canada_location_safety_gate(
+    jobs: list[dict[str, Any]],
+    source_scope_by_key: dict[tuple[str, str], dict[str, Any]],
+) -> tuple[list[dict[str, Any]], Counter[tuple[str, str]], Counter[tuple[str, str]]]:
+    filtered: list[dict[str, Any]] = []
+    rejected_by_source: Counter[tuple[str, str]] = Counter()
+    unknown_by_source: Counter[tuple[str, str]] = Counter()
+    for job in jobs:
+        source_key = job.get("_source_key")
+        if not isinstance(source_key, tuple):
+            filtered.append(job)
+            continue
+        scope = source_scope_by_key.get(source_key, {})
+        if str(scope.get("source_scope_status") or "") != "canada_scope_confirmed":
+            filtered.append(job)
+            continue
+        location_text = str(job.get("location") or "").strip()
+        if _is_explicit_non_canada_location(location_text):
+            risk_flags = list(job.get("risk_flags") or [])
+            if "outside_location_scope" not in risk_flags:
+                risk_flags.append("outside_location_scope")
+            if "non_canada_location" not in risk_flags:
+                risk_flags.append("non_canada_location")
+            job["risk_flags"] = risk_flags
+            rejected_by_source[source_key] += 1
+            continue
+        if not location_text:
+            unknown_by_source[source_key] += 1
+        filtered.append(job)
+    return filtered, rejected_by_source, unknown_by_source
+
+
 def deduplicate_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Deduplicate normalized jobs in memory before persistence."""
 
@@ -324,6 +442,7 @@ def _routing_summary_line(item: dict[str, Any]) -> str:
     return (
         f"- {item['company_name']} | mode {source_mode} | ats {ats_type} | "
         f"collector {collector} | status {status} | "
+        f"scope={item.get('source_scope_status') or '-'} | "
         f"fallback_used={fallback_used} | intervention_required={intervention_required}"
     )
 
@@ -366,6 +485,15 @@ def _source_summary_defaults(company: dict[str, Any]) -> dict[str, Any]:
         "jobs_updated": 0,
         "jobs_unchanged": 0,
         "duplicates_skipped": 0,
+        "source_scope_name": "Canada",
+        "source_scope_status": None,
+        "source_scope_confirmed": False,
+        "source_scope_method": None,
+        "source_scope_reason": None,
+        "source_url_used": company.get("careers_url"),
+        "broad_diagnostic_collection": False,
+        "non_canada_rejected": 0,
+        "unknown_location_relevant": 0,
         "pages_visited": 0,
         "pagination_stop_reason": None,
         "intervention_reason": None,
@@ -395,6 +523,20 @@ def _enrich_source_summary(
             "jobs_updated": int(result.get("jobs_updated", 0) or 0),
             "jobs_unchanged": int(result.get("jobs_unchanged", 0) or 0),
             "duplicates_skipped": int(result.get("duplicates_skipped", 0) or 0),
+            "source_scope_name": result.get("source_scope_name") or summary["source_scope_name"],
+            "source_scope_status": result.get("source_scope_status"),
+            "source_scope_confirmed": bool(result.get("source_scope_confirmed", False)),
+            "source_scope_method": result.get("source_scope_method"),
+            "source_scope_reason": result.get("source_scope_reason"),
+            "source_url_used": result.get("source_url_used") or result.get("starting_url")
+            or summary["source_url"],
+            "broad_diagnostic_collection": bool(
+                result.get("broad_diagnostic_collection", False)
+            ),
+            "non_canada_rejected": int(result.get("non_canada_rejected", 0) or 0),
+            "unknown_location_relevant": int(
+                result.get("unknown_location_relevant", 0) or 0
+            ),
             "pages_visited": int(result.get("pages_visited", 0) or 0),
             "pagination_stop_reason": result.get("pagination_stop_reason"),
             "intervention_reason": result.get("intervention_reason"),
@@ -410,6 +552,8 @@ def _routing_summary_table_row(item: dict[str, Any]) -> str:
         f"| {item['company_name']} | {item.get('source_name') or '-'} | "
         f"{item.get('source_mode') or '-'} | {item.get('ats_type') or '-'} | "
         f"{item.get('collector') or '-'} | {item.get('status') or '-'} | "
+        f"{item.get('source_scope_status') or '-'} | "
+        f"{item.get('source_scope_method') or '-'} | "
         f"{item.get('readiness_label') or '-'} | "
         f"{'yes' if item.get('fallback_used') else 'no'} | "
         f"{'yes' if item.get('intervention_required') else 'no'} | "
@@ -417,6 +561,7 @@ def _routing_summary_table_row(item: dict[str, Any]) -> str:
         f"{int(item.get('jobs_scored', 0) or 0)} | "
         f"{int(item.get('jobs_relevant', 0) or 0)} | "
         f"{int(item.get('jobs_saved', 0) or 0)} | "
+        f"{int(item.get('non_canada_rejected', 0) or 0)} | "
         f"{int(item.get('jobs_inserted', 0) or 0)} | "
         f"{int(item.get('jobs_updated', 0) or 0)} | "
         f"{int(item.get('jobs_unchanged', 0) or 0)} | "
@@ -467,6 +612,9 @@ def write_daily_report(
 
     top_jobs = sorted(jobs, key=lambda job: int(job.get("match_score", 0)), reverse=True)[:10]
     source_metrics = summarize_source_metrics(routing_results)
+    non_canada_rejected = sum(
+        int(item.get("non_canada_rejected", 0) or 0) for item in routing_results
+    )
 
     lines = [
         f"# Daily Job Discovery Report - {run_date}",
@@ -483,6 +631,7 @@ def write_daily_report(
         f"- Jobs updated: {jobs_updated}",
         f"- Jobs unchanged: {jobs_unchanged}",
         f"- Duplicates skipped before scoring: {duplicates_skipped}",
+        f"- Explicit non-Canada jobs rejected by safety gate: {non_canada_rejected}",
         f"- Location scope used: {location_scope_used}",
         f"- Keyword scope used: {keyword_scope_used}",
         f"- Interventions needed: {len(interventions_needed)}",
@@ -496,6 +645,7 @@ def write_daily_report(
         f"| Sources checked | {source_metrics['sources_checked']} |",
         f"| Sources skipped | {source_metrics['sources_skipped']} |",
         f"| Jobs discovered | {jobs_discovered} |",
+        f"| Non-Canada jobs rejected | {non_canada_rejected} |",
         "",
         "## Evaluation",
         "| Metric | Value |",
@@ -554,20 +704,25 @@ def write_daily_report(
             "",
             "## Source Outcomes",
             (
-                "| Company | Source | Mode | ATS | Collector | Status | Readiness | "
-                "Fallback | Intervention | Discovered | Scored | Relevant | Saved | "
-                "Inserted | Updated | Unchanged | Duplicates | Last Error |"
+                "| Company | Source | Mode | ATS | Collector | Status | Scope | "
+                "Scope Method | Readiness | Fallback | Intervention | Discovered | "
+                "Scored | Relevant | Saved | Non-Canada Rejected | Inserted | "
+                "Updated | Unchanged | Duplicates | Last Error |"
             ),
             (
-                "| --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | "
-                "---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |"
+                "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | "
+                "--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | "
+                "---: | --- |"
             ),
         ]
     )
     if routing_results:
         lines.extend(_routing_summary_table_row(item) for item in routing_results)
     else:
-        lines.append("| None | - | - | - | - | - | - | - | - | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | - |")
+        lines.append(
+            "| None | - | - | - | - | - | - | - | - | - | - | 0 | 0 | 0 | 0 | 0 | "
+            "0 | 0 | 0 | 0 | - |"
+        )
 
     lines.extend(["", "## Companies Skipped"])
     if companies_skipped:
@@ -762,7 +917,7 @@ def run_daily_workflow(
                 errors.append(
                     f"{result.get('company_name')}: {result.get('error') or 'collector error'}"
                 )
-            if status in {"skipped", "manual_only", "needs_url", "api_collector_not_implemented"}:
+            if status in {"skipped", *SKIPPED_SOURCE_STATUSES}:
                 companies_skipped.append(
                     {
                         "company_name": str(result.get("company_name") or company["name"]),
@@ -782,9 +937,19 @@ def run_daily_workflow(
     deduped_jobs = deduplicate_jobs(normalized_jobs)
     duplicates_skipped = max(0, len(normalized_jobs) - len(deduped_jobs))
     scored_jobs = [score_normalized_job(job) for job in deduped_jobs]
-    relevant_jobs = [
+    prefiltered_relevant_jobs = [
         job for job in scored_jobs if is_actionable_job(job) and is_relevant_scored_job(job)
     ]
+    source_scope_by_key = {
+        _source_key(item["company_name"], item.get("source_name")): item
+        for item in routing_results
+    }
+    relevant_jobs, non_canada_rejected_by_source, unknown_location_relevant_by_source = (
+        _apply_canada_location_safety_gate(
+            prefiltered_relevant_jobs,
+            source_scope_by_key,
+        )
+    )
     save_summary = save_jobs(connection, relevant_jobs)
     saved_jobs = save_summary["jobs"]
     suspicious_saved_rows = find_suspicious_saved_rows(saved_jobs)
@@ -828,6 +993,8 @@ def run_daily_workflow(
             0,
             raw_count_by_source.get(key, 0) - deduped_count_by_source.get(key, 0),
         )
+        item["non_canada_rejected"] = int(non_canada_rejected_by_source.get(key, 0))
+        item["unknown_location_relevant"] = int(unknown_location_relevant_by_source.get(key, 0))
         item["readiness_label"] = compute_source_readiness(item)
         source_company = source_company_map.get(key) or by_name.get(item["company_name"])
         if source_company is not None:
@@ -857,6 +1024,19 @@ def run_daily_workflow(
                 jobs_updated=int(item.get("jobs_updated", 0) or 0),
                 jobs_unchanged=int(item.get("jobs_unchanged", 0) or 0),
                 duplicates_skipped=int(item.get("duplicates_skipped", 0) or 0),
+                source_scope_name=item.get("source_scope_name"),
+                source_scope_status=item.get("source_scope_status"),
+                source_scope_confirmed=bool(item.get("source_scope_confirmed", False)),
+                source_scope_method=item.get("source_scope_method"),
+                source_scope_reason=item.get("source_scope_reason"),
+                source_url_used=item.get("source_url_used"),
+                broad_diagnostic_collection=bool(
+                    item.get("broad_diagnostic_collection", False)
+                ),
+                non_canada_rejected=int(item.get("non_canada_rejected", 0) or 0),
+                unknown_location_relevant=int(
+                    item.get("unknown_location_relevant", 0) or 0
+                ),
             )
 
     reject_non_actionable_new_jobs(connection)

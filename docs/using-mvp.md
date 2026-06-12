@@ -48,7 +48,7 @@ streamlit run src/dashboard/app.py
 - Aviva Canada: verified, usable
 - BMO: needs_review
 - IBM Consulting: verified, usable
-- Manulife: needs_review
+- Manulife: verified, usable
 - Sun Life: verified, usable
 
 Only companies marked `verified: true` and `status: usable` are included in
@@ -56,11 +56,26 @@ Only companies marked `verified: true` and `status: usable` are included in
 single-company audits, but they are intentionally excluded from the trusted MVP
 slice until their Canada-only scope is proven more explicitly.
 
+## Trusted Run Rule
+Trusted MVP runs do not start from a broad/global careers listing and then rely
+on post-filtering to recover Canada-only results.
+
+Before pagination begins, the source must expose Canada scope through one of:
+
+- a stable official Canada-filtered source URL
+- a public pre-pagination Canada UI filter that the collector can confirm
+
+If Canada scope cannot be confirmed before pagination:
+
+- the trusted run skips the source
+- the source remains `needs_review` or `needs_user_canada_url`
+- any broader collection is treated as diagnostic-only evidence, not verification evidence
+
 ## What "Verified Company" Means
 A company is usable enough for the current MVP workflow when the latest evidence shows:
 
 - a fresh `daily-run --company` completed without error
-- Canada-only scope is confirmed by run behavior or by a stable Canada-filtered official URL
+- Canada-only scope is confirmed before pagination by run behavior or by a stable Canada-filtered official URL
 - the run discovered jobs
 - the run saved relevant jobs, unless a zero-saved result is explicitly explained and accepted
 - suspicious saved rows are `0`

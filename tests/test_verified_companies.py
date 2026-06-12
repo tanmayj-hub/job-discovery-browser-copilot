@@ -101,6 +101,30 @@ def test_verified_company_loader_reads_only_usable_records(tmp_path: Path) -> No
     assert usable_names == ["Verified Co"]
 
 
+def test_verified_company_with_needs_user_canada_url_is_not_usable(tmp_path: Path) -> None:
+    verified_path = tmp_path / "verified_companies.yaml"
+    verified_path.write_text(
+        yaml.safe_dump(
+            {
+                "verified_companies": [
+                    {
+                        "company_name": "Needs URL Co",
+                        "verified": False,
+                        "verified_at": "2026-06-12",
+                        "scope": "Canada",
+                        "status": "needs_user_canada_url",
+                        "notes": "Waiting on official Canada URL.",
+                    }
+                ]
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    assert get_usable_verified_company_names(verified_path) == []
+
+
 def test_verified_only_daily_run_selects_only_usable_companies(tmp_path: Path) -> None:
     config_path = tmp_path / "companies.yaml"
     verified_path = tmp_path / "verified_companies.yaml"

@@ -901,6 +901,7 @@ def main(argv: list[str] | None = None) -> int:
             max_pages_per_source_override=max_pages_per_source_override,
             force_location_scope_search=force_location_scope_search,
             capture_page_html=True,
+            allow_broad_diagnostic_collection=True,
         )
         from storage.db import get_jobs
 

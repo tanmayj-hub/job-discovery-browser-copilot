@@ -122,6 +122,15 @@ def _as_collector_result(
             str(result.get("pagination_stop_reason") or "").strip() or None
         ),
         intervention_reason=str(intervention_reason or "").strip() or None,
+        source_scope_name=str(result.get("source_scope_name") or "").strip() or None,
+        source_scope_status=str(result.get("source_scope_status") or "").strip() or None,
+        source_scope_confirmed=bool(result.get("source_scope_confirmed", False)),
+        source_scope_method=str(result.get("source_scope_method") or "").strip() or None,
+        source_scope_reason=str(result.get("source_scope_reason") or "").strip() or None,
+        source_url_used=str(result.get("source_url_used") or "").strip() or None,
+        broad_diagnostic_collection=bool(result.get("broad_diagnostic_collection", False)),
+        non_canada_rejected=int(result.get("non_canada_rejected", 0) or 0),
+        unknown_location_relevant=int(result.get("unknown_location_relevant", 0) or 0),
     )
 
 

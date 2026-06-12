@@ -139,6 +139,32 @@ def test_classify_source_health_row_flags_pagination_cap() -> None:
     assert classification["issue_category"] == "pagination_cap"
 
 
+def test_classify_source_health_row_flags_needs_user_canada_url() -> None:
+    classification = classify_source_health_row(
+        {
+            "status": "needs_user_canada_url",
+            "source_mode": "browser_allowed",
+            "source_scope_status": "needs_user_canada_url",
+            "priority": "High",
+        }
+    )
+
+    assert classification["issue_category"] == "needs_user_canada_url"
+
+
+def test_classify_source_health_row_flags_unconfirmed_canada_scope() -> None:
+    classification = classify_source_health_row(
+        {
+            "status": "canada_scope_unconfirmed",
+            "source_mode": "browser_allowed",
+            "source_scope_status": "canada_scope_unconfirmed",
+            "priority": "High",
+        }
+    )
+
+    assert classification["issue_category"] == "canada_scope_unconfirmed"
+
+
 def test_write_source_health_csv_contains_required_columns(tmp_path) -> None:
     output_path = tmp_path / "source-health.csv"
     write_source_health_csv(
