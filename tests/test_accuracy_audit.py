@@ -1074,6 +1074,17 @@ def test_workday_url_identity_extracts_td_salesforce_job_id() -> None:
     assert identity["workday_job_id"] == "R_1486443"
 
 
+def test_workday_url_identity_normalizes_jr_suffix_variant() -> None:
+    identity = _url_identity(
+        "https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs/job/"
+        "Toronto-Ontario/Lead-Platform-Reliability-Engineer_JR26051632-1"
+        "?Location_Country=a30a87ed25634629aa6c3958aa2b91ea"
+    )
+
+    assert identity["workday_job_id"] == "JR26051632-1"
+    assert identity["workday_base_id"] == "JR26051632"
+
+
 def test_compare_manual_expected_urls_matches_workday_id_despite_query_difference(
     tmp_path: Path,
 ) -> None:
@@ -1127,6 +1138,85 @@ def test_compare_manual_expected_urls_matches_workday_id_despite_query_differenc
 
     assert result["records"][0]["status"] == "saved_by_mvp"
     assert result["records"][0]["matched_title"] == "Lead Platform Engineer, TD Securities"
+
+
+def test_compare_manual_expected_urls_matches_workday_jr_suffix_variant(
+    tmp_path: Path,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    _write_csv(
+        tmp_path / "Manulife-scored-candidates.csv",
+        [
+            "company",
+            "title",
+            "location",
+            "url",
+            "score",
+            "is_relevant",
+            "relevance_tier",
+            "matched_terms",
+            "reason",
+            "match_reasons",
+            "risk_flags",
+            "rejection_reason",
+            "description",
+            "source_mode",
+        ],
+        [
+            {
+                "company": "Manulife",
+                "title": "Lead Platform Reliability Engineer",
+                "location": "Toronto, Ontario, Canada",
+                "url": (
+                    "https://careers.manulife.com/global/en/job/JR26051632/"
+                    "Lead-Platform-Reliability-Engineer"
+                ),
+                "score": "0",
+                "is_relevant": "false",
+                "relevance_tier": "not_relevant",
+                "matched_terms": "",
+                "reason": "Rejected because no positive scoring signals survived after penalties.",
+                "match_reasons": "",
+                "risk_flags": "",
+                "rejection_reason": (
+                    "Rejected because no positive scoring signals survived after penalties."
+                ),
+                "description": "",
+                "source_mode": "browser_allowed",
+            }
+        ],
+    )
+    fixture = [
+        {
+            "company_name": "Manulife",
+            "manual_career_page": (
+                "https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs"
+                "?Location_Country=a30a87ed25634629aa6c3958aa2b91ea"
+            ),
+            "manual_filter_used": "Canada",
+            "pages_checked": "first 10",
+            "expected_jobs": [
+                {
+                    "job_url": (
+                        "https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs/job/"
+                        "Toronto-Ontario/Lead-Platform-Reliability-Engineer_JR26051632-1"
+                        "?Location_Country=a30a87ed25634629aa6c3958aa2b91ea"
+                    ),
+                    "title": "Lead Platform Reliability Engineer",
+                    "notes": "",
+                }
+            ],
+        }
+    ]
+
+    result = compare_manual_expected_urls(
+        connection,
+        companies=fixture,
+        scored_candidates_dir=tmp_path,
+    )
+
+    assert result["records"][0]["matched_title"] == "Lead Platform Reliability Engineer"
+    assert result["records"][0]["status"] == "outside_scope"
 
 
 def test_compare_manual_expected_urls_matches_sunlife_jr_id_despite_query_difference(

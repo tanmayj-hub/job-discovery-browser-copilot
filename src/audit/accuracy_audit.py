@@ -1611,6 +1611,7 @@ def _url_identity(url: str) -> dict[str, str]:
         ibm_job_id = str(query["jobId"][0]).strip()
     workday_match = re.search(r"(R_\d+(?:-\d+)?|JR\d+(?:-\d+)?)", str(url or ""), re.I)
     workday_id = workday_match.group(1).upper() if workday_match else ""
+    workday_base_id = re.sub(r"-\d+$", "", workday_id) if workday_id else ""
     canonical = ""
     if parsed.scheme and parsed.netloc:
         canonical = (
@@ -1619,6 +1620,7 @@ def _url_identity(url: str) -> dict[str, str]:
     return {
         "ibm_job_id": ibm_job_id,
         "workday_job_id": workday_id,
+        "workday_base_id": workday_base_id,
         "canonical_url": canonical,
     }
 
@@ -1627,7 +1629,11 @@ def _url_identities_match(left: dict[str, str], right: dict[str, str]) -> bool:
     if left["ibm_job_id"] and right["ibm_job_id"]:
         return left["ibm_job_id"] == right["ibm_job_id"]
     if left["workday_job_id"] and right["workday_job_id"]:
-        return left["workday_job_id"] == right["workday_job_id"]
+        return (
+            left["workday_job_id"] == right["workday_job_id"]
+            or bool(left["workday_base_id"])
+            and left["workday_base_id"] == right["workday_base_id"]
+        )
     return bool(left["canonical_url"] and left["canonical_url"] == right["canonical_url"])
 
 

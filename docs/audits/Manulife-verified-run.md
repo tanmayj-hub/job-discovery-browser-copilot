@@ -1,46 +1,292 @@
-# Manulife Verified Run
+# Manulife Collection Diagnostic
 
 ## Source
 - Company: Manulife
-- Source URL: https://careers.manulife.com/global/en/search-results
+- Starting URL: https://careers.manulife.com/global/en/search-results
+- Final URL reached: https://careers.manulife.com/global/en/search-results?from=90&s=1
 - Source mode: browser_allowed
 - ATS type: -
-- Stable Canada-filtered URL configured: no
+- Cookie banner action: allow
+- Language prompt action: none
 
-## Fresh Production Run
-- Run date: 2026-06-11
-- Latest source timestamp: 2026-06-12 02:30:25
-- Status: completed
-- Jobs discovered: 100
-- Jobs scored: 100
-- Relevant jobs saved: 7
-- Jobs inserted: 0
-- Jobs updated: 0
-- Jobs unchanged: 7
-- Duplicates skipped: 0
-- Suspicious saved rows: 0
-- Pending interventions: none
-- Error: none
-
-## Canada Scope
-- Canada-only scope confirmed by stable URL: no
-- Canada-only scope confirmed by fresh production run: no
-- `location_scope_used` in fresh `daily-run --company "Manulife"`: false
-- Focused diagnostic note:
-  the audit helper can type `Canada` into the public results search and keep the
-  first 10 pages scoped during the focused diagnostic, but the default production
-  run still does not confirm a stable Canada-only source URL or equivalent
-  production-level scope signal.
+## Location Scope
+- Location scope used: True
+- Configured locations: Canada
+- Location filter/search attempted: Canada
+- Exact filter method: location_search_input
 
 ## Pagination
-- Pages visited in focused diagnostic: 10
+- Pagination detected: True
+- Next/load-more detection result: detected
+- Max pages per source: 10
+- Pages visited: 10
+- Jobs extracted per page: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
 - Pagination stop reason: max_pages_reached
 
-## Verification Decision
-- Meets fresh-run stability criteria: yes
-- Meets Canada-only trust criterion: no
-- Recommendation: keep as needs_review
-- Reason:
-  Manulife is productive enough to keep auditing, but it should not move into the
-  trusted verified-only MVP slice until Canada-only scope is confirmed more
-  explicitly in the production flow.
+## Counts
+- Candidate jobs before scoring: 100
+- Jobs after scoring: 100
+- Relevant jobs after scoring: 7
+- Unique IBM jobIds extracted: 0
+- Unique Workday job IDs extracted: 100
+- Scored candidates CSV: data\exports\audits\Manulife-scored-candidates.csv
+
+## Visited Pages
+- https://careers.manulife.com/global/en/search-results
+- https://careers.manulife.com/global/en/search-results?from=10&s=1
+- https://careers.manulife.com/global/en/search-results?from=20&s=1
+- https://careers.manulife.com/global/en/search-results?from=30&s=1
+- https://careers.manulife.com/global/en/search-results?from=40&s=1
+- https://careers.manulife.com/global/en/search-results?from=50&s=1
+- https://careers.manulife.com/global/en/search-results?from=60&s=1
+- https://careers.manulife.com/global/en/search-results?from=70&s=1
+- https://careers.manulife.com/global/en/search-results?from=80&s=1
+- https://careers.manulife.com/global/en/search-results?from=90&s=1
+
+## Candidate Jobs Before Scoring
+- Mortgage Specialist | - | https://careers.manulife.com/global/en/job/JR26011136/Mortgage-Specialist
+- Strategy Lead, Global Records & Information Management CoE | - | https://careers.manulife.com/global/en/job/JR26020125/Strategy-Lead-Global-Records-Information-Management-CoE
+- Director, Cloud Network Engineering & Operations | - | https://careers.manulife.com/global/en/job/JR26041816/Director-Cloud-Network-Engineering-Operations
+- Director, US Retirement Technology | - | https://careers.manulife.com/global/en/job/JR26050379/Director-US-Retirement-Technology
+- Lead Data Solution Architect, Wealth Technology | - | https://careers.manulife.com/global/en/job/JR25111415/Lead-Data-Solution-Architect-Wealth-Technology
+- Analyst, Portfolio Management | - | https://careers.manulife.com/global/en/job/JR26040737/Analyst-Portfolio-Management
+- Senior Release Train Engineer | - | https://careers.manulife.com/global/en/job/JR26040604/Senior-Release-Train-Engineer
+- AVP, Health & Dental Claims | - | https://careers.manulife.com/global/en/job/JR26051114/AVP-Health-Dental-Claims
+- North American ETF Capital Markets Associate | - | https://careers.manulife.com/global/en/job/JR26050366/North-American-ETF-Capital-Markets-Associate
+- Corporate Travel Operations Manager | - | https://careers.manulife.com/global/en/job/JR26042111/Corporate-Travel-Operations-Manager
+- Technology Strategy Lead, Banking | - | https://careers.manulife.com/global/en/job/JR26050279/Technology-Strategy-Lead-Banking
+- Corporate/Securities Law Clerk | - | https://careers.manulife.com/global/en/job/JR26051439/Corporate-Securities-Law-Clerk
+- Business Intelligence Senior Analyst | - | https://careers.manulife.com/global/en/job/JR26050826/Business-Intelligence-Senior-Analyst
+- Sales Training Manager | - | https://careers.manulife.com/global/en/job/JR26050628/Sales-Training-Manager
+- Azure AI/Data Architect | - | https://careers.manulife.com/global/en/job/JR25111229/Azure-AI-Data-Architect
+- Marketing Manager, US Wealth | - | https://careers.manulife.com/global/en/job/JR26051285/Marketing-Manager-US-Wealth
+- Marketing Campaign Analyst | - | https://careers.manulife.com/global/en/job/JR26050371/Marketing-Campaign-Analyst
+- Senior Analyst, Canada Operations | Senior Analyst, Canada Operations | https://careers.manulife.com/global/en/job/JR26051116/Senior-Analyst-Canada-Operations
+- Senior Data & AI Solution Architect | - | https://careers.manulife.com/global/en/job/JR26051154/Senior-Data-AI-Solution-Architect
+- Field Salesforce Consultant | - | https://careers.manulife.com/global/en/job/JR26041938/Field-Salesforce-Consultant
+- Salesforce Support & Enablement Consultant | - | https://careers.manulife.com/global/en/job/JR26041934/Salesforce-Support-Enablement-Consultant
+- Mortgage Specialist | - | https://careers.manulife.com/global/en/job/JR25120841/Mortgage-Specialist
+- Engineering Manager | - | https://careers.manulife.com/global/en/job/JR26040365/Engineering-Manager
+- Compliance Manager | - | https://careers.manulife.com/global/en/job/JR26050357/Compliance-Manager
+- Regional Director, Client Relations | - | https://careers.manulife.com/global/en/job/JR26052080/Regional-Director-Client-Relations
+- Sr. Data Scientist - GenAI | - | https://careers.manulife.com/global/en/job/JR26030462/Sr-Data-Scientist-GenAI
+- Digital Desk Specialist | - | https://careers.manulife.com/global/en/job/JR26051434/Digital-Desk-Specialist
+- Business Analyst – AdminAdvantage Operational Controls | - | https://careers.manulife.com/global/en/job/JR26051254/Business-Analyst-AdminAdvantage-Operational-Controls
+- Manager, Global Fund Solutions (Transformation) | - | https://careers.manulife.com/global/en/job/JR26031665/Manager-Global-Fund-Solutions-Transformation
+- Manager, Operations Controls and Governance | - | https://careers.manulife.com/global/en/job/JR26050485/Manager-Operations-Controls-and-Governance
+- Legal Mortgage Administrator | - | https://careers.manulife.com/global/en/job/JR26050069/Legal-Mortgage-Administrator
+- Senior Full-Stack Software Engineer - Global AI Platform | - | https://careers.manulife.com/global/en/job/JR26031208/Senior-Full-Stack-Software-Engineer-Global-AI-Platform
+- Director & Chief Product Owner | - | https://careers.manulife.com/global/en/job/JR26051743/Director-Chief-Product-Owner
+- Licensed Insurance Advisor | - | https://careers.manulife.com/global/en/job/JR25060092/Licensed-Insurance-Advisor
+- Incident Manager | - | https://careers.manulife.com/global/en/job/JR26050480/Incident-Manager
+- Data Engineer | - | https://careers.manulife.com/global/en/job/JR26051442/Data-Engineer
+- Director, Strategy & Business Architecture | - | https://careers.manulife.com/global/en/job/JR26051027/Director-Strategy-Business-Architecture
+- Global Operations and Resilience Architect | - | https://careers.manulife.com/global/en/job/JR26051055/Global-Operations-and-Resilience-Architect
+- AI Product Analyst – Global Technology Operations | - | https://careers.manulife.com/global/en/job/JR26051521/AI-Product-Analyst-Global-Technology-Operations
+- Senior Cloud Architect – AI & Modernization | - | https://careers.manulife.com/global/en/job/JR26051153/Senior-Cloud-Architect-AI-Modernization
+- Global Digital Product Manager | - | https://careers.manulife.com/global/en/job/JR26050947/Global-Digital-Product-Manager
+- Data Insights Lead | - | https://careers.manulife.com/global/en/job/JR26041133/Data-Insights-Lead
+- Director, Corporate Strategy | - | https://careers.manulife.com/global/en/job/JR25111405/Director-Corporate-Strategy
+- Information Security Consultant | - | https://careers.manulife.com/global/en/job/JR26051645/Information-Security-Consultant
+- Lead Release Train Engineer | - | https://careers.manulife.com/global/en/job/JR26041467/Lead-Release-Train-Engineer
+- Director, Architecture & Engineering Transformation | - | https://careers.manulife.com/global/en/job/JR26052085/Director-Architecture-Engineering-Transformation
+- Manager - IT Service Management | - | https://careers.manulife.com/global/en/job/JR24100061/Manager-IT-Service-Management
+- Director, Investor Relations | - | https://careers.manulife.com/global/en/job/JR26060374/Director-Investor-Relations
+- Associate Actuary - UL Valuation | - | https://careers.manulife.com/global/en/job/JR26051653/Associate-Actuary-UL-Valuation
+- Media Relations Consultant | - | https://careers.manulife.com/global/en/job/JR26060267/Media-Relations-Consultant
+- AVP Institutional Sales | - | https://careers.manulife.com/global/en/job/JR26040512/AVP-Institutional-Sales
+- Manager, Finance and Advisory | - | https://careers.manulife.com/global/en/job/JR26051707/Manager-Finance-and-Advisory
+- Lead Enterprise Architect (Global Risk Management) | - | https://careers.manulife.com/global/en/job/JR26051339/Lead-Enterprise-Architect-Global-Risk-Management
+- Product Owner | - | https://careers.manulife.com/global/en/job/JR26042038/Product-Owner
+- Retirement Pricing Actuary, Retirement and Wealth Finance | - | https://careers.manulife.com/global/en/job/JR26051411/Retirement-Pricing-Actuary-Retirement-and-Wealth-Finance
+- Senior Full-Stack Software Engineer (AI Automation) | - | https://careers.manulife.com/global/en/job/JR26040997/Senior-Full-Stack-Software-Engineer-AI-Automation
+- Program Manager | - | https://careers.manulife.com/global/en/job/JR26051048/Program-Manager
+- Process Transformation Consultant – Group Benefits Operations | - | https://careers.manulife.com/global/en/job/JR26041579/Process-Transformation-Consultant-Group-Benefits-Operations
+- Client Service Specialist – AdminAdvantage | - | https://careers.manulife.com/global/en/job/JR26021060/Client-Service-Specialist-AdminAdvantage
+- Director, IT Systems and Operations | - | https://careers.manulife.com/global/en/job/JR26041814/Director-IT-Systems-and-Operations
+- Head - Cybersecurity & Infrastructure Audit & Advisory Services | - | https://careers.manulife.com/global/en/job/JR26010946/Head-Cybersecurity-Infrastructure-Audit-Advisory-Services
+- Field Supervision Analyst | - | https://careers.manulife.com/global/en/job/JR26031144/Field-Supervision-Analyst
+- Manager, GWAM Expense Consolidation | - | https://careers.manulife.com/global/en/job/JR26060243/Manager-GWAM-Expense-Consolidation
+- Institutional Marketing Coordinator | - | https://careers.manulife.com/global/en/job/JR26051830/Institutional-Marketing-Coordinator
+- Director, Digital Customer Leadership Strategy & Insights | - | https://careers.manulife.com/global/en/job/JR26060033/Director-Digital-Customer-Leadership-Strategy-Insights
+- Manager, Sales Compensation | - | https://careers.manulife.com/global/en/job/JR26050622/Manager-Sales-Compensation
+- Director, Global Digital Marketing Enablement | - | https://careers.manulife.com/global/en/job/JR26051416/Director-Global-Digital-Marketing-Enablement
+- Associate Technology Strategy Specialist | - | https://careers.manulife.com/global/en/job/JR26051967/Associate-Technology-Strategy-Specialist
+- Program Manager | - | https://careers.manulife.com/global/en/job/JR26051831/Program-Manager
+- IT Business Systems Analyst, Insurance Technology | - | https://careers.manulife.com/global/en/job/JR26030291/IT-Business-Systems-Analyst-Insurance-Technology
+- Lead Platform Reliability Engineer | - | https://careers.manulife.com/global/en/job/JR26051632/Lead-Platform-Reliability-Engineer
+- Risk and Control Specialist – Bank Operations | - | https://careers.manulife.com/global/en/job/JR26051458/Risk-and-Control-Specialist-Bank-Operations
+- Complaints & Insights Consultant | - | https://careers.manulife.com/global/en/job/JR26051532/Complaints-Insights-Consultant
+- Director - ETF Product Development | - | https://careers.manulife.com/global/en/job/JR26051108/Director-ETF-Product-Development
+- Planning Manager | - | https://careers.manulife.com/global/en/job/JR26051651/Planning-Manager
+- Credit Risk Review Analyst | - | https://careers.manulife.com/global/en/job/JR26060148/Credit-Risk-Review-Analyst
+- Co-Chief Investment Strategist | - | https://careers.manulife.com/global/en/job/JR26051198/Co-Chief-Investment-Strategist
+- Business Development Manager-Wealth and Asset Management | - | https://careers.manulife.com/global/en/job/JR26041321/Business-Development-Manager-Wealth-and-Asset-Management
+- Credit Risk Specialist - Mortgage Special Assets | - | https://careers.manulife.com/global/en/job/JR26060015/Credit-Risk-Specialist-Mortgage-Special-Assets
+- Lead Cybersecurity Architect | - | https://careers.manulife.com/global/en/job/JR25091570/Lead-Cybersecurity-Architect
+- Senior IT Project Manager | - | https://careers.manulife.com/global/en/job/JR26041128/Senior-IT-Project-Manager
+- Assistant Vice President, GFT People and Communications Technology | - | https://careers.manulife.com/global/en/job/JR26051986/Assistant-Vice-President-GFT-People-and-Communications-Technology
+- Lead Solution Architect - GWAM Institutional and General Accounts Investments Technology | - | https://careers.manulife.com/global/en/job/JR26051955/Lead-Solution-Architect-GWAM-Institutional-and-General-Accounts-Investments-Technology
+- Executive Assistant | - | https://careers.manulife.com/global/en/job/JR26060131/Executive-Assistant
+- Senior Analyst, Data Governance | - | https://careers.manulife.com/global/en/job/JR26032040/Senior-Analyst-Data-Governance
+- Manager, GWAM Risk Center | - | https://careers.manulife.com/global/en/job/JR26031552/Manager-GWAM-Risk-Center
+- Senior Application Security Specialist | - | https://careers.manulife.com/global/en/job/JR26010935/Senior-Application-Security-Specialist
+- Manager, Quantitative Models Development | - | https://careers.manulife.com/global/en/job/JR26030482/Manager-Quantitative-Models-Development
+- Data Engineer | - | https://careers.manulife.com/global/en/job/JR25120543/Data-Engineer
+- Fall Co-op 2026 - Sustainable Investing, Public Markets | - | https://careers.manulife.com/global/en/job/JR26050928/Fall-Co-op-2026-Sustainable-Investing-Public-Markets
+- Lead Solution Architect | - | https://careers.manulife.com/global/en/job/JR26040965/Lead-Solution-Architect
+- Senior Data Governance Analyst | - | https://careers.manulife.com/global/en/job/JR26050624/Senior-Data-Governance-Analyst
+- Senior IT Project Manager - Legal, Compliance, Audit, Government Relations | - | https://careers.manulife.com/global/en/job/JR26050164/Senior-IT-Project-Manager-Legal-Compliance-Audit-Government-Relations
+- Senior Manager, Advisor Onboarding & Transitions | - | https://careers.manulife.com/global/en/job/JR26060704/Senior-Manager-Advisor-Onboarding-Transitions
+- Complaint Consultant | - | https://careers.manulife.com/global/en/job/JR26051537/Complaint-Consultant
+- Pricing Officer | - | https://careers.manulife.com/global/en/job/JR26060047/Pricing-Officer
+- Lead Data AI Architect | - | https://careers.manulife.com/global/en/job/JR26040540/Lead-Data-AI-Architect
+- FIU Analyst | - | https://careers.manulife.com/global/en/job/JR26051887/FIU-Analyst
+- Bilingual Tax Operations Representative | - | https://careers.manulife.com/global/en/job/JR26050914/Bilingual-Tax-Operations-Representative
+- Engineering Manager, Group Benefits Technology | - | https://careers.manulife.com/global/en/job/JR26060153/Engineering-Manager-Group-Benefits-Technology
+
+## Scored Candidates
+- Lead Solution Architect - GWAM Institutional and General Accounts Investments Technology | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Solution Architect | https://careers.manulife.com/global/en/job/JR26051955/Lead-Solution-Architect-GWAM-Institutional-and-General-Accounts-Investments-Technology
+- Lead Solution Architect | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Solution Architect | https://careers.manulife.com/global/en/job/JR26040965/Lead-Solution-Architect
+- Lead Data Solution Architect, Wealth Technology | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Solution Architect | https://careers.manulife.com/global/en/job/JR25111415/Lead-Data-Solution-Architect-Wealth-Technology
+- IT Business Systems Analyst, Insurance Technology | score 18 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Business Systems Analyst (technical context) | https://careers.manulife.com/global/en/job/JR26030291/IT-Business-Systems-Analyst-Insurance-Technology
+- Senior Data & AI Solution Architect | score 9 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Solution Architect | https://careers.manulife.com/global/en/job/JR26051154/Senior-Data-AI-Solution-Architect
+- AI Product Analyst – Global Technology Operations | score 8 | relevant=True | tier=core_target_fit | support/ops signals: operations | https://careers.manulife.com/global/en/job/JR26051521/AI-Product-Analyst-Global-Technology-Operations
+- Azure AI/Data Architect | score 4 | relevant=True | tier=core_target_fit | matched skills: Azure | https://careers.manulife.com/global/en/job/JR25111229/Azure-AI-Data-Architect
+- Technology Strategy Lead, Banking | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050279/Technology-Strategy-Lead-Banking
+- Strategy Lead, Global Records & Information Management CoE | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26020125/Strategy-Lead-Global-Records-Information-Management-CoE
+- Sr. Data Scientist - GenAI | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26030462/Sr-Data-Scientist-GenAI
+- Senior Release Train Engineer | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26040604/Senior-Release-Train-Engineer
+- Senior Manager, Advisor Onboarding & Transitions | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060704/Senior-Manager-Advisor-Onboarding-Transitions
+- Senior IT Project Manager - Legal, Compliance, Audit, Government Relations | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050164/Senior-IT-Project-Manager-Legal-Compliance-Audit-Government-Relations
+- Senior IT Project Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26041128/Senior-IT-Project-Manager
+- Senior Full-Stack Software Engineer - Global AI Platform | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26031208/Senior-Full-Stack-Software-Engineer-Global-AI-Platform
+- Senior Full-Stack Software Engineer (AI Automation) | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26040997/Senior-Full-Stack-Software-Engineer-AI-Automation
+- Senior Data Governance Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050624/Senior-Data-Governance-Analyst
+- Senior Cloud Architect – AI & Modernization | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051153/Senior-Cloud-Architect-AI-Modernization
+- Senior Application Security Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26010935/Senior-Application-Security-Specialist
+- Senior Analyst, Data Governance | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26032040/Senior-Analyst-Data-Governance
+- Senior Analyst, Canada Operations | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://careers.manulife.com/global/en/job/JR26051116/Senior-Analyst-Canada-Operations
+- Salesforce Support & Enablement Consultant | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26041934/Salesforce-Support-Enablement-Consultant
+- Sales Training Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050628/Sales-Training-Manager
+- Risk and Control Specialist – Bank Operations | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051458/Risk-and-Control-Specialist-Bank-Operations
+- Retirement Pricing Actuary, Retirement and Wealth Finance | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051411/Retirement-Pricing-Actuary-Retirement-and-Wealth-Finance
+- Regional Director, Client Relations | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26052080/Regional-Director-Client-Relations
+- Program Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051048/Program-Manager
+- Program Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051831/Program-Manager
+- Product Owner | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26042038/Product-Owner
+- Process Transformation Consultant – Group Benefits Operations | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26041579/Process-Transformation-Consultant-Group-Benefits-Operations
+- Pricing Officer | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060047/Pricing-Officer
+- Planning Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051651/Planning-Manager
+- North American ETF Capital Markets Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050366/North-American-ETF-Capital-Markets-Associate
+- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26011136/Mortgage-Specialist
+- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR25120841/Mortgage-Specialist
+- Media Relations Consultant | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060267/Media-Relations-Consultant
+- Marketing Manager, US Wealth | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051285/Marketing-Manager-US-Wealth
+- Marketing Campaign Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050371/Marketing-Campaign-Analyst
+- Manager, Sales Compensation | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050622/Manager-Sales-Compensation
+- Manager, Quantitative Models Development | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26030482/Manager-Quantitative-Models-Development
+- Manager, Operations Controls and Governance | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050485/Manager-Operations-Controls-and-Governance
+- Manager, Global Fund Solutions (Transformation) | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26031665/Manager-Global-Fund-Solutions-Transformation
+- Manager, GWAM Risk Center | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26031552/Manager-GWAM-Risk-Center
+- Manager, GWAM Expense Consolidation | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060243/Manager-GWAM-Expense-Consolidation
+- Manager, Finance and Advisory | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051707/Manager-Finance-and-Advisory
+- Manager - IT Service Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR24100061/Manager-IT-Service-Management
+- Licensed Insurance Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR25060092/Licensed-Insurance-Advisor
+- Legal Mortgage Administrator | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050069/Legal-Mortgage-Administrator
+- Lead Release Train Engineer | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26041467/Lead-Release-Train-Engineer
+- Lead Platform Reliability Engineer | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051632/Lead-Platform-Reliability-Engineer
+- Lead Enterprise Architect (Global Risk Management) | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051339/Lead-Enterprise-Architect-Global-Risk-Management
+- Lead Data AI Architect | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26040540/Lead-Data-AI-Architect
+- Lead Cybersecurity Architect | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR25091570/Lead-Cybersecurity-Architect
+- Institutional Marketing Coordinator | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051830/Institutional-Marketing-Coordinator
+- Information Security Consultant | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051645/Information-Security-Consultant
+- Incident Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050480/Incident-Manager
+- Head - Cybersecurity & Infrastructure Audit & Advisory Services | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26010946/Head-Cybersecurity-Infrastructure-Audit-Advisory-Services
+- Global Operations and Resilience Architect | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051055/Global-Operations-and-Resilience-Architect
+- Global Digital Product Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050947/Global-Digital-Product-Manager
+- Field Supervision Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26031144/Field-Supervision-Analyst
+- Field Salesforce Consultant | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26041938/Field-Salesforce-Consultant
+- Fall Co-op 2026 - Sustainable Investing, Public Markets | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050928/Fall-Co-op-2026-Sustainable-Investing-Public-Markets
+- FIU Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051887/FIU-Analyst
+- Executive Assistant | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060131/Executive-Assistant
+- Engineering Manager, Group Benefits Technology | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060153/Engineering-Manager-Group-Benefits-Technology
+- Engineering Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26040365/Engineering-Manager
+- Director, US Retirement Technology | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050379/Director-US-Retirement-Technology
+- Director, Strategy & Business Architecture | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051027/Director-Strategy-Business-Architecture
+- Director, Investor Relations | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060374/Director-Investor-Relations
+- Director, IT Systems and Operations | score 0 | relevant=False | tier=not_relevant | support/ops signals: operations | https://careers.manulife.com/global/en/job/JR26041814/Director-IT-Systems-and-Operations
+- Director, Global Digital Marketing Enablement | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051416/Director-Global-Digital-Marketing-Enablement
+- Director, Digital Customer Leadership Strategy & Insights | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060033/Director-Digital-Customer-Leadership-Strategy-Insights
+- Director, Corporate Strategy | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR25111405/Director-Corporate-Strategy
+- Director, Cloud Network Engineering & Operations | score 0 | relevant=False | tier=not_relevant | matched skills: networking; support/ops signals: operations | https://careers.manulife.com/global/en/job/JR26041816/Director-Cloud-Network-Engineering-Operations
+- Director, Architecture & Engineering Transformation | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26052085/Director-Architecture-Engineering-Transformation
+- Director - ETF Product Development | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051108/Director-ETF-Product-Development
+- Director & Chief Product Owner | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051743/Director-Chief-Product-Owner
+- Digital Desk Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051434/Digital-Desk-Specialist
+- Data Insights Lead | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26041133/Data-Insights-Lead
+- Data Engineer | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051442/Data-Engineer
+- Data Engineer | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR25120543/Data-Engineer
+- Credit Risk Specialist - Mortgage Special Assets | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060015/Credit-Risk-Specialist-Mortgage-Special-Assets
+- Credit Risk Review Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26060148/Credit-Risk-Review-Analyst
+- Corporate/Securities Law Clerk | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051439/Corporate-Securities-Law-Clerk
+- Corporate Travel Operations Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26042111/Corporate-Travel-Operations-Manager
+- Compliance Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050357/Compliance-Manager
+- Complaints & Insights Consultant | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051532/Complaints-Insights-Consultant
+- Complaint Consultant | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051537/Complaint-Consultant
+- Co-Chief Investment Strategist | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051198/Co-Chief-Investment-Strategist
+- Client Service Specialist – AdminAdvantage | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26021060/Client-Service-Specialist-AdminAdvantage
+- Business Intelligence Senior Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050826/Business-Intelligence-Senior-Analyst
+- Business Development Manager-Wealth and Asset Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26041321/Business-Development-Manager-Wealth-and-Asset-Management
+- Business Analyst – AdminAdvantage Operational Controls | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051254/Business-Analyst-AdminAdvantage-Operational-Controls
+- Bilingual Tax Operations Representative | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26050914/Bilingual-Tax-Operations-Representative
+- Associate Technology Strategy Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051967/Associate-Technology-Strategy-Specialist
+- Associate Actuary - UL Valuation | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051653/Associate-Actuary-UL-Valuation
+- Assistant Vice President, GFT People and Communications Technology | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051986/Assistant-Vice-President-GFT-People-and-Communications-Technology
+- Analyst, Portfolio Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26040737/Analyst-Portfolio-Management
+- AVP, Health & Dental Claims | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26051114/AVP-Health-Dental-Claims
+- AVP Institutional Sales | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.manulife.com/global/en/job/JR26040512/AVP-Institutional-Sales
+
+## Relevant Jobs After Scoring
+- Lead Data Solution Architect, Wealth Technology | score 24 | tier=adjacent_customer_facing_technical_fit | - | https://careers.manulife.com/global/en/job/JR25111415/Lead-Data-Solution-Architect-Wealth-Technology
+- Azure AI/Data Architect | score 4 | tier=core_target_fit | - | https://careers.manulife.com/global/en/job/JR25111229/Azure-AI-Data-Architect
+- Senior Data & AI Solution Architect | score 9 | tier=adjacent_customer_facing_technical_fit | - | https://careers.manulife.com/global/en/job/JR26051154/Senior-Data-AI-Solution-Architect
+- AI Product Analyst – Global Technology Operations | score 8 | tier=core_target_fit | - | https://careers.manulife.com/global/en/job/JR26051521/AI-Product-Analyst-Global-Technology-Operations
+- IT Business Systems Analyst, Insurance Technology | score 18 | tier=adjacent_customer_facing_technical_fit | - | https://careers.manulife.com/global/en/job/JR26030291/IT-Business-Systems-Analyst-Insurance-Technology
+- Lead Solution Architect - GWAM Institutional and General Accounts Investments Technology | score 24 | tier=adjacent_customer_facing_technical_fit | - | https://careers.manulife.com/global/en/job/JR26051955/Lead-Solution-Architect-GWAM-Institutional-and-General-Accounts-Investments-Technology
+- Lead Solution Architect | score 24 | tier=adjacent_customer_facing_technical_fit | - | https://careers.manulife.com/global/en/job/JR26040965/Lead-Solution-Architect
+
+## Rejected But Interesting Jobs
+- Senior Release Train Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26040604/Senior-Release-Train-Engineer
+- Senior Full-Stack Software Engineer - Global AI Platform | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26031208/Senior-Full-Stack-Software-Engineer-Global-AI-Platform
+- Senior Full-Stack Software Engineer (AI Automation) | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26040997/Senior-Full-Stack-Software-Engineer-AI-Automation
+- Senior Data Governance Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26050624/Senior-Data-Governance-Analyst
+- Senior Cloud Architect – AI & Modernization | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26051153/Senior-Cloud-Architect-AI-Modernization
+- Senior Analyst, Data Governance | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26032040/Senior-Analyst-Data-Governance
+- Senior Analyst, Canada Operations | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26051116/Senior-Analyst-Canada-Operations
+- Salesforce Support & Enablement Consultant | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26041934/Salesforce-Support-Enablement-Consultant
+- Risk and Control Specialist – Bank Operations | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26051458/Risk-and-Control-Specialist-Bank-Operations
+- Process Transformation Consultant – Group Benefits Operations | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26041579/Process-Transformation-Consultant-Group-Benefits-Operations
+- Marketing Campaign Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26050371/Marketing-Campaign-Analyst
+- Manager, Operations Controls and Governance | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26050485/Manager-Operations-Controls-and-Governance
+- Legal Mortgage Administrator | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26050069/Legal-Mortgage-Administrator
+- Lead Release Train Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26041467/Lead-Release-Train-Engineer
+- Lead Platform Reliability Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26051632/Lead-Platform-Reliability-Engineer
+- Head - Cybersecurity & Infrastructure Audit & Advisory Services | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26010946/Head-Cybersecurity-Infrastructure-Audit-Advisory-Services
+- Global Operations and Resilience Architect | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26051055/Global-Operations-and-Resilience-Architect
+- Field Supervision Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26031144/Field-Supervision-Analyst
+- FIU Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26051887/FIU-Analyst
+- Engineering Manager, Group Benefits Technology | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26060153/Engineering-Manager-Group-Benefits-Technology
+- Engineering Manager | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26040365/Engineering-Manager
+- Director, IT Systems and Operations | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26041814/Director-IT-Systems-and-Operations
+- Director, Cloud Network Engineering & Operations | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26041816/Director-Cloud-Network-Engineering-Operations
+- Director, Architecture & Engineering Transformation | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26052085/Director-Architecture-Engineering-Transformation
+- Data Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26051442/Data-Engineer
+- Data Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR25120543/Data-Engineer
+- Credit Risk Review Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26060148/Credit-Risk-Review-Analyst
+- Corporate Travel Operations Manager | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26042111/Corporate-Travel-Operations-Manager
+- Client Service Specialist – AdminAdvantage | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26021060/Client-Service-Specialist-AdminAdvantage
+- Business Intelligence Senior Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26050826/Business-Intelligence-Senior-Analyst
+- Business Analyst – AdminAdvantage Operational Controls | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26051254/Business-Analyst-AdminAdvantage-Operational-Controls
+- Bilingual Tax Operations Representative | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26050914/Bilingual-Tax-Operations-Representative
+- Analyst, Portfolio Management | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.manulife.com/global/en/job/JR26040737/Analyst-Portfolio-Management
