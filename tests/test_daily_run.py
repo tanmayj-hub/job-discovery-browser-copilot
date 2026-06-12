@@ -743,3 +743,35 @@ def test_canada_location_safety_gate_rejects_explicit_us_rows() -> None:
     assert rejected_by_source[source_key] == 1
     assert unknown_by_source[source_key] == 1
     assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]
+
+
+def test_canada_location_safety_gate_rejects_bmo_enus_urls_even_without_location() -> None:
+    source_key = ("BMO", "company-careers")
+    rejected_job = {
+        "company_name": "BMO",
+        "source_name": "company-careers",
+        "title": "Bank Manager",
+        "location": "",
+        "job_url": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012209EXTERNALENUS/Bank-Manager",
+        "risk_flags": [],
+        "_source_key": source_key,
+    }
+    filtered_jobs, rejected_by_source, unknown_by_source = _apply_canada_location_safety_gate(
+        [
+            rejected_job,
+            {
+                "company_name": "BMO",
+                "source_name": "company-careers",
+                "title": "Software Developer",
+                "location": "",
+                "job_url": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000290EXTERNALENCA/Software-Developer",
+                "_source_key": source_key,
+            },
+        ],
+        {source_key: {"source_scope_status": "canada_scope_confirmed"}},
+    )
+
+    assert [job["title"] for job in filtered_jobs] == ["Software Developer"]
+    assert rejected_by_source[source_key] == 1
+    assert unknown_by_source[source_key] == 1
+    assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]

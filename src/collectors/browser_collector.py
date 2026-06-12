@@ -13,7 +13,9 @@ import yaml
 from playwright.sync_api import Error as PlaywrightError
 
 from browser.extraction import (
+    _wait_for_visible_bmo_job_links,
     apply_ibm_canada_filter,
+    detect_bmo_canada_page_evidence,
     dismiss_cookie_banner,
     dismiss_ibm_language_prompt,
     extract_visible_job_cards_with_diagnostics,
@@ -408,6 +410,29 @@ def collect_company_jobs(
                     confirmed=True,
                     method="ui_filter",
                     reason="IBM's public Canada facet was applied before pagination.",
+                    source_url_used=page.url or careers_url,
+                )
+                location_scope_used = True
+        if not source_scope_status.confirmed:
+            bmo_evidence = None
+            _wait_for_visible_bmo_job_links(page)
+            for _ in range(10):
+                bmo_evidence = detect_bmo_canada_page_evidence(page)
+                if bmo_evidence:
+                    break
+                page.wait_for_timeout(500)
+            if bmo_evidence:
+                location_queries.append("Canada (BMO visible filter)")
+                location_filter_method = "bmo_page_evidence"
+                source_scope_status = _build_source_scope_status(
+                    status=SOURCE_SCOPE_CONFIRMED,
+                    confirmed=True,
+                    method=str(bmo_evidence.get("method") or "page_evidence"),
+                    reason=str(bmo_evidence.get("reason") or "").strip()
+                    or (
+                        "BMO's visible results page showed an active Canada filter and "
+                        "Canada-only visible job links."
+                    ),
                     source_url_used=page.url or careers_url,
                 )
                 location_scope_used = True
@@ -953,6 +978,11 @@ def _is_explicit_non_canada_location(location: str | None) -> bool:
     return bool(US_CITY_STATE_PATTERN.search(normalized))
 
 
+def _is_explicit_non_canada_job_url(job_url: str | None) -> bool:
+    normalized = str(job_url or "").strip().lower()
+    return "jobs.bmo.com" in normalized and "externalenus" in normalized
+
+
 def _apply_source_scope_job_safety_gate(
     jobs: list[dict[str, Any]],
     *,
@@ -966,7 +996,9 @@ def _apply_source_scope_job_safety_gate(
     unknown_location_relevant = 0
     for job in jobs:
         location_text = str(job.get("location") or "").strip()
-        if _is_explicit_non_canada_location(location_text):
+        if _is_explicit_non_canada_location(location_text) or _is_explicit_non_canada_job_url(
+            job.get("job_url")
+        ):
             risk_flags = list(job.get("risk_flags") or [])
             if "outside_location_scope" not in risk_flags:
                 risk_flags.append("outside_location_scope")

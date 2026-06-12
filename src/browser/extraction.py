@@ -330,6 +330,156 @@ def is_ibm_careers_search_url(url: str) -> bool:
     return parsed.netloc.endswith("ibm.com") and parsed.path.rstrip("/") == "/careers/search"
 
 
+def is_bmo_careers_search_url(url: str) -> bool:
+    """Return True when the URL is BMO's public Canada search-results page."""
+
+    parsed = urlparse(str(url or "").strip().lower())
+    return parsed.netloc == "jobs.bmo.com" and "/search-results" in parsed.path
+
+
+def detect_bmo_canada_page_evidence(page: Page) -> dict[str, Any] | None:
+    """Return trusted Canada-scope evidence from BMO's visible results page when available."""
+
+    if not is_bmo_careers_search_url(page.url):
+        return None
+
+    try:
+        evidence = page.evaluate(
+            """
+            () => {
+              const visible = (element) => {
+                if (!element || typeof element.getBoundingClientRect !== 'function') return false;
+                const style = window.getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return style.display !== 'none'
+                  && style.visibility !== 'hidden'
+                  && rect.width > 0
+                  && rect.height > 0;
+              };
+
+              const activeCanadaChip = Array.from(
+                document.querySelectorAll('button, a, span, div')
+              ).some((node) => {
+                if (!visible(node)) return false;
+                const text = (node.textContent || '').trim();
+                const parentText = (node.parentElement?.textContent || '').trim();
+                return text === 'Canada' && parentText.includes('Clear all');
+              });
+
+              const countryFacet = document.querySelector(
+                'input[data-ph-at-facetkey="facet-country"][data-ph-at-text="Canada"]'
+              );
+              const countryFacetChecked = Boolean(
+                countryFacet
+                && (
+                  countryFacet.checked
+                  || String(
+                    countryFacet.getAttribute('aria-checked') || ''
+                  ).toLowerCase() === 'true'
+                )
+              );
+
+              const visibleLinks = Array.from(
+                document.querySelectorAll('a[data-ph-at-id="job-link"]')
+              ).filter((node) => visible(node));
+              const sampleHrefs = visibleLinks.slice(0, 10).map((node) => node.href || '');
+              const allVisibleEnca = sampleHrefs.length > 0
+                && sampleHrefs.every((href) => href.includes('EXTERNALENCA'));
+              const anyVisibleEnus = sampleHrefs.some((href) => href.includes('EXTERNALENUS'));
+
+              return {
+                activeCanadaChip,
+                countryFacetChecked,
+                visibleJobLinkCount: visibleLinks.length,
+                allVisibleEnca,
+                anyVisibleEnus,
+                sampleHrefs,
+              };
+            }
+            """,
+        )
+    except Exception:  # noqa: BLE001
+        return None
+
+    if not isinstance(evidence, dict):
+        return None
+
+    visible_count = int(evidence.get("visibleJobLinkCount", 0) or 0)
+    if visible_count <= 0:
+        return None
+    if not evidence.get("allVisibleEnca") or evidence.get("anyVisibleEnus"):
+        return None
+
+    return {
+        "confirmed": True,
+        "method": "page_evidence",
+        "reason": (
+            "BMO's visible results page exposes only Canada (`EXTERNALENCA`) job result "
+            "links and no visible US (`EXTERNALENUS`) result links."
+        ),
+        "visible_job_link_count": visible_count,
+        "active_canada_chip": bool(evidence.get("activeCanadaChip")),
+        "country_facet_checked": bool(evidence.get("countryFacetChecked")),
+        "sample_hrefs": list(evidence.get("sampleHrefs") or []),
+    }
+
+
+def _count_visible_bmo_job_links(page: Page) -> int:
+    """Return the count of visible BMO result links on the current page."""
+
+    if not is_bmo_careers_search_url(page.url):
+        return 0
+
+    try:
+        count = page.evaluate(
+            """
+            () => {
+              const visible = (element) => {
+                if (!element || typeof element.getBoundingClientRect !== 'function') return false;
+                const style = window.getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return style.display !== 'none'
+                  && style.visibility !== 'hidden'
+                  && rect.width > 0
+                  && rect.height > 0;
+              };
+
+              return Array.from(
+                document.querySelectorAll('a[data-ph-at-id="job-link"]')
+              ).filter((node) => visible(node)).length;
+            }
+            """,
+        )
+    except Exception:  # noqa: BLE001
+        return 0
+
+    try:
+        return int(count or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _wait_for_visible_bmo_job_links(
+    page: Page,
+    *,
+    min_links: int = 1,
+    max_polls: int = 10,
+    poll_delay_ms: int = 500,
+) -> int:
+    """Allow BMO's client-side results grid time to render visible job links."""
+
+    if not is_bmo_careers_search_url(page.url):
+        return 0
+
+    last_count = 0
+    for _ in range(max_polls):
+        last_count = _count_visible_bmo_job_links(page)
+        if last_count >= min_links:
+            return last_count
+        page.wait_for_timeout(poll_delay_ms)
+    return last_count
+
+
 def dismiss_ibm_language_prompt(page: Page) -> str | None:
     """Dismiss IBM's French geo/language prompt without switching locales."""
 
@@ -418,11 +568,46 @@ def has_interactive_job_cards(page: Page) -> bool:
         )
     except Exception:  # noqa: BLE001
         return False
-    return bool(count)
+    if isinstance(count, bool):
+        return count
+    if isinstance(count, int):
+        return count > 0
+    if isinstance(count, list):
+        for item in count:
+            if not isinstance(item, Mapping):
+                continue
+            combined = _clean_text(
+                f"{item.get('aria', '')} {item.get('text', '')} {item.get('label', '')}"
+            ).lower()
+            if "view job:" in combined or "expand job details" in combined:
+                return True
+        return False
+    return False
+
+
+def _page_already_shows_job_results(page: Page) -> bool:
+    """Return True when the current page already exposes visible job results."""
+
+    if has_interactive_job_cards(page):
+        return True
+    if detect_bmo_canada_page_evidence(page):
+        return True
+    if not _is_search_results_style_page(page):
+        return False
+
+    body_text = _safe_locator_inner_text(page.locator("body"), timeout=3_000).lower()
+    if re.search(r"\b\d+\s*-\s*\d+\s+of\s+\d+\s+results\b", body_text):
+        return True
+    if re.search(r"\b\d+\s+jobs?\b", body_text) and "sort by" in body_text:
+        return True
+    return False
 
 
 def navigate_to_job_search_page(page: Page) -> str | None:
     """Move from a careers landing page to an on-site job-search/results page when visible."""
+
+    if _page_already_shows_job_results(page):
+        return None
 
     current_host = urlparse(page.url).netloc.lower()
     try:
@@ -1118,6 +1303,72 @@ def _extract_from_bmo_job_cards(
     return jobs
 
 
+def _extract_visible_bmo_job_cards(
+    page: Page,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+) -> list[dict[str, Any]]:
+    """Extract only visible BMO/Phenom result cards from the live page DOM."""
+
+    if not is_bmo_careers_search_url(page.url):
+        return []
+
+    try:
+        items = page.evaluate(
+            """
+            () => {
+              const visible = (element) => {
+                if (!element || typeof element.getBoundingClientRect !== 'function') return false;
+                const style = window.getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return style.display !== 'none'
+                  && style.visibility !== 'hidden'
+                  && rect.width > 0
+                  && rect.height > 0;
+              };
+
+              return Array.from(
+                document.querySelectorAll('a[data-ph-at-id="job-link"]')
+              )
+                .filter((node) => visible(node))
+                .map((node) => {
+                  const title = (
+                    node.getAttribute('data-ph-at-job-title-text')
+                    || node.textContent
+                    || ''
+                  ).trim();
+                  const href = (node.getAttribute('href') || '').trim();
+                  const card = node.closest('li, article, section, div');
+                  const description = ((card?.innerText) || '').replace(/\\s+/g, ' ').trim();
+                  return { title, href, description };
+                });
+            }
+            """,
+        )
+    except Exception:  # noqa: BLE001
+        return []
+
+    jobs: list[dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        job = _build_job_record(
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            title=_clean_text(item.get("title")),
+            base_url=page.url,
+            href=str(item.get("href") or "").strip(),
+            description=_clean_text(item.get("description")),
+            allow_base_url_fallback=False,
+        )
+        if job is not None:
+            jobs.append(job)
+    return jobs
+
+
 def _extract_from_tables(
     soup: BeautifulSoup,
     *,
@@ -1370,6 +1621,7 @@ def extract_jobs_from_html(
     source_mode: str,
     base_url: str,
     max_cards: int = 20,
+    include_bmo_structured: bool = True,
 ) -> list[dict[str, Any]]:
     """Extract plausible job records from one HTML document."""
 
@@ -1387,15 +1639,16 @@ def extract_jobs_from_html(
             base_url=base_url,
         )
     )
-    candidates.extend(
-        _extract_from_bmo_job_cards(
-            soup,
-            company_name=company_name,
-            source_name=source_name,
-            source_mode=source_mode,
-            base_url=base_url,
+    if include_bmo_structured:
+        candidates.extend(
+            _extract_from_bmo_job_cards(
+                soup,
+                company_name=company_name,
+                source_name=source_name,
+                source_mode=source_mode,
+                base_url=base_url,
+            )
         )
-    )
     candidates.extend(
         _extract_from_accenture_job_cards(
             soup,
@@ -1705,6 +1958,7 @@ def extract_visible_job_cards_with_diagnostics(
     pagination_detected = False
     pagination_stop_reason = "single_page_only"
 
+    _wait_for_visible_bmo_job_links(page)
     interactive_jobs = _extract_from_interactive_cards(
         page,
         company_name=company_name,
@@ -1714,18 +1968,32 @@ def extract_visible_job_cards_with_diagnostics(
     candidates.extend(interactive_jobs)
     seen_job_identities.update(_job_identity_key(job) for job in interactive_jobs)
 
-    current_url = page.url
-    current_html = page.content()
-    current_jobs = extract_jobs_from_html(
-        current_html,
+    visible_bmo_jobs = _extract_visible_bmo_job_cards(
+        page,
         company_name=company_name,
         source_name=source_name,
         source_mode=source_mode,
-        base_url=current_url,
-        max_cards=max_cards,
     )
+    candidates.extend(visible_bmo_jobs)
+    seen_job_identities.update(_job_identity_key(job) for job in visible_bmo_jobs)
+
+    current_url = page.url
+    current_html = page.content()
+    current_jobs = (
+        []
+        if visible_bmo_jobs
+        else extract_jobs_from_html(
+            current_html,
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            base_url=current_url,
+            max_cards=max_cards,
+        )
+    )
+    current_page_candidates = visible_bmo_jobs or current_jobs
     pages_visited.append(current_url)
-    jobs_extracted_per_page.append(len(current_jobs))
+    jobs_extracted_per_page.append(len(current_page_candidates))
     if capture_page_html:
         page_html_snapshots.append({"url": current_url, "html": current_html})
     candidates.extend(current_jobs)
@@ -1747,27 +2015,41 @@ def extract_visible_job_cards_with_diagnostics(
             before_url=before_url,
             before_html=before_html,
         )
+        _wait_for_visible_bmo_job_links(page)
+        after_url = page.url
+        after_html = page.content()
         if after_url == before_url and after_html == before_html:
             pagination_stop_reason = "no_page_change"
             break
 
-        page_jobs = extract_jobs_from_html(
-            after_html,
+        page_visible_bmo_jobs = _extract_visible_bmo_job_cards(
+            page,
             company_name=company_name,
             source_name=source_name,
             source_mode=source_mode,
-            base_url=after_url,
-            max_cards=max_cards,
         )
+        page_jobs = (
+            []
+            if page_visible_bmo_jobs
+            else extract_jobs_from_html(
+                after_html,
+                company_name=company_name,
+                source_name=source_name,
+                source_mode=source_mode,
+                base_url=after_url,
+                max_cards=max_cards,
+            )
+        )
+        page_candidates = page_visible_bmo_jobs or page_jobs
         pages_visited.append(after_url)
-        jobs_extracted_per_page.append(len(page_jobs))
+        jobs_extracted_per_page.append(len(page_candidates))
         if capture_page_html:
             page_html_snapshots.append({"url": after_url, "html": after_html})
 
         new_jobs = [
-            job for job in page_jobs if _job_identity_key(job) not in seen_job_identities
+            job for job in page_candidates if _job_identity_key(job) not in seen_job_identities
         ]
-        candidates.extend(page_jobs)
+        candidates.extend(page_candidates)
         if not new_jobs:
             pagination_stop_reason = "no_new_job_urls"
             break

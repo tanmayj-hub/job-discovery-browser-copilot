@@ -10,7 +10,7 @@ verified_companies:
     verified_at: "2026-06-12"
     scope: Canada
     status: needs_review
-    notes: "Trusted run on 2026-06-12 stopped before pagination because https://jobs.bmo.com/ca/en/search-results is still canada_scope_unconfirmed. A separate diagnostic run found 104 Canada-locale candidates across 10 pages, but that evidence is broad diagnostic only and cannot promote BMO into verified-only."
+    notes: "Trusted BMO collection now confirms Canada scope from visible search-result evidence on https://jobs.bmo.com/ca/en/search-results. The collector extracts only visible ENCA result rows and discovered 20 Canada-scoped candidates with 0 relevant jobs saved, so BMO is ready for scoring/manual review but is not yet promoted into the verified-only slice."
   - company_name: IBM Consulting
     verified: true
     verified_at: "2026-06-12"

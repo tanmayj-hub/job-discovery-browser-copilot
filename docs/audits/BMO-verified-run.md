@@ -4,37 +4,33 @@
 - Run date: 2026-06-12
 - Verification decision: `needs_review`
 - Trusted source URL: `https://jobs.bmo.com/ca/en/search-results`
-- Source scope status: `canada_scope_unconfirmed`
-- Canada scope confirmed before pagination: `False`
-- Source scope method: `manual_audit_url`
+- Source scope status: `canada_scope_confirmed`
+- Canada scope confirmed before pagination: `True`
+- Source scope method: `page_evidence`
 - Broad diagnostic collection used for verification: `False`
 
 ## Trusted Run Result
 - `python -m src.main daily-run --company "BMO"`
 - Companies checked: `1`
-- Companies skipped: `1`
-- Jobs discovered: `0`
-- Jobs scored: `0`
+- Companies skipped: `0`
+- Jobs discovered: `20`
+- Jobs scored: `20`
 - Jobs saved: `0`
-- Pagination stop reason: `scope_not_confirmed_before_pagination`
+- Pagination stop reason: `no_new_job_urls`
 - Non-Canada jobs rejected by safety gate: `0`
 
-## Separate Diagnostic Review
-- `python -m src.main audit diagnose-company-collection --company "BMO"`
-- Diagnostic source scope status: `canada_scope_unconfirmed`
-- Broad diagnostic collection: `True`
-- Pages visited: `10`
-- Candidate jobs discovered: `104`
-- Relevant jobs after scoring: `0`
-- Observed behavior: the `/ca/en/search-results` page still exposed mixed `ENCA` and `ENUS` job URLs, so the locale path alone is not strong enough to trust as a Canada-only listing.
+## What Was Fixed
+- The top-right `Canada / US` site selector is not the same as the job-search country filter.
+- The collector now trusts the BMO results page based on visible result evidence, not just the locale path.
+- The collector confirms Canada scope when the visible BMO search-result links are all `EXTERNALENCA` and no visible `EXTERNALENUS` links appear.
+- The BMO extractor now prefers visible result rows and no longer pulls hidden US rows from the broader page DOM.
+- A BMO-specific safety net now rejects `EXTERNALENUS` job URLs even if location text is blank.
 
-## Manual Audit Alignment
-- Manual career page reviewed: `https://jobs.bmo.com/ca/en/search-results`
-- Manual filter used: `Canada`
-- Pages checked manually: first `10`
-- Manual note: no relevant jobs were found in the first 10 Canada-scoped pages.
+## Current Review State
+- BMO stays out of the verified-only slice for now.
+- `config/verified_companies.yaml` remains `verified: false` with `status: needs_review`.
+- Reason: source scope is now trusted, but the current BMO run saved `0` relevant jobs, so the next review point is scoring/fit rather than URL trust.
 
-## Decision
-- BMO stays out of the verified-only slice.
-- `config/verified_companies.yaml` remains `verified: false` and `status: needs_review`.
-- Next action: keep using the source-scope diagnostic path until BMO exposes a stable Canada-only URL or a public pre-pagination Canada filter that the MVP can confirm deterministically.
+## Next Action
+- Keep BMO available for single-company audits and scoring review.
+- Revisit BMO promotion only after the saved-job quality is strong enough for the trusted verified-only slice.

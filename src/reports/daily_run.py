@@ -279,6 +279,11 @@ def _is_explicit_non_canada_location(location: object) -> bool:
     return bool(US_CITY_STATE_PATTERN.search(normalized))
 
 
+def _is_explicit_non_canada_job_url(job_url: object) -> bool:
+    normalized = str(job_url or "").strip().lower()
+    return "jobs.bmo.com" in normalized and "externalenus" in normalized
+
+
 def _apply_canada_location_safety_gate(
     jobs: list[dict[str, Any]],
     source_scope_by_key: dict[tuple[str, str], dict[str, Any]],
@@ -296,7 +301,9 @@ def _apply_canada_location_safety_gate(
             filtered.append(job)
             continue
         location_text = str(job.get("location") or "").strip()
-        if _is_explicit_non_canada_location(location_text):
+        if _is_explicit_non_canada_location(location_text) or _is_explicit_non_canada_job_url(
+            job.get("job_url")
+        ):
             risk_flags = list(job.get("risk_flags") or [])
             if "outside_location_scope" not in risk_flags:
                 risk_flags.append("outside_location_scope")

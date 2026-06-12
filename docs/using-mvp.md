@@ -54,7 +54,7 @@ streamlit run src/dashboard/app.py
 Only companies marked `verified: true` and `status: usable` are included in
 `--verified-only` runs. Companies marked `needs_review` remain available for
 single-company audits, but they are intentionally excluded from the trusted MVP
-slice until their Canada-only scope is proven more explicitly.
+slice until both source scope and result quality are proven strongly enough.
 
 ## Trusted Run Rule
 Trusted MVP runs do not start from a broad/global careers listing and then rely

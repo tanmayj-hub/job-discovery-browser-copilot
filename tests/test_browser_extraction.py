@@ -4,6 +4,7 @@ from pathlib import Path
 
 from browser.extraction import (
     apply_ibm_canada_filter,
+    detect_bmo_canada_page_evidence,
     dismiss_cookie_banner,
     dismiss_ibm_language_prompt,
     extract_jobs_from_html,
@@ -240,6 +241,18 @@ class FakeBrokenButtonNavigationPage(FakeButtonNavigationPage):
         return FakeLocatorCollection([])
 
 
+class FakeResultsAlreadyVisibleNavigationPage(FakeButtonNavigationPage):
+    def __init__(self) -> None:
+        super().__init__()
+        self._url = "https://jobs.bmo.com/ca/en/search-results"
+        self._body_text = "1-10 of 667 results Sort by Relevance Software Developer"
+        self.visited: list[str] = []
+
+    def goto(self, url: str, wait_until: str = "load") -> None:  # noqa: ARG002
+        self._url = url
+        self.visited.append(url)
+
+
 class FakeSearchInput(FakeLocatorItem):
     def __init__(self, page) -> None:
         super().__init__(page, "")
@@ -274,6 +287,68 @@ class FakeSearchPage:
 
     def evaluate(self, _script: str):
         return 0
+
+
+class FakeBmoVisiblePage:
+    def __init__(self) -> None:
+        self._url = "https://jobs.bmo.com/ca/en/search-results"
+        self._html = """
+        <main>
+          <a
+            data-ph-at-id="job-link"
+            data-ph-at-job-title-text="Software Developer"
+            href="https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000290EXTERNALENCA/Software-Developer"
+          >Software Developer</a>
+          <a
+            data-ph-at-id="job-link"
+            data-ph-at-job-title-text="Senior Premier Relationship Manager"
+            href="https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260010172EXTERNALENUS/Senior-Premier-Relationship-Manager"
+          >Senior Premier Relationship Manager</a>
+        </main>
+        """
+        self.visible_bmo_rows = [
+            {
+                "title": "Software Developer",
+                "href": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000290EXTERNALENCA/Software-Developer",
+                "description": "Software Developer Toronto, ON M8X 1C4, Canada Category Technology",
+            }
+        ]
+        self.bmo_evidence = {
+            "activeCanadaChip": True,
+            "countryFacetChecked": False,
+            "visibleJobLinkCount": 10,
+            "allVisibleEnca": True,
+            "anyVisibleEnus": False,
+            "sampleHrefs": [
+                "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000290EXTERNALENCA/Software-Developer"
+            ],
+        }
+
+    @property
+    def url(self) -> str:
+        return self._url
+
+    def content(self) -> str:
+        return self._html
+
+    def locator(self, selector: str):
+        if selector == "button, a, [role='button']":
+            return FakeLocatorCollection([])
+        if selector == "body":
+            return FakeBodyLocator("BMO jobs")
+        return FakeLocatorCollection([])
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def evaluate(self, script: str):
+        if 'view job:' in script.lower():
+            return []
+        if 'activeCanadaChip' in script:
+            return self.bmo_evidence
+        if 'data-ph-at-id="job-link"' in script:
+            return self.visible_bmo_rows
+        return []
 
 
 class FakeCheckboxLocatorItem(FakeLocatorItem):
@@ -407,6 +482,56 @@ class FakeNoNewJobsPage(FakeMultiPageWorkday):
             self.index += 1
 
 
+class FakeMultiPageBmoVisible:
+    def __init__(self, urls: list[str], rows_by_page: list[list[dict[str, str]]]) -> None:
+        self.urls = urls
+        self.rows_by_page = rows_by_page
+        self.index = 0
+
+    @property
+    def url(self) -> str:
+        return self.urls[self.index]
+
+    def content(self) -> str:
+        return "<main>BMO visible jobs</main>"
+
+    def locator(self, selector: str):
+        if selector == "button, a, [role='button']":
+            if self.index < len(self.rows_by_page) - 1:
+                return FakeLocatorCollection(
+                    [FakeMultiPageLocatorItem(self, "next", enabled=True)]
+                )
+            return FakeLocatorCollection(
+                [FakeMultiPageLocatorItem(self, "next", enabled=False)]
+            )
+        if selector == "body":
+            return FakeBodyLocator("1-10 of 667 results Sort by Relevance")
+        return FakeLocatorCollection([])
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def advance(self) -> None:
+        if self.index < len(self.rows_by_page) - 1:
+            self.index += 1
+
+    def evaluate(self, script: str):
+        if "activeCanadaChip" in script:
+            return {
+                "activeCanadaChip": True,
+                "countryFacetChecked": False,
+                "visibleJobLinkCount": len(self.rows_by_page[self.index]),
+                "allVisibleEnca": True,
+                "anyVisibleEnus": False,
+                "sampleHrefs": [row["href"] for row in self.rows_by_page[self.index][:3]],
+            }
+        if 'data-ph-at-id="job-link"' in script:
+            return self.rows_by_page[self.index]
+        if "view job:" in script.lower():
+            return []
+        return []
+
+
 def test_extract_jobs_from_html_uses_anchor_and_card_strategies() -> None:
     html = (FIXTURES_DIR / "anchors_cards.html").read_text(encoding="utf-8")
 
@@ -468,6 +593,32 @@ def test_extract_visible_job_cards_uses_interactive_job_cards() -> None:
     assert jobs[0]["title"] == "Support Analyst"
     assert jobs[0]["job_url"] == "https://careers.example.com/careers/job/123"
     assert "match_score" not in jobs[0]
+
+
+def test_detect_bmo_canada_page_evidence_confirms_active_canada_results() -> None:
+    page = FakeBmoVisiblePage()
+
+    evidence = detect_bmo_canada_page_evidence(page)
+
+    assert evidence is not None
+    assert evidence["confirmed"] is True
+    assert evidence["method"] == "page_evidence"
+
+
+def test_extract_visible_job_cards_prefers_visible_bmo_rows_over_hidden_us_dom_links() -> None:
+    page = FakeBmoVisiblePage()
+
+    jobs = extract_visible_job_cards(
+        page,
+        company_name="BMO",
+        source_name="company-careers",
+        source_mode="browser_allowed",
+        max_pages=1,
+    )
+
+    assert [job["job_url"] for job in jobs] == [
+        "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000290EXTERNALENCA/Software-Developer"
+    ]
 
 
 def test_extract_visible_job_cards_paginates_until_disabled_or_max_pages() -> None:
@@ -666,6 +817,74 @@ def test_extract_visible_job_cards_handles_ibm_dense_pagination_no_new_job_ids()
     assert diagnostics.pagination_stop_reason == "no_new_job_urls"
 
 
+def test_extract_visible_job_cards_uses_visible_bmo_rows_across_pages() -> None:
+    page = FakeMultiPageBmoVisible(
+        urls=[
+            "https://jobs.bmo.com/ca/en/search-results",
+            "https://jobs.bmo.com/ca/en/search-results?from=10&s=1",
+            "https://jobs.bmo.com/ca/en/search-results?from=20&s=1",
+        ],
+        rows_by_page=[
+            [
+                {
+                    "title": "Software Developer",
+                    "href": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000290EXTERNALENCA/Software-Developer",
+                    "description": (
+                        "Software Developer Toronto, ON M8X 1C4, Canada "
+                        "Category Technology"
+                    ),
+                },
+                {
+                    "title": "Cloud Engineer",
+                    "href": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000291EXTERNALENCA/Cloud-Engineer",
+                    "description": "Cloud Engineer Toronto, ON, Canada Category Technology",
+                },
+            ],
+            [
+                {
+                    "title": "DevOps Engineer",
+                    "href": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000292EXTERNALENCA/DevOps-Engineer",
+                    "description": "DevOps Engineer Mississauga, ON, Canada Category Technology",
+                },
+                {
+                    "title": "Systems Administrator",
+                    "href": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000293EXTERNALENCA/Systems-Administrator",
+                    "description": "Systems Administrator Toronto, ON, Canada Category Technology",
+                },
+            ],
+            [
+                {
+                    "title": "Cloud Operations Analyst",
+                    "href": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000294EXTERNALENCA/Cloud-Operations-Analyst",
+                    "description": (
+                        "Cloud Operations Analyst Toronto, ON, Canada Category "
+                        "Technology"
+                    ),
+                },
+                {
+                    "title": "Linux Administrator",
+                    "href": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000295EXTERNALENCA/Linux-Administrator",
+                    "description": "Linux Administrator Toronto, ON, Canada Category Technology",
+                },
+            ],
+        ],
+    )
+
+    jobs, diagnostics = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name="BMO",
+        source_name="BMO",
+        source_mode="browser_allowed",
+        max_cards=60,
+        max_pages=3,
+    )
+
+    assert len(jobs) == 6
+    assert diagnostics.pagination_detected is True
+    assert diagnostics.pagination_stop_reason == "max_pages_reached"
+    assert diagnostics.jobs_extracted_per_page == [2, 2, 2]
+
+
 def test_extract_jobs_from_html_captures_live_like_ibm_card_and_dedupes_duplicate_job_ids() -> None:
     html = """
     <main>
@@ -788,6 +1007,16 @@ def test_navigate_to_job_search_page_can_click_button_navigation() -> None:
 
     assert resolved == "https://www.example.com/careers/search-results"
     assert page.url == "https://www.example.com/careers/search-results"
+
+
+def test_navigate_to_job_search_page_skips_find_jobs_when_results_already_visible() -> None:
+    page = FakeResultsAlreadyVisibleNavigationPage()
+
+    resolved = navigate_to_job_search_page(page)
+
+    assert resolved is None
+    assert page.url == "https://jobs.bmo.com/ca/en/search-results"
+    assert page.visited == []
 
 
 def test_navigate_to_job_search_page_allows_public_external_job_boards() -> None:

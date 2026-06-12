@@ -319,6 +319,38 @@ def test_apply_source_scope_job_safety_gate_rejects_explicit_us_locations() -> N
     assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]
 
 
+def test_apply_source_scope_job_safety_gate_rejects_bmo_enus_urls_without_location() -> None:
+    source_scope = _build_source_scope_status(
+        status=SOURCE_SCOPE_CONFIRMED,
+        confirmed=True,
+        method="page_evidence",
+        reason="Visible BMO results were ENCA only.",
+        source_url_used="https://jobs.bmo.com/ca/en/search-results",
+    )
+    rejected_job = {
+        "title": "Bank Manager",
+        "location": "",
+        "job_url": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012209EXTERNALENUS/Bank-Manager",
+        "risk_flags": [],
+    }
+    allowed_jobs, rejected_count, unknown_count = _apply_source_scope_job_safety_gate(
+        [
+            rejected_job,
+            {
+                "title": "Software Developer",
+                "location": "",
+                "job_url": "https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000290EXTERNALENCA/Software-Developer",
+            },
+        ],
+        source_scope_status=source_scope,
+    )
+
+    assert [job["title"] for job in allowed_jobs] == ["Software Developer"]
+    assert rejected_count == 1
+    assert unknown_count == 1
+    assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]
+
+
 class _FakeLocator:
     def inner_text(self, timeout: int | None = None) -> str:
         _ = timeout
@@ -430,3 +462,58 @@ def test_collect_company_jobs_allows_broad_collection_only_for_diagnostics(
     assert result["source_scope_confirmed"] is False
     assert result["broad_diagnostic_collection"] is True
     assert "diagnostic run" in str(result["source_scope_reason"])
+
+
+def test_collect_company_jobs_confirms_bmo_scope_from_page_evidence(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    company = _browser_company(careers_url="https://jobs.bmo.com/ca/en/search-results")
+    upsert_companies(connection, [company])
+
+    monkeypatch.setattr("collectors.browser_collector.dismiss_cookie_banner", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.dismiss_ibm_language_prompt",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.navigate_to_job_search_page",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.detect_browser_barriers",
+        lambda **kwargs: [],
+    )
+    monkeypatch.setattr("collectors.browser_collector.find_search_input", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.detect_bmo_canada_page_evidence",
+        lambda page: {
+            "confirmed": True,
+            "method": "page_evidence",
+            "reason": "Visible Canada chip plus visible ENCA result links.",
+        },
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.extract_visible_job_cards_with_diagnostics",
+        lambda *args, **kwargs: (
+            [],
+            SimpleNamespace(
+                pagination_detected=False,
+                pagination_stop_reason="no_jobs_found",
+                pages_visited=["https://jobs.bmo.com/ca/en/search-results"],
+                jobs_extracted_per_page=[0],
+                page_html_snapshots=[],
+            ),
+        ),
+    )
+
+    result = collect_company_jobs(
+        connection,
+        company=company,
+        page=_FakePage(str(company["careers_url"])),
+    )
+
+    assert result["status"] == "completed"
+    assert result["source_scope_confirmed"] is True
+    assert result["source_scope_method"] == "page_evidence"
