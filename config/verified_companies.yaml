@@ -1,10 +1,28 @@
 verified_companies:
+  - company_name: Aviva Canada
+    verified: true
+    verified_at: "2026-06-11"
+    scope: Canada
+    status: usable
+    notes: "Passed fresh daily-run with stable Canada-filtered Workday URL, 83 discovered jobs, 1 relevant saved, and no suspicious rows or blocking interventions."
+  - company_name: BMO
+    verified: false
+    verified_at: "2026-06-11"
+    scope: Canada
+    status: needs_review
+    notes: "Fresh run was productive and stable, but the production flow still does not confirm a stable Canada-only source URL or equivalent location-scope signal."
   - company_name: IBM Consulting
     verified: true
     verified_at: "2026-06-10"
     scope: Canada
     status: usable
     notes: "Passed fresh daily-run and manual URL recall audit. Collection misses: 0."
+  - company_name: Manulife
+    verified: false
+    verified_at: "2026-06-11"
+    scope: Canada
+    status: needs_review
+    notes: "Fresh run completed cleanly and saved relevant jobs, but Canada-only scope is not yet confirmed by a stable public URL or production-level location scope signal."
   - company_name: Sun Life
     verified: true
     verified_at: "2026-06-10"
