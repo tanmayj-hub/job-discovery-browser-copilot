@@ -54,8 +54,8 @@
 - https://jobs.bmo.com/ca/en/search-results?from=90&s=1
 
 ## Verification Decision
-- Decision: ready_for_verified_review
-- Reason: Canada source scope was confirmed before pagination and no diagnostic-only fallback was required.
+- Decision: collection_fixed_relevance_pending
+- Reason: Canada source scope was confirmed before pagination and no diagnostic-only fallback was required, but the fresh trusted run still saved 0 relevant jobs and therefore remains under review for relevance quality.
 
 ## Candidate Jobs Before Scoring
 - Software Developer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000290EXTERNALENCA/Software-Developer
@@ -64,21 +64,16 @@
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006998EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008059EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014316EXTERNALENCA/Mortgage-Specialist
-- Manager, Credit Risk Strategy Oversight | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260004607EXTERNALENCA/Manager-Credit-Risk-Strategy-Oversight
 - Head, North American Provisioning & Risk Analytics | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011943EXTERNALENCA/Head-North-American-Provisioning-Risk-Analytics
+- Manager, Credit Risk Strategy Oversight | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260004607EXTERNALENCA/Manager-Credit-Risk-Strategy-Oversight
 - Senior Manager Collections Strategy Management | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014905EXTERNALENCA/Senior-Manager-Collections-Strategy-Management
-- Investment Advisor, Nesbitt Burns | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008372EXTERNALENCA/Investment-Advisor-Nesbitt-Burns
-- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013770EXTERNALENCA/Mortgage-Specialist
-- Administration Assistant, Wealth Management, Nesbitt Burns | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011198EXTERNALENCA/Administration-Assistant-Wealth-Management-Nesbitt-Burns
-- Associate, Client Onboarding | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014971EXTERNALENCA/Associate-Client-Onboarding
-- Associate Director, Commercial Banking (Corporate Finance Group) | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006932EXTERNALENCA/Associate-Director-Commercial-Banking-Corporate-Finance-Group
 - Manager, Business Compliance | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250020790EXTERNALENCA/Manager-Business-Compliance
+- Administration Assistant, Wealth Management, Nesbitt Burns | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011198EXTERNALENCA/Administration-Assistant-Wealth-Management-Nesbitt-Burns
+- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013770EXTERNALENCA/Mortgage-Specialist
+- Investment Advisor, Nesbitt Burns | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008372EXTERNALENCA/Investment-Advisor-Nesbitt-Burns
+- Associate Director, Commercial Banking (Corporate Finance Group) | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006932EXTERNALENCA/Associate-Director-Commercial-Banking-Corporate-Finance-Group
+- Associate, Client Onboarding | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014971EXTERNALENCA/Associate-Client-Onboarding
 - Personal Banking Associate | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015173EXTERNALENCA/Personal-Banking-Associate
-- Director of Software Engineering – Infrastructure, Resiliency & Compliance | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014078EXTERNALENCA/Director-of-Software-Engineering-Infrastructure-Resiliency-Compliance
-- Conseiller(e) en service bancaire | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012480EXTERNALENCA/Conseiller-e-en-service-bancaire
-- Client Service Associate, BMO Nesbitt Burns | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260004141EXTERNALENCA/Client-Service-Associate-BMO-Nesbitt-Burns
-- Manager, Customer Segments | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014537EXTERNALENCA/Manager-Customer-Segments
-- Customer Service Representative | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015656EXTERNALENCA/Customer-Service-Representative
 - Application Security Automation Engineer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015064EXTERNALENCA/Application-Security-Automation-Engineer
 - Private Banking Officer, Sales, Private Banking | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015729EXTERNALENCA/Private-Banking-Officer-Sales-Private-Banking
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015593EXTERNALENCA/Mortgage-Specialist
@@ -86,78 +81,83 @@
 - Analyst, Metals & Mining Investment Banking | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008798EXTERNALENCA/Analyst-Metals-Mining-Investment-Banking
 - Assistant Branch Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015636EXTERNALENCA/Assistant-Branch-Manager
 - Sr. Analyst, Regulatory Reporting | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015811EXTERNALENCA/Sr-Analyst-Regulatory-Reporting
-- Manager, Business Compliance | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008496EXTERNALENCA/Manager-Business-Compliance
+- Senior Salesforce Solution Designer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013885EXTERNALENCA/Senior-Salesforce-Solution-Designer
+- Client Service Associate, BMO Nesbitt Burns | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260004141EXTERNALENCA/Client-Service-Associate-BMO-Nesbitt-Burns
+- Manager, Customer Segments | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014537EXTERNALENCA/Manager-Customer-Segments
 - Sales Coordinator | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016209EXTERNALENCA/Sales-Coordinator
 - Director, Generative and Agentic AI Model Validation | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012941EXTERNALENCA/Director-Generative-and-Agentic-AI-Model-Validation
-- Senior Salesforce Solution Designer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013885EXTERNALENCA/Senior-Salesforce-Solution-Designer
-- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016055EXTERNALENCA/Mortgage-Specialist
-- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011058EXTERNALENCA/Mortgage-Specialist
 - Senior Frontend Engineer (Full Stack, Frontend-Lead) | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014161EXTERNALENCA/Senior-Frontend-Engineer-Full-Stack-Frontend-Lead
+- Customer Service Representative | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015656EXTERNALENCA/Customer-Service-Representative
 - Specialist, Loan Quality Control-Underwriter | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008545EXTERNALENCA/Specialist-Loan-Quality-Control-Underwriter
-- Wealth Planning Consultant | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000397EXTERNALENCA/Wealth-Planning-Consultant
-- Senior Manager Data Engineering | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014690EXTERNALENCA/Senior-Manager-Data-Engineering
-- IBM MDM Developer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260004814EXTERNALENCA/IBM-MDM-Developer
-- Campaign Execution Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015419EXTERNALENCA/Campaign-Execution-Manager
-- Personal Banker | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011963EXTERNALENCA/Personal-Banker
-- Senior Legal Counsel, Wealth Management | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260010871EXTERNALENCA/Senior-Legal-Counsel-Wealth-Management
-- Sr. Audit Manager, Commercial | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012177EXTERNALENCA/Sr-Audit-Manager-Commercial
-- Director, Vendor Management Office | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260007024EXTERNALENCA/Director-Vendor-Management-Office
-- Manager, Customer Insights & Reporting | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015537EXTERNALENCA/Manager-Customer-Insights-Reporting
-- Wealth Planning Consultant, Private Wealth | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250024477EXTERNALENCA/Wealth-Planning-Consultant-Private-Wealth
-- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016630EXTERNALENCA/Mortgage-Specialist
-- Senior Advisor, Strategic Initiatives | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008992EXTERNALENCA/Senior-Advisor-Strategic-Initiatives
-- Sr Relationship Manager, Managed Technology Services | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014555EXTERNALENCA/Sr-Relationship-Manager-Managed-Technology-Services
-- Senior Manager - Mortgage Renewal Lifecycle | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015762EXTERNALENCA/Senior-Manager-Mortgage-Renewal-Lifecycle
-- Senior Manager - Portfolio & Sales Enablement | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015758EXTERNALENCA/Senior-Manager-Portfolio-Sales-Enablement
-- Digital Marketing Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016446EXTERNALENCA/Digital-Marketing-Manager
-- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000476EXTERNALENCA/Mortgage-Specialist
-- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006244EXTERNALENCA/Mortgage-Specialist
-- Investment Advisory Support | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016698EXTERNALENCA/Investment-Advisory-Support
-- Senior Counsel Derivatives, Global Asset Management | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250026046EXTERNALENCA/Senior-Counsel-Derivatives-Global-Asset-Management
-- Manager, Structural Market Risk | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014115EXTERNALENCA/Manager-Structural-Market-Risk
-- Partnership Development Internship, Fall 2026 (4 months) Toronto, CA | Partnership Development Internship, Fall 2026 (4 months) Toronto, CA | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016030EXTERNALENCA/Partnership-Development-Internship-Fall-2026-4-months-Toronto-CA
-- Personal Banking Associate | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015791EXTERNALENCA/Personal-Banking-Associate
-- Senior Analyst, Data Foundations and Infrastructure | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016416EXTERNALENCA/Senior-Analyst-Data-Foundations-and-Infrastructure
-- Branch Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012140EXTERNALENCA/Branch-Manager
-- Directeur(rice) de comptes agricoles | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013919EXTERNALENCA/Directeur-rice-de-comptes-agricoles
-- Business Development Manager, BMO Insurance | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006420EXTERNALENCA/Business-Development-Manager-BMO-Insurance
+- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016055EXTERNALENCA/Mortgage-Specialist
+- Director of Software Engineering – Infrastructure, Resiliency & Compliance | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014078EXTERNALENCA/Director-of-Software-Engineering-Infrastructure-Resiliency-Compliance
+- Conseiller(e) en service bancaire | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012480EXTERNALENCA/Conseiller-e-en-service-bancaire
+- Manager, Business Compliance | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008496EXTERNALENCA/Manager-Business-Compliance
+- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011058EXTERNALENCA/Mortgage-Specialist
 - Associate Investment Counsellor | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016244EXTERNALENCA/Associate-Investment-Counsellor
+- Wealth Planning Consultant | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000397EXTERNALENCA/Wealth-Planning-Consultant
 - Mainframe Application Developer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014819EXTERNALENCA/Mainframe-Application-Developer
 - Executive Assistant, Investment Banking, BMO Capital Markets | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016214EXTERNALENCA/Executive-Assistant-Investment-Banking-BMO-Capital-Markets
-- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260009807EXTERNALENCA/Mortgage-Specialist
-- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011809EXTERNALENCA/Mortgage-Specialist
-- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014200EXTERNALENCA/Mortgage-Specialist
+- Directeur(rice) de comptes agricoles | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013919EXTERNALENCA/Directeur-rice-de-comptes-agricoles
+- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000476EXTERNALENCA/Mortgage-Specialist
+- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006244EXTERNALENCA/Mortgage-Specialist
+- Branch Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012140EXTERNALENCA/Branch-Manager
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250032735EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006934EXTERNALENCA/Mortgage-Specialist
 - Personal Banker Associate | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014980EXTERNALENCA/Personal-Banker-Associate
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012910EXTERNALENCA/Mortgage-Specialist
+- Business Development Manager, BMO Insurance | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006420EXTERNALENCA/Business-Development-Manager-BMO-Insurance
 - personal banker | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016067EXTERNALENCA/personal-banker
 - Manager, Wealth Leads & Campaigns | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016286EXTERNALENCA/Manager-Wealth-Leads-Campaigns
 - Financial Planner | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016395EXTERNALENCA/Financial-Planner
 - Manager, Court Orders Oversight (Bilingual) | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015879EXTERNALENCA/Manager-Court-Orders-Oversight-Bilingual
 - Senior Manager, Wealth Leads & Campaigns | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013022EXTERNALENCA/Senior-Manager-Wealth-Leads-Campaigns
+- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011809EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260003968EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014970EXTERNALENCA/Mortgage-Specialist
-- Senior Manager, Canadian Provisions and Analytics | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013964EXTERNALENCA/Senior-Manager-Canadian-Provisions-and-Analytics
-- : Operations Specialist/Global Equity Clearing and Settlements | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260007830EXTERNALENCA/-Operations-Specialist-Global-Equity-Clearing-and-Settlements
-- Customer Service Representative | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016900EXTERNALENCA/Customer-Service-Representative
-- Client Service Assistant, BMO Nesbitt Burns | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260007037EXTERNALENCA/Client-Service-Assistant-BMO-Nesbitt-Burns
-- Senior Manager, Corporate Credit Officer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016005EXTERNALENCA/Senior-Manager-Corporate-Credit-Officer
+- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260009807EXTERNALENCA/Mortgage-Specialist
+- Manager, Customer Insights & Reporting | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015537EXTERNALENCA/Manager-Customer-Insights-Reporting
+- Wealth Planning Consultant, Private Wealth | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250024477EXTERNALENCA/Wealth-Planning-Consultant-Private-Wealth
+- Director, Vendor Management Office | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260007024EXTERNALENCA/Director-Vendor-Management-Office
+- IBM MDM Developer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260004814EXTERNALENCA/IBM-MDM-Developer
+- Campaign Execution Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015419EXTERNALENCA/Campaign-Execution-Manager
+- Personal Banker | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011963EXTERNALENCA/Personal-Banker
+- Senior Legal Counsel, Wealth Management | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260010871EXTERNALENCA/Senior-Legal-Counsel-Wealth-Management
+- Senior Advisor, Strategic Initiatives | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008992EXTERNALENCA/Senior-Advisor-Strategic-Initiatives
+- Sr Relationship Manager, Managed Technology Services | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014555EXTERNALENCA/Sr-Relationship-Manager-Managed-Technology-Services
+- Senior Manager - Mortgage Renewal Lifecycle | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015762EXTERNALENCA/Senior-Manager-Mortgage-Renewal-Lifecycle
+- Senior Manager - Portfolio & Sales Enablement | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015758EXTERNALENCA/Senior-Manager-Portfolio-Sales-Enablement
+- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016630EXTERNALENCA/Mortgage-Specialist
+- Investment Advisory Support | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016698EXTERNALENCA/Investment-Advisory-Support
 - Personal Banker | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016564EXTERNALENCA/Personal-Banker
 - Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014840EXTERNALENCA/Mortgage-Specialist
 - Manager, Pricing Operations, Reporting & Insights ( Commercial Banking) | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016097EXTERNALENCA/Manager-Pricing-Operations-Reporting-Insights-Commercial-Banking
-- Portfolio Management Internship, Fall 2026 (4 months)- Toronto, CA | Portfolio Management Internship, Fall 2026 (4 months)- Toronto, CA | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016032EXTERNALENCA/Portfolio-Management-Internship-Fall-2026-4-months-Toronto-CA
-- Customer Service Representative | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016819EXTERNALENCA/Customer-Service-Representative
 - Branch Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016975EXTERNALENCA/Branch-Manager
 - Analyst, AI Product Ownership and Enablement (Capital Markets) | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260017051EXTERNALENCA/Analyst-AI-Product-Ownership-and-Enablement-Capital-Markets
-- Personal Banking Associate | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016803EXTERNALENCA/Personal-Banking-Associate
-- Operational Resilience Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014620EXTERNALENCA/Operational-Resilience-Manager
-- Technology Development and Innovation Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011202EXTERNALENCA/Technology-Development-and-Innovation-Manager
-- Customer Service Representative | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015650EXTERNALENCA/Customer-Service-Representative
-- Executive Assistant (Economics) | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014841EXTERNALENCA/Executive-Assistant-Economics
-- Senior Applied AI Engineer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260017191EXTERNALENCA/Senior-Applied-AI-Engineer
-- Model Risk Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260017489EXTERNALENCA/Model-Risk-Specialist
-- Customer Service Representative | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260017213EXTERNALENCA/Customer-Service-Representative
+- Senior Manager PM - Corporate Technologies | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012281EXTERNALENCA/Senior-Manager-PM-Corporate-Technologies
+- Software Developer - (Java / Websphere / Payment Systems) | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260010364EXTERNALENCA/Software-Developer-Java-Websphere-Payment-Systems
+- Director, Risk Reporting and Relationship Management | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015514EXTERNALENCA/Director-Risk-Reporting-and-Relationship-Management
+- Senior Analyst, Loan Review | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016137EXTERNALENCA/Senior-Analyst-Loan-Review
+- Regional Sales Manager, BMO InvestorLine | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016317EXTERNALENCA/Regional-Sales-Manager-BMO-InvestorLine
+- Customer Service Representative | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016169EXTERNALENCA/Customer-Service-Representative
+- Senior Manager, Technology Performance Management | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016932EXTERNALENCA/Senior-Manager-Technology-Performance-Management
+- Sr Manager, Corporate Communications | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016497EXTERNALENCA/Sr-Manager-Corporate-Communications
+- Manager, Customer Insights & Reporting | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015538EXTERNALENCA/Manager-Customer-Insights-Reporting
+- Mortgage Specialist | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014200EXTERNALENCA/Mortgage-Specialist
+- Sr. Audit Manager, Commercial | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012177EXTERNALENCA/Sr-Audit-Manager-Commercial
+- Senior Manager Data Engineering | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014690EXTERNALENCA/Senior-Manager-Data-Engineering
+- Digital Marketing Manager | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016446EXTERNALENCA/Digital-Marketing-Manager
+- Manager, Structural Market Risk | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014115EXTERNALENCA/Manager-Structural-Market-Risk
+- Partnership Development Internship, Fall 2026 (4 months) Toronto, CA | Partnership Development Internship, Fall 2026 (4 months) Toronto, CA | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016030EXTERNALENCA/Partnership-Development-Internship-Fall-2026-4-months-Toronto-CA
+- Senior Counsel Derivatives, Global Asset Management | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250026046EXTERNALENCA/Senior-Counsel-Derivatives-Global-Asset-Management
+- Customer Service Representative | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016900EXTERNALENCA/Customer-Service-Representative
+- Customer Service Representative | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016819EXTERNALENCA/Customer-Service-Representative
+- Senior Manager, Canadian Provisions and Analytics | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013964EXTERNALENCA/Senior-Manager-Canadian-Provisions-and-Analytics
+- Senior Manager, Corporate Credit Officer | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016005EXTERNALENCA/Senior-Manager-Corporate-Credit-Officer
+- : Operations Specialist/Global Equity Clearing and Settlements | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260007830EXTERNALENCA/-Operations-Specialist-Global-Equity-Clearing-and-Settlements
+- Portfolio Management Internship, Fall 2026 (4 months)- Toronto, CA | Portfolio Management Internship, Fall 2026 (4 months)- Toronto, CA | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016032EXTERNALENCA/Portfolio-Management-Internship-Fall-2026-4-months-Toronto-CA
+- Senior Analyst, Data Foundations and Infrastructure | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016416EXTERNALENCA/Senior-Analyst-Data-Foundations-and-Infrastructure
+- Personal Banking Associate | - | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015791EXTERNALENCA/Personal-Banking-Associate
 
 ## Scored Candidates
 - Portfolio Management Internship, Fall 2026 (4 months)- Toronto, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016032EXTERNALENCA/Portfolio-Management-Internship-Fall-2026-4-months-Toronto-CA
@@ -165,16 +165,19 @@
 - personal banker | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016067EXTERNALENCA/personal-banker
 - Wealth Planning Consultant, Private Wealth | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250024477EXTERNALENCA/Wealth-Planning-Consultant-Private-Wealth
 - Wealth Planning Consultant | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000397EXTERNALENCA/Wealth-Planning-Consultant
-- Technology Development and Innovation Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011202EXTERNALENCA/Technology-Development-and-Innovation-Manager
 - Sr. Audit Manager, Commercial | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012177EXTERNALENCA/Sr-Audit-Manager-Commercial
 - Sr. Analyst, Regulatory Reporting | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015811EXTERNALENCA/Sr-Analyst-Regulatory-Reporting
 - Sr Relationship Manager, Managed Technology Services | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014555EXTERNALENCA/Sr-Relationship-Manager-Managed-Technology-Services
+- Sr Manager, Corporate Communications | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016497EXTERNALENCA/Sr-Manager-Corporate-Communications
 - Specialist, Loan Quality Control-Underwriter | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008545EXTERNALENCA/Specialist-Loan-Quality-Control-Underwriter
+- Software Developer - (Java / Websphere / Payment Systems) | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260010364EXTERNALENCA/Software-Developer-Java-Websphere-Payment-Systems
 - Software Developer | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000290EXTERNALENCA/Software-Developer
 - Senior Salesforce Solution Designer | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013885EXTERNALENCA/Senior-Salesforce-Solution-Designer
 - Senior Manager, Wealth Leads & Campaigns | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013022EXTERNALENCA/Senior-Manager-Wealth-Leads-Campaigns
+- Senior Manager, Technology Performance Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016932EXTERNALENCA/Senior-Manager-Technology-Performance-Management
 - Senior Manager, Corporate Credit Officer | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016005EXTERNALENCA/Senior-Manager-Corporate-Credit-Officer
 - Senior Manager, Canadian Provisions and Analytics | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013964EXTERNALENCA/Senior-Manager-Canadian-Provisions-and-Analytics
+- Senior Manager PM - Corporate Technologies | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012281EXTERNALENCA/Senior-Manager-PM-Corporate-Technologies
 - Senior Manager Data Engineering | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014690EXTERNALENCA/Senior-Manager-Data-Engineering
 - Senior Manager Collections Strategy Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014905EXTERNALENCA/Senior-Manager-Collections-Strategy-Management
 - Senior Manager - Portfolio & Sales Enablement | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015758EXTERNALENCA/Senior-Manager-Portfolio-Sales-Enablement
@@ -183,19 +186,18 @@
 - Senior ITAM Currency Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012117EXTERNALENCA/Senior-ITAM-Currency-Manager
 - Senior Frontend Engineer (Full Stack, Frontend-Lead) | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014161EXTERNALENCA/Senior-Frontend-Engineer-Full-Stack-Frontend-Lead
 - Senior Counsel Derivatives, Global Asset Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250026046EXTERNALENCA/Senior-Counsel-Derivatives-Global-Asset-Management
-- Senior Applied AI Engineer | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260017191EXTERNALENCA/Senior-Applied-AI-Engineer
+- Senior Analyst, Loan Review | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016137EXTERNALENCA/Senior-Analyst-Loan-Review
 - Senior Analyst, Data Foundations and Infrastructure | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016416EXTERNALENCA/Senior-Analyst-Data-Foundations-and-Infrastructure
 - Senior Advisor, Strategic Initiatives | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008992EXTERNALENCA/Senior-Advisor-Strategic-Initiatives
 - Sales Coordinator | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016209EXTERNALENCA/Sales-Coordinator
+- Regional Sales Manager, BMO InvestorLine | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016317EXTERNALENCA/Regional-Sales-Manager-BMO-InvestorLine
 - Project Manager, Third Party Risk Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012977EXTERNALENCA/Project-Manager-Third-Party-Risk-Management
 - Private Banking Officer, Sales, Private Banking | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015729EXTERNALENCA/Private-Banking-Officer-Sales-Private-Banking
 - Personal Banking Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015173EXTERNALENCA/Personal-Banking-Associate
 - Personal Banking Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015791EXTERNALENCA/Personal-Banking-Associate
-- Personal Banking Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016803EXTERNALENCA/Personal-Banking-Associate
 - Personal Banker Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014980EXTERNALENCA/Personal-Banker-Associate
 - Personal Banker | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011963EXTERNALENCA/Personal-Banker
 - Personal Banker | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016564EXTERNALENCA/Personal-Banker
-- Operational Resilience Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014620EXTERNALENCA/Operational-Resilience-Manager
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006998EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260008059EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014316EXTERNALENCA/Mortgage-Specialist
@@ -203,24 +205,24 @@
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015593EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016055EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011058EXTERNALENCA/Mortgage-Specialist
-- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016630EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260000476EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006244EXTERNALENCA/Mortgage-Specialist
-- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260009807EXTERNALENCA/Mortgage-Specialist
-- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011809EXTERNALENCA/Mortgage-Specialist
-- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014200EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250032735EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006934EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012910EXTERNALENCA/Mortgage-Specialist
+- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011809EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260003968EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014970EXTERNALENCA/Mortgage-Specialist
+- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260009807EXTERNALENCA/Mortgage-Specialist
+- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016630EXTERNALENCA/Mortgage-Specialist
 - Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014840EXTERNALENCA/Mortgage-Specialist
-- Model Risk Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260017489EXTERNALENCA/Model-Risk-Specialist
+- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014200EXTERNALENCA/Mortgage-Specialist
 - Manager, Wealth Leads & Campaigns | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016286EXTERNALENCA/Manager-Wealth-Leads-Campaigns
 - Manager, Structural Market Risk | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014115EXTERNALENCA/Manager-Structural-Market-Risk
 - Manager, Pricing Operations, Reporting & Insights ( Commercial Banking) | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016097EXTERNALENCA/Manager-Pricing-Operations-Reporting-Insights-Commercial-Banking
 - Manager, Customer Segments | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014537EXTERNALENCA/Manager-Customer-Segments
 - Manager, Customer Insights & Reporting | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015537EXTERNALENCA/Manager-Customer-Insights-Reporting
+- Manager, Customer Insights & Reporting | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015538EXTERNALENCA/Manager-Customer-Insights-Reporting
 - Manager, Credit Risk Strategy Oversight | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260004607EXTERNALENCA/Manager-Credit-Risk-Strategy-Oversight
 - Manager, Court Orders Oversight (Bilingual) | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015879EXTERNALENCA/Manager-Court-Orders-Oversight-Bilingual
 - Manager, Business Compliance | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR250020790EXTERNALENCA/Manager-Business-Compliance
@@ -232,20 +234,18 @@
 - Head, North American Provisioning & Risk Analytics | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260011943EXTERNALENCA/Head-North-American-Provisioning-Risk-Analytics
 - Financial Planner | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016395EXTERNALENCA/Financial-Planner
 - Executive Assistant, Investment Banking, BMO Capital Markets | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016214EXTERNALENCA/Executive-Assistant-Investment-Banking-BMO-Capital-Markets
-- Executive Assistant (Economics) | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014841EXTERNALENCA/Executive-Assistant-Economics
 - Director, Vendor Management Office | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260007024EXTERNALENCA/Director-Vendor-Management-Office
+- Director, Risk Reporting and Relationship Management | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015514EXTERNALENCA/Director-Risk-Reporting-and-Relationship-Management
 - Director, Generative and Agentic AI Model Validation | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012941EXTERNALENCA/Director-Generative-and-Agentic-AI-Model-Validation
 - Director of Software Engineering – Infrastructure, Resiliency & Compliance | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014078EXTERNALENCA/Director-of-Software-Engineering-Infrastructure-Resiliency-Compliance
 - Directeur(rice) de comptes agricoles | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260013919EXTERNALENCA/Directeur-rice-de-comptes-agricoles
 - Digital Marketing Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016446EXTERNALENCA/Digital-Marketing-Manager
 - Customer Service Representative | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015656EXTERNALENCA/Customer-Service-Representative
+- Customer Service Representative | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016169EXTERNALENCA/Customer-Service-Representative
 - Customer Service Representative | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016900EXTERNALENCA/Customer-Service-Representative
 - Customer Service Representative | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016819EXTERNALENCA/Customer-Service-Representative
-- Customer Service Representative | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015650EXTERNALENCA/Customer-Service-Representative
-- Customer Service Representative | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260017213EXTERNALENCA/Customer-Service-Representative
 - Conseiller(e) en service bancaire | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012480EXTERNALENCA/Conseiller-e-en-service-bancaire
 - Client Service Associate, BMO Nesbitt Burns | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260004141EXTERNALENCA/Client-Service-Associate-BMO-Nesbitt-Burns
-- Client Service Assistant, BMO Nesbitt Burns | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260007037EXTERNALENCA/Client-Service-Assistant-BMO-Nesbitt-Burns
 - Campaign Execution Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015419EXTERNALENCA/Campaign-Execution-Manager
 - Business Development Manager, BMO Insurance | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260006420EXTERNALENCA/Business-Development-Manager-BMO-Insurance
 - Branch Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260012140EXTERNALENCA/Branch-Manager
@@ -264,11 +264,16 @@
 ## Relevant Jobs After Scoring
 - None
 
+## Relevance Review Snapshot
+- Fresh trusted production run also saved `0` BMO jobs.
+- That matches the user's manual review of the first 10 Canada-filtered BMO pages finding no relevant jobs.
+- Conclusion: collection trust is improved; BMO remains under review because relevance has not yet produced a promotable saved-job set.
+
 ## Rejected But Interesting Jobs
 - Sr. Analyst, Regulatory Reporting | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260015811EXTERNALENCA/Sr-Analyst-Regulatory-Reporting
 - Senior Manager Data Engineering | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014690EXTERNALENCA/Senior-Manager-Data-Engineering
 - Senior Frontend Engineer (Full Stack, Frontend-Lead) | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260014161EXTERNALENCA/Senior-Frontend-Engineer-Full-Stack-Frontend-Lead
-- Senior Applied AI Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260017191EXTERNALENCA/Senior-Applied-AI-Engineer
+- Senior Analyst, Loan Review | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016137EXTERNALENCA/Senior-Analyst-Loan-Review
 - Senior Analyst, Data Foundations and Infrastructure | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016416EXTERNALENCA/Senior-Analyst-Data-Foundations-and-Infrastructure
 - Manager, Pricing Operations, Reporting & Insights ( Commercial Banking) | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016097EXTERNALENCA/Manager-Pricing-Operations-Reporting-Insights-Commercial-Banking
 - Investment Advisory Support | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.bmo.com/ca/en/job/BOMOGLOBALR260016698EXTERNALENCA/Investment-Advisory-Support

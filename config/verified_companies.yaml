@@ -10,7 +10,7 @@ verified_companies:
     verified_at: "2026-06-12"
     scope: Canada
     status: needs_review
-    notes: "Trusted BMO collection now confirms Canada scope from visible search-result evidence on https://jobs.bmo.com/ca/en/search-results. The collector extracts only visible ENCA result rows and discovered 20 Canada-scoped candidates with 0 relevant jobs saved, so BMO is ready for scoring/manual review but is not yet promoted into the verified-only slice."
+    notes: "Trusted BMO collection now confirms Canada scope from visible search-result evidence on https://jobs.bmo.com/ca/en/search-results. A fresh production run on 2026-06-12 discovered 100 Canada-scoped candidates across the first 10 pages, saved 0 relevant jobs, and produced 0 suspicious saved rows. This matches the user's manual first-10-pages audit of no relevant roles, so BMO remains needs_review instead of being promoted into the verified-only slice."
   - company_name: IBM Consulting
     verified: true
     verified_at: "2026-06-12"

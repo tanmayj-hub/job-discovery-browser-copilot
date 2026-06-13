@@ -265,6 +265,13 @@ def test_url_uses_location_scope_supports_ibm_canada_query_param() -> None:
     ) is True
 
 
+def test_url_uses_location_scope_supports_njoyn_country_id_canada_param() -> None:
+    assert _url_uses_location_scope(
+        "https://cgi.njoyn.com/corp/xweb/xweb.asp?NTKN=c&clid=21001&Page=joblisting"
+        "&CountryID=CA&lang=1"
+    ) is True
+
+
 def test_initial_source_scope_status_detects_confirmed_workday_canada_url() -> None:
     status = _initial_source_scope_status(
         "https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs"

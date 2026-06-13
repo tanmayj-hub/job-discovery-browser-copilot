@@ -46,7 +46,7 @@ streamlit run src/dashboard/app.py
 
 ## Current Verified Company Status
 - Aviva Canada: verified, usable
-- BMO: needs_review
+- BMO: needs_review (Canada-scoped collection fixed, but latest trusted run saved 0 relevant jobs)
 - IBM Consulting: verified, usable
 - Manulife: verified, usable
 - Sun Life: verified, usable
@@ -55,6 +55,11 @@ Only companies marked `verified: true` and `status: usable` are included in
 `--verified-only` runs. Companies marked `needs_review` remain available for
 single-company audits, but they are intentionally excluded from the trusted MVP
 slice until both source scope and result quality are proven strongly enough.
+
+For example, BMO now has a trusted Canada-scoped collection flow, but it still
+stays outside the verified-only slice because the latest trusted run saved `0`
+relevant jobs and currently serves as a clean audit signal rather than a
+trusted daily source of target-fit openings.
 
 ## Trusted Run Rule
 Trusted MVP runs do not start from a broad/global careers listing and then rely

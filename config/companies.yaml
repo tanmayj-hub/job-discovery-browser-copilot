@@ -793,7 +793,7 @@ companies:
 - name: Canada Life
   sector: Insurance & Wealth
   category: Insurance/Wealth
-  careers_url: https://jobs.canadalife.com/go/All-Jobs/9170201?locale=en_US
+  careers_url: https://jobs.canadalife.com/search/?createNewAlert=false&q=&locationsearch=&optionsFacetsDD_location=&optionsFacetsDD_country=CA&optionsFacetsDD_department=
   source_mode: browser_allowed
   status: Watching
   role_families:
