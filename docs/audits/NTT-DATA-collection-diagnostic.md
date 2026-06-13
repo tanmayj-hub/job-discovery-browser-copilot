@@ -2,60 +2,237 @@
 
 ## Source
 - Company: NTT DATA
-- Starting URL: https://ca.nttdata.com/en/careers
-- Final URL reached: -
+- Starting URL: https://careers.services.global.ntt/global/en/search-results
+- Final URL reached: https://careers.services.global.ntt/global/en/search-results?from=30&s=1
 - Source mode: browser_allowed
 - ATS type: -
-- Cookie banner action: none
+- Cookie banner action: Allow
 - Language prompt action: none
 
 ## Source Scope Validation
-- Source URL used: https://ca.nttdata.com/en/careers
-- Source scope status: canada_scope_unconfirmed
-- Canada scope confirmed before pagination: False
-- Source scope method: broad_unconfirmed
-- Source scope reason: The source started from a broad or global listing without an explicit Canada filter.
+- Source URL used: https://careers.services.global.ntt/global/en/search-results
+- Source scope status: canada_scope_confirmed
+- Canada scope confirmed before pagination: True
+- Source scope method: ui_filter
+- Source scope reason: NTT DATA's public Country facet was applied before pagination.
 - Broad diagnostic collection: False
 
 ## Location Scope
-- Location scope used: False
-- Configured locations: -
-- Location filter/search attempted: none
-- Exact filter method: none
+- Location scope used: True
+- Configured locations: Canada
+- Location filter/search attempted: Canada (NTT country facet)
+- Exact filter method: ntt_country_facet
 
 ## Pagination
-- Pagination detected: False
-- Next/load-more detection result: not detected
-- Max pages per source: -
-- Pages visited: 0
-- Jobs extracted per page: -
-- Pagination stop reason: -
+- Pagination detected: True
+- Next/load-more detection result: detected
+- Max pages per source: 10
+- Pages visited: 4
+- Jobs extracted per page: [20, 20, 20, 18]
+- Pagination stop reason: next_disabled_or_missing
 
 ## Counts
-- Candidate jobs before scoring: 0
-- Jobs after scoring: 0
-- Relevant jobs after scoring: 0
-- Explicit non-Canada jobs rejected by safety gate: 0
-- Relevant jobs with unknown/blank location text: 0
+- Candidate jobs before scoring: 78
+- Jobs after scoring: 78
+- Relevant jobs after scoring: 9
+- Explicit non-Canada jobs rejected by safety gate: 12
+- Relevant jobs with unknown/blank location text: 1
 - Unique IBM jobIds extracted: 0
 - Unique Workday job IDs extracted: 0
 - Scored candidates CSV: data\exports\audits\NTT-DATA-scored-candidates.csv
 
 ## Visited Pages
-- None
+- https://careers.services.global.ntt/global/en/search-results
+- https://careers.services.global.ntt/global/en/search-results?from=10&s=1
+- https://careers.services.global.ntt/global/en/search-results?from=20&s=1
+- https://careers.services.global.ntt/global/en/search-results?from=30&s=1
 
 ## Verification Decision
 - Decision: needs_review
-- Reason: Canada source scope was not confirmed before pagination.
+- Reason: The source scope looked confirmed, but the non-Canada safety gate still had to reject explicit out-of-scope jobs.
 
 ## Candidate Jobs Before Scoring
-- None
+- Remote Bilingual Technical Sales Specialist (French/English) | Ottawa, Ontario, Canada | https://careers.services.global.ntt/global/en/job/P-100223/Remote-Bilingual-Technical-Sales-Specialist-French-English
+- Ventes techniques sortantes (Télétravail) | Montreal, Quebec, Canada | https://careers.services.global.ntt/global/en/job/P-100210/Ventes-techniques-sortantes-Télétravail
+- Remote Bilingual Customer Service Representative (English/French) | Edmonton, Alberta, Canada | https://careers.services.global.ntt/global/en/job/P-100224/Remote-Bilingual-Customer-Service-Representative-English-French
+- Remote Bilingual Technical Sales Specialist (French/English) | Calgary, Alberta, Canada | https://careers.services.global.ntt/global/en/job/P-100209/Remote-Bilingual-Technical-Sales-Specialist-French-English
+- Senior Azure Architect | Toronto, Ontario, Canada | https://careers.services.global.ntt/global/en/job/R-139490/Senior-Azure-Architect
+- Remote Bilingual Customer Service Representative (English/French) | Ottawa, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/347529/Remote-Bilingual-Customer-Service-Representative-English-French
+- Senior ITSM Platform Engineer | Ottawa, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/372143/Senior-ITSM-Platform-Engineer
+- Java Full Stack Developer - Hybrid / Onsite | Brampton, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/374489/Java-Full-Stack-Developer-Hybrid-Onsite
+- Speciality Seller IV | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/373761/Speciality-Seller-IV
+- Business Partner Senior Specialist | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/375733/Business-Partner-Senior-Specialist
+- Remote Bilingual Technical Sales Specialist (French/English) | Apply now Remote Bilingual Technical Sales Specialist (French/English) | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100223EXTERNALENGLOBAL
+- Ventes techniques sortantes (Télétravail) | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100210EXTERNALENGLOBAL
+- Remote Bilingual Customer Service Representative (English/French) | Apply now Remote Bilingual Customer Service Representative (English/French) | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100224EXTERNALENGLOBAL
+- Remote Bilingual Technical Sales Specialist (French/English) | Apply now Remote Bilingual Technical Sales Specialist (French/English) | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100209EXTERNALENGLOBAL
+- Senior Azure Architect | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALR139490EXTERNALENGLOBAL
+- Remote Bilingual Customer Service Representative (English/French) | Apply now Remote Bilingual Customer Service Representative (English/French) | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL347529EXTERNALENGLOBAL
+- Senior ITSM Platform Engineer | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL372143EXTERNALENGLOBAL
+- Java Full Stack Developer - Hybrid / Onsite | Apply now Java Full Stack Developer - Hybrid / Onsite | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL374489EXTERNALENGLOBAL
+- Speciality Seller IV | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL373761EXTERNALENGLOBAL
+- Business Partner Senior Specialist | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375733EXTERNALENGLOBAL
+- Business Partner Specialist Advisor | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/375547/Business-Partner-Specialist-Advisor
+- AI Development Engineer - Remote | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/348821/AI-Development-Engineer-Remote
+- ETL Data Engineer - HYBRID | Halifax, CA-NS, Canada | https://careers.services.global.ntt/global/en/job/375278/ETL-Data-Engineer-HYBRID
+- Sr Micro Focus COBOL Developer (hybrid) | Brampton, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/370815/Sr-Micro-Focus-COBOL-Developer-hybrid
+- Outbound Sales Specialist (Telecommunications) - Remote 6 month contract | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/347536/Outbound-Sales-Specialist-Telecommunications-Remote-6-month-contract
+- Java DevOps Developer - REMOTE | Halifax, CA-NS, Canada | https://careers.services.global.ntt/global/en/job/369698/Java-DevOps-Developer-REMOTE
+- Senior Network Engineer | Toronto, Ontario, Canada | https://careers.services.global.ntt/global/en/job/R-137870/Senior-Network-Engineer
+- Business Analyst | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/360592/Business-Analyst
+- Inbound Customer Service Representative (English) - On Site | Ottawa, Ontario, Canada | https://careers.services.global.ntt/global/en/job/P-100240/Inbound-Customer-Service-Representative-English-On-Site
+- Platform Engineer (AWS) - Remote | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/369004/Platform-Engineer-AWS-Remote
+- Business Partner Specialist Advisor | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375547EXTERNALENGLOBAL
+- AI Development Engineer - Remote | Apply now AI Development Engineer - Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL348821EXTERNALENGLOBAL
+- ETL Data Engineer - HYBRID | Apply now ETL Data Engineer - HYBRID | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375278EXTERNALENGLOBAL
+- Sr Micro Focus COBOL Developer (hybrid) | Apply now Sr Micro Focus COBOL Developer (hybrid) | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL370815EXTERNALENGLOBAL
+- Outbound Sales Specialist (Telecommunications) - Remote 6 month contract | Apply now Outbound Sales Specialist (Telecommunications) - Remote 6 month contract | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL347536EXTERNALENGLOBAL
+- Java DevOps Developer - REMOTE | Apply now Java DevOps Developer - REMOTE | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369698EXTERNALENGLOBAL
+- Senior Network Engineer | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALR137870EXTERNALENGLOBAL
+- Business Analyst | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL360592EXTERNALENGLOBAL
+- Inbound Customer Service Representative (English) - On Site | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100240EXTERNALENGLOBAL
+- Platform Engineer (AWS) - Remote | Apply now Platform Engineer (AWS) - Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369004EXTERNALENGLOBAL
+- Agentic AI Engineer | toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/353881/Agentic-AI-Engineer
+- Oracle ERP Cloud Solution Architect - Remote | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/375279/Oracle-ERP-Cloud-Solution-Architect-Remote
+- HR Operations & Admin Senior Analyst | Burnaby, CA-BC, Canada | https://careers.services.global.ntt/global/en/job/371156/HR-Operations-Admin-Senior-Analyst
+- Senior Team Lead, Technical Services | Toronto, Ontario, Canada | https://careers.services.global.ntt/global/en/job/R-146182/Senior-Team-Lead-Technical-Services
+- AI Developer (REMOTE) | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/373890/AI-Developer-REMOTE
+- Remote - Outbound Technical Sales Specialist | Calgary, Alberta, Canada | https://careers.services.global.ntt/global/en/job/P-100231/Remote-Outbound-Technical-Sales-Specialist
+- Remote Outbound Sales Representative - Contract | Calgary, CA-AB, Canada | https://careers.services.global.ntt/global/en/job/371573/Remote-Outbound-Sales-Representative-Contract
+- Senior Sales Executive(Energy/Oil & Gas) | Calgary, CA-AB, Canada | https://careers.services.global.ntt/global/en/job/351575/Senior-Sales-Executive-Energy-Oil-Gas
+- Agentic AI Systems Developer - Remote | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/369003/Agentic-AI-Systems-Developer-Remote
+- Corporate Counsel-Remote within Canada | Ontario, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/364478/Corporate-Counsel-Remote-within-Canada
+- Agentic AI Engineer | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL353881EXTERNALENGLOBAL
+- Oracle ERP Cloud Solution Architect - Remote | Apply now Oracle ERP Cloud Solution Architect - Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375279EXTERNALENGLOBAL
+- HR Operations & Admin Senior Analyst | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL371156EXTERNALENGLOBAL
+- Senior Team Lead, Technical Services | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALR146182EXTERNALENGLOBAL
+- AI Developer (REMOTE) | Apply now AI Developer (REMOTE) | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL373890EXTERNALENGLOBAL
+- Remote - Outbound Technical Sales Specialist | Apply now Remote - Outbound Technical Sales Specialist | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100231EXTERNALENGLOBAL
+- Remote Outbound Sales Representative - Contract | Apply now Remote Outbound Sales Representative - Contract | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL371573EXTERNALENGLOBAL
+- Senior Sales Executive(Energy/Oil & Gas) | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL351575EXTERNALENGLOBAL
+- Agentic AI Systems Developer - Remote | Apply now Agentic AI Systems Developer - Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369003EXTERNALENGLOBAL
+- Corporate Counsel-Remote within Canada | Apply now Corporate Counsel-Remote within Canada | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL364478EXTERNALENGLOBAL
+- Sales Managing Director - Products Vertical - Canada | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/368414/Sales-Managing-Director-Products-Vertical-Canada
+- Ventes techniques sortantes (Télétravail) | Quebec City, CA-QC, Canada | https://careers.services.global.ntt/global/en/job/347539/Ventes-techniques-sortantes-Télétravail
+- Clinical Service Desk | Halifax, CA-NS, Canada | https://careers.services.global.ntt/global/en/job/371227/Clinical-Service-Desk
+- Clinical Service Desk- Helpdesk Senior Representative-Remote-Halifax | Halifax, CA-NS, Canada | https://careers.services.global.ntt/global/en/job/373121/Clinical-Service-Desk-Helpdesk-Senior-Representative-Remote-Halifax
+- Sr. Java/React Full Stack Developer (Onsite Hybrid) | Mississauga, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/368883/Sr-Java-React-Full-Stack-Developer-Onsite-Hybrid
+- Azure APIM & Self-Hosted Gateway Administrator - HYBRID | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/354894/Azure-APIM-Self-Hosted-Gateway-Administrator-HYBRID
+- Senior AI Engineer - Remote | Toronto, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/369008/Senior-AI-Engineer-Remote
+- Project Manager | Tiverton, CA-ON, Canada | https://careers.services.global.ntt/global/en/job/368736/Project-Manager
+- Power BI Developer / Lead (FTE/Hybrid) | Halifax, CA-NS, Canada | https://careers.services.global.ntt/global/en/job/374365/Power-BI-Developer-Lead-FTE-Hybrid
+- Sales Managing Director - Products Vertical - Canada | Apply now Sales Managing Director - Products Vertical - Canada | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL368414EXTERNALENGLOBAL
+- Ventes techniques sortantes (Télétravail) | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL347539EXTERNALENGLOBAL
+- Clinical Service Desk | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL371227EXTERNALENGLOBAL
+- Clinical Service Desk- Helpdesk Senior Representative-Remote-Halifax | Apply now Clinical Service Desk- Helpdesk Senior Representative-Remote-Halifax | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL373121EXTERNALENGLOBAL
+- Sr. Java/React Full Stack Developer (Onsite Hybrid) | Apply now Sr. Java/React Full Stack Developer (Onsite Hybrid) | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL368883EXTERNALENGLOBAL
+- Azure APIM & Self-Hosted Gateway Administrator - HYBRID | Apply now Azure APIM & Self-Hosted Gateway Administrator - HYBRID | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL354894EXTERNALENGLOBAL
+- Senior AI Engineer - Remote | Apply now Senior AI Engineer - Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369008EXTERNALENGLOBAL
+- Project Manager | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL368736EXTERNALENGLOBAL
+- Power BI Developer / Lead (FTE/Hybrid) | Apply now Power BI Developer / Lead (FTE/Hybrid) | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL374365EXTERNALENGLOBAL
 
 ## Scored Candidates
-- None
+- Platform Engineer (AWS) - Remote | score 61 | relevant=True | tier=core_target_fit | title matches target role: Platform Engineer; matched skills: AWS; location signals: Toronto, Canada, Remote | https://careers.services.global.ntt/global/en/job/369004/Platform-Engineer-AWS-Remote
+- Platform Engineer (AWS) - Remote | score 53 | relevant=True | tier=core_target_fit | title matches target role: Platform Engineer; matched skills: AWS; location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369004EXTERNALENGLOBAL
+- Senior ITSM Platform Engineer | score 50 | relevant=True | tier=core_target_fit | title matches target role: Platform Engineer; matched skills: Linux, support; location signals: Canada; support/ops signals: support, admin | https://careers.services.global.ntt/global/en/job/372143/Senior-ITSM-Platform-Engineer
+- Oracle ERP Cloud Solution Architect - Remote | score 36 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto, Canada, Remote; adjacent customer-facing technical fit: Solution Architect | https://careers.services.global.ntt/global/en/job/375279/Oracle-ERP-Cloud-Solution-Architect-Remote
+- Senior ITSM Platform Engineer | score 30 | relevant=True | tier=core_target_fit | title matches target role: Platform Engineer | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL372143EXTERNALENGLOBAL
+- Oracle ERP Cloud Solution Architect - Remote | score 28 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Remote; adjacent customer-facing technical fit: Solution Architect | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375279EXTERNALENGLOBAL
+- Remote - Outbound Technical Sales Specialist | score 24 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Toronto, Canada, Remote; support/ops signals: support | https://careers.services.global.ntt/global/en/job/P-100231/Remote-Outbound-Technical-Sales-Specialist
+- Corporate Counsel-Remote within Canada | score 24 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Ontario, Canada, Remote; support/ops signals: support | https://careers.services.global.ntt/global/en/job/364478/Corporate-Counsel-Remote-within-Canada
+- Azure APIM & Self-Hosted Gateway Administrator - HYBRID | score 24 | relevant=True | tier=core_target_fit | matched skills: Azure; location signals: Toronto, Canada, Hybrid; support/ops signals: administrator, admin | https://careers.services.global.ntt/global/en/job/354894/Azure-APIM-Self-Hosted-Gateway-Administrator-HYBRID
+- Remote Bilingual Customer Service Representative (English/French) | score 20 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Canada, Remote; support/ops signals: support | https://careers.services.global.ntt/global/en/job/347529/Remote-Bilingual-Customer-Service-Representative-English-French
+- Inbound Customer Service Representative (English) - On Site | score 20 | relevant=True | tier=core_target_fit | matched skills: troubleshooting; location signals: Ontario, Canada; support/ops signals: troubleshooting | https://careers.services.global.ntt/global/en/job/P-100240/Inbound-Customer-Service-Representative-English-On-Site
+- Clinical Service Desk | score 20 | relevant=True | tier=core_target_fit | matched skills: troubleshooting, support; location signals: Canada; support/ops signals: support, troubleshooting | https://careers.services.global.ntt/global/en/job/371227/Clinical-Service-Desk
+- Azure APIM & Self-Hosted Gateway Administrator - HYBRID | score 16 | relevant=True | tier=core_target_fit | matched skills: Azure; location signals: Hybrid; support/ops signals: administrator, admin | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL354894EXTERNALENGLOBAL
+- AI Developer (REMOTE) | score 16 | relevant=True | tier=core_target_fit | matched skills: Python; location signals: Toronto, Canada, Remote | https://careers.services.global.ntt/global/en/job/373890/AI-Developer-REMOTE
+- Senior Network Engineer | score 13 | relevant=True | tier=core_target_fit | matched skills: networking, troubleshooting; location signals: Toronto, Ontario, Canada; support/ops signals: troubleshooting | https://careers.services.global.ntt/global/en/job/R-137870/Senior-Network-Engineer
+- Remote Bilingual Technical Sales Specialist (French/English) | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada, Remote | https://careers.services.global.ntt/global/en/job/P-100223/Remote-Bilingual-Technical-Sales-Specialist-French-English
+- Outbound Sales Specialist (Telecommunications) - Remote 6 month contract | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Canada, Remote | https://careers.services.global.ntt/global/en/job/347536/Outbound-Sales-Specialist-Telecommunications-Remote-6-month-contract
+- Java DevOps Developer - REMOTE | score 12 | relevant=True | tier=core_target_fit | matched skills: CI/CD; location signals: Canada, Remote | https://careers.services.global.ntt/global/en/job/369698/Java-DevOps-Developer-REMOTE
+- ETL Data Engineer - HYBRID | score 12 | relevant=True | tier=core_target_fit | matched skills: Python; location signals: Canada, Hybrid | https://careers.services.global.ntt/global/en/job/375278/ETL-Data-Engineer-HYBRID
+- AI Development Engineer - Remote | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Canada, Remote | https://careers.services.global.ntt/global/en/job/348821/AI-Development-Engineer-Remote
+- Remote Outbound Sales Representative - Contract | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://careers.services.global.ntt/global/en/job/371573/Remote-Outbound-Sales-Representative-Contract
+- Remote Bilingual Technical Sales Specialist (French/English) | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://careers.services.global.ntt/global/en/job/P-100209/Remote-Bilingual-Technical-Sales-Specialist-French-English
+- Remote Bilingual Customer Service Representative (English/French) | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://careers.services.global.ntt/global/en/job/P-100224/Remote-Bilingual-Customer-Service-Representative-English-French
+- Power BI Developer / Lead (FTE/Hybrid) | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Hybrid | https://careers.services.global.ntt/global/en/job/374365/Power-BI-Developer-Lead-FTE-Hybrid
+- Corporate Counsel-Remote within Canada | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL364478EXTERNALENGLOBAL
+- Business Analyst | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://careers.services.global.ntt/global/en/job/360592/Business-Analyst
+- Senior Team Lead, Technical Services | score 5 | relevant=True | tier=core_target_fit | location signals: Toronto, Ontario, Canada, Remote, Hybrid; support/ops signals: incident | https://careers.services.global.ntt/global/en/job/R-146182/Senior-Team-Lead-Technical-Services
+- Clinical Service Desk- Helpdesk Senior Representative-Remote-Halifax | score 5 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Canada, Remote; support/ops signals: support, operations | https://careers.services.global.ntt/global/en/job/373121/Clinical-Service-Desk-Helpdesk-Senior-Representative-Remote-Halifax
+- Agentic AI Systems Developer - Remote | score 5 | relevant=True | tier=core_target_fit | matched skills: Azure, Python; location signals: Toronto, Canada, Remote | https://careers.services.global.ntt/global/en/job/369003/Agentic-AI-Systems-Developer-Remote
+- Ventes techniques sortantes (Télétravail) | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://careers.services.global.ntt/global/en/job/P-100210/Ventes-techniques-sortantes-Télétravail
+- Ventes techniques sortantes (Télétravail) | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://careers.services.global.ntt/global/en/job/347539/Ventes-techniques-sortantes-Télétravail
+- Sr. Java/React Full Stack Developer (Onsite Hybrid) | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL368883EXTERNALENGLOBAL
+- Sr Micro Focus COBOL Developer (hybrid) | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL370815EXTERNALENGLOBAL
+- Remote Outbound Sales Representative - Contract | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL371573EXTERNALENGLOBAL
+- Remote Bilingual Technical Sales Specialist (French/English) | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100223EXTERNALENGLOBAL
+- Remote Bilingual Technical Sales Specialist (French/English) | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100209EXTERNALENGLOBAL
+- Remote Bilingual Customer Service Representative (English/French) | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100224EXTERNALENGLOBAL
+- Remote Bilingual Customer Service Representative (English/French) | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL347529EXTERNALENGLOBAL
+- Remote - Outbound Technical Sales Specialist | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100231EXTERNALENGLOBAL
+- Power BI Developer / Lead (FTE/Hybrid) | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL374365EXTERNALENGLOBAL
+- Outbound Sales Specialist (Telecommunications) - Remote 6 month contract | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL347536EXTERNALENGLOBAL
+- Java Full Stack Developer - Hybrid / Onsite | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL374489EXTERNALENGLOBAL
+- Java DevOps Developer - REMOTE | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369698EXTERNALENGLOBAL
+- ETL Data Engineer - HYBRID | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375278EXTERNALENGLOBAL
+- Agentic AI Systems Developer - Remote | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369003EXTERNALENGLOBAL
+- AI Development Engineer - Remote | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL348821EXTERNALENGLOBAL
+- AI Developer (REMOTE) | score 4 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL373890EXTERNALENGLOBAL
+- Senior Azure Architect | score 1 | relevant=True | tier=core_target_fit | matched skills: Azure; location signals: Toronto, Ontario, Canada | https://careers.services.global.ntt/global/en/job/R-139490/Senior-Azure-Architect
+- Ventes techniques sortantes (Télétravail) | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100210EXTERNALENGLOBAL
+- Ventes techniques sortantes (Télétravail) | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL347539EXTERNALENGLOBAL
+- Sr. Java/React Full Stack Developer (Onsite Hybrid) | score 0 | relevant=False | tier=not_relevant | location signals: Mississauga, Canada, Hybrid | https://careers.services.global.ntt/global/en/job/368883/Sr-Java-React-Full-Stack-Developer-Onsite-Hybrid
+- Sr Micro Focus COBOL Developer (hybrid) | score 0 | relevant=False | tier=not_relevant | location signals: Canada, Hybrid | https://careers.services.global.ntt/global/en/job/370815/Sr-Micro-Focus-COBOL-Developer-hybrid
+- Speciality Seller IV | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://careers.services.global.ntt/global/en/job/373761/Speciality-Seller-IV
+- Speciality Seller IV | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL373761EXTERNALENGLOBAL
+- Senior Team Lead, Technical Services | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALR146182EXTERNALENGLOBAL
+- Senior Sales Executive(Energy/Oil & Gas) | score 0 | relevant=False | tier=not_relevant | location signals: Canada, Remote | https://careers.services.global.ntt/global/en/job/351575/Senior-Sales-Executive-Energy-Oil-Gas
+- Senior Sales Executive(Energy/Oil & Gas) | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL351575EXTERNALENGLOBAL
+- Senior Network Engineer | score 0 | relevant=False | tier=not_relevant | matched skills: networking | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALR137870EXTERNALENGLOBAL
+- Senior Azure Architect | score 0 | relevant=False | tier=not_relevant | matched skills: Azure | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALR139490EXTERNALENGLOBAL
+- Senior AI Engineer - Remote | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada, Remote | https://careers.services.global.ntt/global/en/job/369008/Senior-AI-Engineer-Remote
+- Senior AI Engineer - Remote | score 0 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369008EXTERNALENGLOBAL
+- Sales Managing Director - Products Vertical - Canada | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://careers.services.global.ntt/global/en/job/368414/Sales-Managing-Director-Products-Vertical-Canada
+- Sales Managing Director - Products Vertical - Canada | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL368414EXTERNALENGLOBAL
+- Project Manager | score 0 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://careers.services.global.ntt/global/en/job/368736/Project-Manager
+- Project Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL368736EXTERNALENGLOBAL
+- Java Full Stack Developer - Hybrid / Onsite | score 0 | relevant=False | tier=not_relevant | location signals: Canada, Hybrid | https://careers.services.global.ntt/global/en/job/374489/Java-Full-Stack-Developer-Hybrid-Onsite
+- Inbound Customer Service Representative (English) - On Site | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALP100240EXTERNALENGLOBAL
+- HR Operations & Admin Senior Analyst | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://careers.services.global.ntt/global/en/job/371156/HR-Operations-Admin-Senior-Analyst
+- HR Operations & Admin Senior Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL371156EXTERNALENGLOBAL
+- Clinical Service Desk- Helpdesk Senior Representative-Remote-Halifax | score 0 | relevant=False | tier=not_relevant | location signals: Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL373121EXTERNALENGLOBAL
+- Clinical Service Desk | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL371227EXTERNALENGLOBAL
+- Business Partner Specialist Advisor | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://careers.services.global.ntt/global/en/job/375547/Business-Partner-Specialist-Advisor
+- Business Partner Specialist Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375547EXTERNALENGLOBAL
+- Business Partner Senior Specialist | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://careers.services.global.ntt/global/en/job/375733/Business-Partner-Senior-Specialist
+- Business Partner Senior Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375733EXTERNALENGLOBAL
+- Business Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL360592EXTERNALENGLOBAL
+- Agentic AI Engineer | score 0 | relevant=False | tier=not_relevant | matched skills: Azure; location signals: Toronto, Canada | https://careers.services.global.ntt/global/en/job/353881/Agentic-AI-Engineer
+- Agentic AI Engineer | score 0 | relevant=False | tier=not_relevant | no core matches | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL353881EXTERNALENGLOBAL
 
 ## Relevant Jobs After Scoring
-- None
+- Senior Azure Architect | score 1 | tier=core_target_fit | Toronto, Ontario, Canada | https://careers.services.global.ntt/global/en/job/R-139490/Senior-Azure-Architect
+- Senior ITSM Platform Engineer | score 30 | tier=core_target_fit | - | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL372143EXTERNALENGLOBAL
+- Senior Network Engineer | score 13 | tier=core_target_fit | Toronto, Ontario, Canada | https://careers.services.global.ntt/global/en/job/R-137870/Senior-Network-Engineer
+- Inbound Customer Service Representative (English) - On Site | score 20 | tier=core_target_fit | Ottawa, Ontario, Canada | https://careers.services.global.ntt/global/en/job/P-100240/Inbound-Customer-Service-Representative-English-On-Site
+- Platform Engineer (AWS) - Remote | score 53 | tier=core_target_fit | Apply now Platform Engineer (AWS) - Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369004EXTERNALENGLOBAL
+- Senior Team Lead, Technical Services | score 5 | tier=core_target_fit | Toronto, Ontario, Canada | https://careers.services.global.ntt/global/en/job/R-146182/Senior-Team-Lead-Technical-Services
+- Remote - Outbound Technical Sales Specialist | score 24 | tier=core_target_fit | Calgary, Alberta, Canada | https://careers.services.global.ntt/global/en/job/P-100231/Remote-Outbound-Technical-Sales-Specialist
+- Oracle ERP Cloud Solution Architect - Remote | score 28 | tier=adjacent_customer_facing_technical_fit | Apply now Oracle ERP Cloud Solution Architect - Remote | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375279EXTERNALENGLOBAL
+- Azure APIM & Self-Hosted Gateway Administrator - HYBRID | score 16 | tier=core_target_fit | Apply now Azure APIM & Self-Hosted Gateway Administrator - HYBRID | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL354894EXTERNALENGLOBAL
 
 ## Rejected But Interesting Jobs
-- None
+- AI Development Engineer - Remote | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.services.global.ntt/global/en/job/348821/AI-Development-Engineer-Remote
+- Business Analyst | score 8 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.services.global.ntt/global/en/job/360592/Business-Analyst
+- Java DevOps Developer - REMOTE | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369698EXTERNALENGLOBAL
+- ETL Data Engineer - HYBRID | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL375278EXTERNALENGLOBAL
+- AI Development Engineer - Remote | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL348821EXTERNALENGLOBAL
+- Senior Network Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBALR137870EXTERNALENGLOBAL
+- Senior AI Engineer - Remote | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.services.global.ntt/global/en/job/369008/Senior-AI-Engineer-Remote
+- Senior AI Engineer - Remote | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL369008EXTERNALENGLOBAL
+- HR Operations & Admin Senior Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.services.global.ntt/global/en/job/371156/HR-Operations-Admin-Senior-Analyst
+- HR Operations & Admin Senior Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL371156EXTERNALENGLOBAL
+- Business Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL360592EXTERNALENGLOBAL
+- Agentic AI Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.services.global.ntt/global/en/job/353881/Agentic-AI-Engineer
+- Agentic AI Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://careers.services.global.ntt/global/en/hvhapply?jobSeqNo=NTT1GLOBAL353881EXTERNALENGLOBAL

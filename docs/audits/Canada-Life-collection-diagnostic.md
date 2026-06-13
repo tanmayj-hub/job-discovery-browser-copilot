@@ -3,7 +3,7 @@
 ## Source
 - Company: Canada Life
 - Starting URL: https://jobs.canadalife.com/search/?createNewAlert=false&q=&locationsearch=&optionsFacetsDD_location=&optionsFacetsDD_country=CA&optionsFacetsDD_department=
-- Final URL reached: https://jobs.canadalife.com/search/?createNewAlert=false&q=&locationsearch=&optionsFacetsDD_location=&optionsFacetsDD_country=CA&optionsFacetsDD_department=
+- Final URL reached: https://jobs.canadalife.com/search/?q=&sortColumn=referencedate&sortDirection=desc&optionsFacetsDD_country=CA&startrow=75
 - Source mode: browser_allowed
 - ATS type: -
 - Cookie banner action: accept all cookies
@@ -24,17 +24,17 @@
 - Exact filter method: url_filter
 
 ## Pagination
-- Pagination detected: False
-- Next/load-more detection result: not detected
+- Pagination detected: True
+- Next/load-more detection result: detected
 - Max pages per source: 10
-- Pages visited: 1
-- Jobs extracted per page: [26]
-- Pagination stop reason: pagination_not_detected
+- Pages visited: 4
+- Jobs extracted per page: [26, 26, 26, 12]
+- Pagination stop reason: no_page_change
 
 ## Counts
-- Candidate jobs before scoring: 26
-- Jobs after scoring: 26
-- Relevant jobs after scoring: 1
+- Candidate jobs before scoring: 87
+- Jobs after scoring: 87
+- Relevant jobs after scoring: 4
 - Explicit non-Canada jobs rejected by safety gate: 0
 - Relevant jobs with unknown/blank location text: 0
 - Unique IBM jobIds extracted: 0
@@ -43,6 +43,9 @@
 
 ## Visited Pages
 - https://jobs.canadalife.com/search/?createNewAlert=false&q=&locationsearch=&optionsFacetsDD_location=&optionsFacetsDD_country=CA&optionsFacetsDD_department=
+- https://jobs.canadalife.com/search/?q=&sortColumn=referencedate&sortDirection=desc&optionsFacetsDD_country=CA&startrow=25
+- https://jobs.canadalife.com/search/?q=&sortColumn=referencedate&sortDirection=desc&optionsFacetsDD_country=CA&startrow=50
+- https://jobs.canadalife.com/search/?q=&sortColumn=referencedate&sortDirection=desc&optionsFacetsDD_country=CA&startrow=75
 
 ## Verification Decision
 - Decision: ready_for_verified_review
@@ -75,37 +78,162 @@
 - Winnipeg Manitoba, MB, CA, R3C 1V3 | Digital Technology | https://jobs.canadalife.com/job/Winnipeg-Manitoba-Cyber-Threat-Intelligence-Specialist-MB-R3C-1V3/1403060733/
 - Toronto, ON, CA +2 more… | Digital Technology | https://jobs.canadalife.com/job/Toronto-Data-Analytics-Manager-ON/1403087333/
 - Search for jobs | - | https://jobs.canadalife.com/go/All-Jobs/9170201/
+- Edmonton, AB, CA +1 more… | Sales and Business Development | https://jobs.canadalife.com/job/Edmonton-Sales-Support-Associate-12-Month-Contract-AB/1403124633/
+- London, ON, CA +1 more… | Actuarial and Investments and Finance | https://jobs.canadalife.com/job/London-Associate-Manager-Quadrus-ON/1403095733/
+- Mississauga Ontario, ON, CA, L4W 0E4 | Customer Service and Administration | https://jobs.canadalife.com/job/Mississauga-Ontario-Associate-Manager%2C-Private-Wealth-ON-L4W-0E4/1387556133/
+- London, ON, CA +2 more… | Digital Technology | https://jobs.canadalife.com/job/London-Release-Manager-ON/1402486433/
+- London, ON, CA +2 more… | Digital Technology | https://jobs.canadalife.com/job/London-Associate-Project-Manager-ON/1402558033/
+- Toronto, ON, CA +2 more… | Corporate Functions | https://jobs.canadalife.com/job/Toronto-Manager%2C-Operations-Strategy-&-Performance-ON/1402600033/
+- Toronto, ON, CA +2 more… | Digital Technology | https://jobs.canadalife.com/job/Toronto-Infrastructure-Specialist-ON/1402594833/
+- Vancouver, British Columbia, CA | Claims Management | https://jobs.canadalife.com/job/Vancouver-Disability-Medical-Coordinator-Brit/1402603333/
+- Pickering, ON, CA | Customer Service and Administration | https://jobs.canadalife.com/job/Pickering-Administrative-Assistant-ON/1402619033/
+- Winnipeg, MB, CA +2 more… | Claims Management | https://jobs.canadalife.com/job/Winnipeg-Claims-Review-Specialist-12-month-Contract-MB/1402638033/
+- London, ON, CA +2 more… | Claims Management | https://jobs.canadalife.com/job/London-Bilingual-%28FrEn%29-Claims-Review-Specialist-ON/1402637733/
+- Toronto, ON, CA +3 more… | Customer Service and Administration | https://jobs.canadalife.com/job/Toronto-New-Business-Technician-ON/1402062033/
+- Vancouver, British Columbia, CA +1 more… | Customer Service and Administration | https://jobs.canadalife.com/job/Vancouver-Administrative-Assistant-%2818-Month-Contract%29-Brit/1402062333/
+- Vancouver, British Columbia, CA | Claims Management | https://jobs.canadalife.com/job/Vancouver-Disability-Claims-Administrator-Brit/1402078233/
+- London, ON, CA +2 more… | Digital Technology | https://jobs.canadalife.com/job/London-Software-Developer-%28Java-&-Mainframe%29-ON/1402053533/
+- London, ON, CA +2 more… | Customer Service and Administration | https://jobs.canadalife.com/job/London-Director%2C-Insurance-Operations%2C-In-force-Modernization-ON/1402019133/
+- London, ON, CA +3 more… | Actuarial and Investments and Finance | https://jobs.canadalife.com/job/London-Associate-Manager-Financial-Reporting-&-Analysis-ON/1402054333/
+- Toronto, ON, CA +2 more… | Digital Technology | https://jobs.canadalife.com/job/Toronto-Solutions-Architect-%28API-&-Business-Automation%29-ON/1389627733/
+- Montreal, Quebec, CA | Sales and Business Development | https://jobs.canadalife.com/job/Montreal-Bilingual-%28FrEn%29-Regional-Sales-Manager-Insurance-Queb/1391479033/
+- Kitchener Ontario, ON, CA, N2P 2G5 +2 more… | Corporate Functions | https://jobs.canadalife.com/job/Kitchener-Ontario-Investment-Specialist-18-Month-Contract-ON-N2P-2G5/1391347733/
+- London, ON, CA +2 more… | Actuarial and Investments and Finance | https://jobs.canadalife.com/job/London-Compliance-Analyst-12-Month-Term-ON/1401354833/
+- Brantford Ontario, ON, CA, N3R 7J4 +1 more… | Customer Service and Administration | https://jobs.canadalife.com/job/Brantford-Ontario-Client-Experience-Specialist-Brantford%2C-ON-ON-N3R-7J4/1401454733/
+- London, ON, CA +2 more… | Corporate Functions | https://jobs.canadalife.com/job/London-Senior-Disability-Product-Specialist-ON/1286864201/
+- Toronto Ontario, ON, CA, M5G 1R8 | Actuarial and Investments and Finance | https://jobs.canadalife.com/job/Toronto-Ontario-Risk-Management-Manager%2C-Reinsurance-ON-M5G-1R8/1388052733/
+- Montreal, Quebec, CA | Claims Management | https://jobs.canadalife.com/job/Montreal-Disability-Case-Manager-%28bilingual%29-Queb/1381484433/
+- Ottawa, ON, CA | Sales and Business Development | https://jobs.canadalife.com/job/Ottawa-Sales-Director%2C-Group-Benefits-ON/1400863133/
+- Toronto, ON, CA | Customer Service and Administration | https://jobs.canadalife.com/job/Toronto-Service-Support-Associate-18-Month-Contract-ON/1401017833/
+- Prince Albert, SK, CA, S6V 4P3 | Sales and Business Development | https://jobs.canadalife.com/job/Prince-Albert-Financial-Advisor-SK-S6V-4P3/1400881133/
+- Sault Ste Marie Ontario, ON, CA, P6A 2K6 | Corporate Functions | https://jobs.canadalife.com/job/Sault-Ste-Marie-Ontario-Wealth-Advisor-Sault-Ste_-Marie-ON-P6A-2K6/1400902833/
+- Winnipeg, MB, CA | Claims Management | https://jobs.canadalife.com/job/Winnipeg-Senior-Claims-Examiner-%28Bilingual-FrenchEnglish%29-MB/1400570333/
+- Winnipeg, MB, CA | Actuarial and Investments and Finance | https://jobs.canadalife.com/job/Winnipeg-Manager-Investment-Operations-MB/1400563133/
+- Canada, ON, CA | Claims Management | https://jobs.canadalife.com/job/Canada-Team-Manager%2C-Mental-Health-Mentoring-%28Claims%29-ON/1400479733/
+- Calgary, AB, CA +5 more… | Sales and Business Development | https://jobs.canadalife.com/job/Calgary-Investment-&-Retirement-Consultant-AB/1400510833/
+- Regina, SK, CA +1 more… | Customer Service and Administration | https://jobs.canadalife.com/job/Regina-Administrative-Assistant-12-month-Contract-SK/1400549433/
+- Montreal, Quebec, CA +3 more… | Sales and Business Development | https://jobs.canadalife.com/job/Montreal-Group-Insurance-Underwriter-%28bilingual%29-Queb/1400575833/
+- London, ON, CA +2 more… | Digital Technology | https://jobs.canadalife.com/job/London-Senior-Devops-Engineering-Specialist-ON/1400494133/
+- Toronto, ON, CA +2 more… | Corporate Functions | https://jobs.canadalife.com/job/Toronto-Manager%2C-Risk-&-Resilience-ON/1385989233/
+- Oakville Ontario, ON, CA, L5K 0J3 +1 more… | Corporate Functions | https://jobs.canadalife.com/job/Oakville-Ontario-Wealth-Advisor-Oakville%2C-ON-ON-L5K-0J3/1384272333/
+- Winnipeg, MB, CA +1 more… | Actuarial and Investments and Finance | https://jobs.canadalife.com/job/Winnipeg-Financial-Analyst-MB/1399977233/
+- Toronto, ON, CA +1 more… | Corporate Functions | https://jobs.canadalife.com/job/Toronto-Associate-Manager%2C-Digital-Analytics-12-Month-Contract-ON/1400016233/
+- Toronto, ON, CA +1 more… | Customer Service and Administration | https://jobs.canadalife.com/job/Toronto-Business-Solutions-Coordinator-ON/1400012733/
+- Toronto, ON, CA | Sales and Business Development | https://jobs.canadalife.com/job/Toronto-Analyst%2C-Data-&-Analytics-ON/1400052233/
+- Ottawa Ontario, ON, CA, K1Z 8R9 +1 more… | Customer Service and Administration | https://jobs.canadalife.com/job/Ottawa-Ontario-New-Business-Specialist-12-Month-Contract-ON-K1Z-8R9/1399970733/
+- Kitchener Ontario, ON, CA, N2P 2G5 +1 more… | Customer Service and Administration | https://jobs.canadalife.com/job/Kitchener-Ontario-Transfers-Specialist-6-month-contract-ON-N2P-2G5/1400062333/
+- Montreal, Quebec, CA | Customer Service and Administration | https://jobs.canadalife.com/job/Montreal-New-Business-Technician-%28Bilingual%29-Queb/1399534433/
+- Kitchener Ontario, ON, CA, N2P 2G5 | Customer Service and Administration | https://jobs.canadalife.com/job/Kitchener-Ontario-Office-Administrator-12-month-contract-ON-N2P-2G5/1399401333/
+- Toronto, ON, CA | Corporate Functions | https://jobs.canadalife.com/job/Toronto-Senior-Analyst%2C-Strategy-ON/1376141633/
+- Penticton British Columbia, British Columbia, CA, V2A 5L5 | Customer Service and Administration | https://jobs.canadalife.com/job/Penticton-British-Columbia-Client-Experience-Specialist-II-Penticton-Brit-V2A-5L5/1285913801/
+- Montreal, Quebec, CA +1 more… | Sales and Business Development | https://jobs.canadalife.com/job/Montreal-Customer-Service-Specialist-%28bilingual%29-Group-insurance-Queb/1273709201/
+- Toronto, ON, CA | Digital Technology | https://jobs.canadalife.com/job/Toronto-Director%2C-Technology-Delivery%2C-QE-ON/1398445033/
+- Toronto, ON, CA | Corporate Functions | https://jobs.canadalife.com/job/Toronto-AI-Builder%2C-Strategy-&-Transformation-ON/1398447133/
+- Toronto, ON, CA +2 more… | Digital Technology | https://jobs.canadalife.com/job/Toronto-Solutions-Architect-%28Digital%29-ON/1397835133/
+- Halifax, Nova Scotia, CA +3 more… | Sales and Business Development | https://jobs.canadalife.com/job/Halifax-Account-Executive%2C-Group-Benefits-Nova/1258429401/
+- Winnipeg, MB, CA | Claims Management | https://jobs.canadalife.com/job/Winnipeg-Disability-Case-Manager-MB/1397431133/
+- Toronto, ON, CA +2 more… | Digital Technology | https://jobs.canadalife.com/job/Toronto-Senior-Network-Engineering-Specialist-%28Cloud-and-On-premise%29-ON/1381005333/
+- Kelowna British Columbia, British Columbia, CA, V1Y 4Z4 | Corporate Functions | https://jobs.canadalife.com/job/Kelowna-British-Columbia-Associate-Wealth-Advisor-Kelowna-Brit-V1Y-4Z4/1396111933/
+- Canada, ON, CA | Customer Service and Administration | https://jobs.canadalife.com/job/Canada-Health-&-Benefits-Consultant-ON/1396230933/
+- Winnipeg, MB, CA | Customer Service and Administration | https://jobs.canadalife.com/job/Winnipeg-Administrative-Assistant-MB/1395711633/
+- Calgary Alberta, AB, CA, T2H 1L9 | Customer Service and Administration | https://jobs.canadalife.com/job/Calgary-Alberta-Client-Experience-Specialist-Calgary-AB-T2H-1L9/1395234133/
+- Winnipeg Manitoba, MB, CA, R3L 1X8 +1 more… | Customer Service and Administration | https://jobs.canadalife.com/job/Winnipeg-Manitoba-Client-Experience-Specialist-Winnipeg-MB-R3L-1X8/1395053033/
+- Ottawa, ON, CA | Claims Management | https://jobs.canadalife.com/job/Ottawa-Disability-Case-Manager-%28bilingual%29-ON/1375657633/
 
 ## Scored Candidates
+- Toronto, ON, CA +2 more… | score 16 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto; adjacent customer-facing technical fit: Solutions Architect | https://jobs.canadalife.com/job/Toronto-Solutions-Architect-%28API-&-Business-Automation%29-ON/1389627733/
+- Toronto, ON, CA +2 more… | score 16 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto; adjacent customer-facing technical fit: Solutions Architect | https://jobs.canadalife.com/job/Toronto-Solutions-Architect-%28Digital%29-ON/1397835133/
 - London, ON, CA +2 more… | score 12 | relevant=True | tier=adjacent_customer_facing_technical_fit | adjacent customer-facing technical fit: Solutions Architect | https://jobs.canadalife.com/job/London-Solutions-Architect-ON/1404013933/
 - Toronto Ontario, ON, CA, M5G 1R8 +2 more… | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario | https://jobs.canadalife.com/job/Toronto-Ontario-Sales-Support-Associate-ON-M5G-1R8/1403529833/
+- London, ON, CA +2 more… | score 5 | relevant=True | tier=core_target_fit | description mentions target role: DevOps Engineer | https://jobs.canadalife.com/job/London-Senior-Devops-Engineering-Specialist-ON/1400494133/
+- Toronto, ON, CA +3 more… | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-New-Business-Technician-ON/1402062033/
 - Toronto, ON, CA +2 more… | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Group-Benefits-Analyst-ON/1404014633/
+- Toronto, ON, CA +2 more… | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Infrastructure-Specialist-ON/1402594833/
+- Toronto, ON, CA +1 more… | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Business-Solutions-Coordinator-ON/1400012733/
+- Toronto, ON, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Service-Support-Associate-18-Month-Contract-ON/1401017833/
+- Toronto, ON, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Analyst%2C-Data-&-Analytics-ON/1400052233/
+- Toronto, ON, CA | score 4 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-AI-Builder%2C-Strategy-&-Transformation-ON/1398447133/
+- Sault Ste Marie Ontario, ON, CA, P6A 2K6 | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://jobs.canadalife.com/job/Sault-Ste-Marie-Ontario-Wealth-Advisor-Sault-Ste_-Marie-ON-P6A-2K6/1400902833/
+- Ottawa Ontario, ON, CA, K1Z 8R9 +1 more… | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://jobs.canadalife.com/job/Ottawa-Ontario-New-Business-Specialist-12-Month-Contract-ON-K1Z-8R9/1399970733/
+- Oakville Ontario, ON, CA, L5K 0J3 +1 more… | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://jobs.canadalife.com/job/Oakville-Ontario-Wealth-Advisor-Oakville%2C-ON-ON-L5K-0J3/1384272333/
+- Kitchener Ontario, ON, CA, N2P 2G5 +2 more… | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://jobs.canadalife.com/job/Kitchener-Ontario-Investment-Specialist-18-Month-Contract-ON-N2P-2G5/1391347733/
+- Kitchener Ontario, ON, CA, N2P 2G5 +1 more… | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://jobs.canadalife.com/job/Kitchener-Ontario-Transfers-Specialist-6-month-contract-ON-N2P-2G5/1400062333/
+- Kitchener Ontario, ON, CA, N2P 2G5 | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://jobs.canadalife.com/job/Kitchener-Ontario-Office-Administrator-12-month-contract-ON-N2P-2G5/1399401333/
+- Canada, ON, CA | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.canadalife.com/job/Canada-Health-&-Benefits-Consultant-ON/1396230933/
+- Brantford Ontario, ON, CA, N3R 7J4 +1 more… | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://jobs.canadalife.com/job/Brantford-Ontario-Client-Experience-Specialist-Brantford%2C-ON-ON-N3R-7J4/1401454733/
+- Winnipeg, MB, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Claims-Review-Specialist-12-month-Contract-MB/1402638033/
 - Winnipeg, MB, CA +1 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Senior-Financial-Reporting-Analyst-MB/1404055533/
+- Winnipeg, MB, CA +1 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Financial-Analyst-MB/1399977233/
 - Winnipeg, MB, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Associate-Manager%2C-Investment-Financial-Management-MB/1403567233/
+- Winnipeg, MB, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Senior-Claims-Examiner-%28Bilingual-FrenchEnglish%29-MB/1400570333/
+- Winnipeg, MB, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Manager-Investment-Operations-MB/1400563133/
+- Winnipeg, MB, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Disability-Case-Manager-MB/1397431133/
+- Winnipeg, MB, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Administrative-Assistant-MB/1395711633/
+- Winnipeg Manitoba, MB, CA, R3L 1X8 +1 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Manitoba-Client-Experience-Specialist-Winnipeg-MB-R3L-1X8/1395053033/
 - Winnipeg Manitoba, MB, CA, R3C 1V3 | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Winnipeg-Manitoba-Cyber-Threat-Intelligence-Specialist-MB-R3C-1V3/1403060733/
+- Vancouver, British Columbia, CA +1 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Vancouver-Administrative-Assistant-%2818-Month-Contract%29-Brit/1402062333/
 - Vancouver, British Columbia, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Vancouver-Disability-Claims-Administrator-Brit/1404072833/
+- Vancouver, British Columbia, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Vancouver-Disability-Medical-Coordinator-Brit/1402603333/
+- Vancouver, British Columbia, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Vancouver-Disability-Claims-Administrator-Brit/1402078233/
 - Toronto, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | matched skills: networking; location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Senior-Network-Security-Engineering-Specialist-ON/1393833833/
 - Toronto, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Senior-Data-Analyst-ON/1371205333/
 - Toronto, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | matched skills: networking; location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Senior-Network-Engineering-Specialist-Lead-%28Cloud-and-On-premise%29-ON/1381006633/
 - Toronto, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Director-HR-Business-Partner-Workplace-Benefits-&-Retirement-ON/1403062833/
 - Toronto, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Data-Analytics-Manager-ON/1403087333/
+- Toronto, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Manager%2C-Operations-Strategy-&-Performance-ON/1402600033/
+- Toronto, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Manager%2C-Risk-&-Resilience-ON/1385989233/
+- Toronto, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | matched skills: networking; location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Senior-Network-Engineering-Specialist-%28Cloud-and-On-premise%29-ON/1381005333/
+- Toronto, ON, CA +1 more… | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Associate-Manager%2C-Digital-Analytics-12-Month-Contract-ON/1400016233/
 - Toronto, ON, CA | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Director%2C-Quality-Engineering-Practice-Lead-ON/1387097033/
 - Toronto, ON, CA | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Director-HR-Business-Partner-Wealth-ON/1403062533/
+- Toronto, ON, CA | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Senior-Analyst%2C-Strategy-ON/1376141633/
+- Toronto, ON, CA | score 0 | relevant=False | tier=not_relevant | location signals: Toronto | https://jobs.canadalife.com/job/Toronto-Director%2C-Technology-Delivery%2C-QE-ON/1398445033/
+- Toronto Ontario, ON, CA, M5G 1R8 | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario | https://jobs.canadalife.com/job/Toronto-Ontario-Risk-Management-Manager%2C-Reinsurance-ON-M5G-1R8/1388052733/
 - Search for jobs | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/go/All-Jobs/9170201/
+- Regina, SK, CA +1 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Regina-Administrative-Assistant-12-month-Contract-SK/1400549433/
+- Prince Albert, SK, CA, S6V 4P3 | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Prince-Albert-Financial-Advisor-SK-S6V-4P3/1400881133/
+- Pickering, ON, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Pickering-Administrative-Assistant-ON/1402619033/
+- Penticton British Columbia, British Columbia, CA, V2A 5L5 | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Penticton-British-Columbia-Client-Experience-Specialist-II-Penticton-Brit-V2A-5L5/1285913801/
 - Ottawa, ON, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Ottawa-Account-Executive%2C-National-Accounts-ON/1403974233/
+- Ottawa, ON, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Ottawa-Sales-Director%2C-Group-Benefits-ON/1400863133/
+- Ottawa, ON, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Ottawa-Disability-Case-Manager-%28bilingual%29-ON/1375657633/
+- Montreal, Quebec, CA +3 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Montreal-Group-Insurance-Underwriter-%28bilingual%29-Queb/1400575833/
+- Montreal, Quebec, CA +1 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Montreal-Customer-Service-Specialist-%28bilingual%29-Group-insurance-Queb/1273709201/
+- Montreal, Quebec, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Montreal-Bilingual-%28FrEn%29-Regional-Sales-Manager-Insurance-Queb/1391479033/
+- Montreal, Quebec, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Montreal-Disability-Case-Manager-%28bilingual%29-Queb/1381484433/
+- Montreal, Quebec, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Montreal-New-Business-Technician-%28Bilingual%29-Queb/1399534433/
 - Mississauga Ontario, ON, CA, L4W 0E4 +1 more… | score 0 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario | https://jobs.canadalife.com/job/Mississauga-Ontario-Bilingual-%28FrEn%29-Marketing-Relationship-Manager-ON-L4W-0E4/1403496633/
 - Mississauga Ontario, ON, CA, L4W 0E4 | score 0 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario | https://jobs.canadalife.com/job/Mississauga-Ontario-Senior-Financial-Analyst-ON-L4W-0E4/1403560933/
+- Mississauga Ontario, ON, CA, L4W 0E4 | score 0 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario | https://jobs.canadalife.com/job/Mississauga-Ontario-Associate-Manager%2C-Private-Wealth-ON-L4W-0E4/1387556133/
+- London, ON, CA +3 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Associate-Manager-Financial-Reporting-&-Analysis-ON/1402054333/
 - London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Lead-Business-Analyst-ON/1404055233/
 - London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Senior-Analyst-Finance-&-Planning-ON/1404060933/
 - London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Senior-Infrastructure-Specialist-DB-ON/1403575333/
 - London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Manager-Project-Delivery-ON/1403505933/
+- London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Release-Manager-ON/1402486433/
+- London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Associate-Project-Manager-ON/1402558033/
+- London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Bilingual-%28FrEn%29-Claims-Review-Specialist-ON/1402637733/
+- London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Software-Developer-%28Java-&-Mainframe%29-ON/1402053533/
+- London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Director%2C-Insurance-Operations%2C-In-force-Modernization-ON/1402019133/
+- London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Compliance-Analyst-12-Month-Term-ON/1401354833/
+- London, ON, CA +2 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Senior-Disability-Product-Specialist-ON/1286864201/
+- London, ON, CA +1 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Associate-Manager-Quadrus-ON/1403095733/
 - London, ON, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/London-Operations-Associate-1-year-contract-%28bilingual%29-ON/1403586933/
 - London Ontario, ON, CA, N6A 4K1 +1 more… | score 0 | relevant=False | tier=not_relevant | location signals: Ontario | https://jobs.canadalife.com/job/London-Ontario-Manager-Process-Excellence-ON-N6A-4K1/1404026633/
 - Langley, British Columbia, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Langley-Disability-Case-Manager-Brit/1382804533/
+- Kelowna British Columbia, British Columbia, CA, V1Y 4Z4 | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Kelowna-British-Columbia-Associate-Wealth-Advisor-Kelowna-Brit-V1Y-4Z4/1396111933/
+- Halifax, Nova Scotia, CA +3 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Halifax-Account-Executive%2C-Group-Benefits-Nova/1258429401/
+- Edmonton, AB, CA +1 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Edmonton-Sales-Support-Associate-12-Month-Contract-AB/1403124633/
+- Canada, ON, CA | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.canadalife.com/job/Canada-Team-Manager%2C-Mental-Health-Mentoring-%28Claims%29-ON/1400479733/
+- Calgary, AB, CA +5 more… | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Calgary-Investment-&-Retirement-Consultant-AB/1400510833/
 - Calgary, AB, CA | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Calgary-Rehabilitation-Consultant-AB/1386193233/
+- Calgary Alberta, AB, CA, T2H 1L9 | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.canadalife.com/job/Calgary-Alberta-Client-Experience-Specialist-Calgary-AB-T2H-1L9/1395234133/
 
 ## Relevant Jobs After Scoring
 - London, ON, CA +2 more… | score 12 | tier=adjacent_customer_facing_technical_fit | Digital Technology | https://jobs.canadalife.com/job/London-Solutions-Architect-ON/1404013933/
+- Toronto, ON, CA +2 more… | score 16 | tier=adjacent_customer_facing_technical_fit | Digital Technology | https://jobs.canadalife.com/job/Toronto-Solutions-Architect-%28API-&-Business-Automation%29-ON/1389627733/
+- London, ON, CA +2 more… | score 5 | tier=core_target_fit | Digital Technology | https://jobs.canadalife.com/job/London-Senior-Devops-Engineering-Specialist-ON/1400494133/
+- Toronto, ON, CA +2 more… | score 16 | tier=adjacent_customer_facing_technical_fit | Digital Technology | https://jobs.canadalife.com/job/Toronto-Solutions-Architect-%28Digital%29-ON/1397835133/
 
 ## Rejected But Interesting Jobs
 - None

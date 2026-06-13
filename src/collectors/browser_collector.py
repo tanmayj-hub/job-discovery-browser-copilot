@@ -15,6 +15,7 @@ from playwright.sync_api import Error as PlaywrightError
 from browser.extraction import (
     _wait_for_visible_bmo_job_links,
     apply_ibm_canada_filter,
+    apply_ntt_canada_filter,
     detect_bmo_canada_page_evidence,
     dismiss_cookie_banner,
     dismiss_ibm_language_prompt,
@@ -410,6 +411,19 @@ def collect_company_jobs(
                     confirmed=True,
                     method="ui_filter",
                     reason="IBM's public Canada facet was applied before pagination.",
+                    source_url_used=page.url or careers_url,
+                )
+                location_scope_used = True
+        if not source_scope_status.confirmed:
+            ntt_filter_query = apply_ntt_canada_filter(page, location_scope)
+            if ntt_filter_query:
+                location_queries.append(ntt_filter_query)
+                location_filter_method = "ntt_country_facet"
+                source_scope_status = _build_source_scope_status(
+                    status=SOURCE_SCOPE_CONFIRMED,
+                    confirmed=True,
+                    method="ui_filter",
+                    reason="NTT DATA's public Country facet was applied before pagination.",
                     source_url_used=page.url or careers_url,
                 )
                 location_scope_used = True
@@ -965,6 +979,8 @@ def _is_explicit_non_canada_location(location: str | None) -> bool:
     normalized = str(location or "").strip().lower()
     if not normalized:
         return False
+    if "any cgi location" in normalized and "canada" not in normalized:
+        return True
     if any(
         marker in normalized
         for marker in (

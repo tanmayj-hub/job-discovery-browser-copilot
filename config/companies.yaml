@@ -455,7 +455,7 @@ companies:
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://www.cgi.com/canada/en-ca/careers
+  careers_url: https://cgi.njoyn.com/CORP/xweb/xweb.asp?page=joblisting&CLID=21001&CountryID=CA&lang=1
 - name: Capgemini
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI
@@ -499,7 +499,7 @@ companies:
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://ca.nttdata.com/en/careers
+  careers_url: https://careers.services.global.ntt/global/en/search-results
 - name: Cognizant
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI

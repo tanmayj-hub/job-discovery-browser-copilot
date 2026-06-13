@@ -1124,6 +1124,16 @@ def test_workday_url_identity_normalizes_jr_suffix_variant() -> None:
     assert identity["workday_base_id"] == "JR26051632"
 
 
+def test_njoyn_url_identity_extracts_jobid_and_brid() -> None:
+    identity = _url_identity(
+        "https://cgi.njoyn.com/corp/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails"
+        "&Jobid=J0626-0210&BRID=1305099&lang=1"
+    )
+
+    assert identity["njoyn_job_id"] == "J0626-0210"
+    assert identity["njoyn_brid"] == "1305099"
+
+
 def test_compare_manual_expected_urls_matches_workday_id_despite_query_difference(
     tmp_path: Path,
 ) -> None:
@@ -1612,6 +1622,79 @@ def test_compare_manual_expected_urls_distinguishes_saved_rejected_and_missed(
         "extracted_but_rejected_by_scoring",
         "missed_by_collection",
     ]
+
+
+def test_compare_manual_expected_urls_matches_njoyn_jobid_despite_query_case(
+    tmp_path: Path,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    _write_csv(
+        tmp_path / "CGI-scored-candidates.csv",
+        [
+            "company",
+            "title",
+            "location",
+            "url",
+            "score",
+            "is_relevant",
+            "relevance_tier",
+            "matched_terms",
+            "reason",
+            "match_reasons",
+            "risk_flags",
+            "rejection_reason",
+            "description",
+            "source_mode",
+        ],
+        [
+            {
+                "company": "CGI",
+                "title": "Application Support Consultant",
+                "location": "Montreal, Quebec, Canada",
+                "url": (
+                    "https://cgi.njoyn.com/CORP/xweb/xweb.asp?Page=JobDetails&Jobid=J0626-0210"
+                    "&BRID=1305099&lang=1"
+                ),
+                "score": "12",
+                "is_relevant": "true",
+                "relevance_tier": "core_target_fit",
+                "matched_terms": "Support; Consultant",
+                "reason": "Saved as relevant.",
+                "match_reasons": "title matches target role: Support Engineer",
+                "risk_flags": "",
+                "rejection_reason": "",
+                "description": "",
+                "source_mode": "browser_allowed",
+            }
+        ],
+    )
+    fixture = [
+        {
+            "company_name": "CGI",
+            "manual_career_page": "https://cgi.njoyn.com/corp/xweb/xweb.asp?NTKN=c&clid=21001&Page=joblisting",
+            "manual_filter_used": "Canada",
+            "pages_checked": "first 10",
+            "expected_jobs": [
+                {
+                    "job_url": (
+                        "https://cgi.njoyn.com/corp/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails"
+                        "&Jobid=J0626-0210&BRID=1305099&lang=1"
+                    ),
+                    "title": "Application Support Consultant",
+                    "notes": "",
+                }
+            ],
+        }
+    ]
+
+    result = compare_manual_expected_urls(
+        connection,
+        companies=fixture,
+        scored_candidates_dir=tmp_path,
+    )
+
+    assert result["records"][0]["status"] == "extracted_and_relevant"
+    assert result["records"][0]["matched_title"] == "Application Support Consultant"
 
 
 def test_write_first_manual_url_audit_summary_includes_per_company_status_counts(

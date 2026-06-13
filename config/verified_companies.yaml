@@ -11,6 +11,18 @@ verified_companies:
     scope: Canada
     status: needs_review
     notes: "Trusted BMO collection now confirms Canada scope from visible search-result evidence on https://jobs.bmo.com/ca/en/search-results. A fresh production run on 2026-06-12 discovered 100 Canada-scoped candidates across the first 10 pages, saved 0 relevant jobs, and produced 0 suspicious saved rows. This matches the user's manual first-10-pages audit of no relevant roles, so BMO remains needs_review instead of being promoted into the verified-only slice."
+  - company_name: Canada Life
+    verified: true
+    verified_at: "2026-06-13"
+    scope: Canada
+    status: usable
+    notes: "Passed a fresh Canada-scoped run on 2026-06-13 from the official country-filtered search URL, with numeric pagination fixed, 87 discovered jobs across 4 pages, 4 relevant jobs after scoring, 0 explicit non-Canada saves, and 0 manual collection misses in the next-slice audit."
+  - company_name: CGI
+    verified: false
+    verified_at: "2026-06-13"
+    scope: Canada
+    status: needs_review
+    notes: "Trusted collection now starts from CGI's direct Canada Njoyn board and a fresh 2026-06-13 run discovered 51 candidates with 7 current relevant jobs after rejecting 1 non-Canada row. CGI remains needs_review because the next-slice manual audit still shows 12 unresolved manual URLs that were not reproduced by the current listing export."
   - company_name: IBM Consulting
     verified: true
     verified_at: "2026-06-12"
@@ -23,6 +35,12 @@ verified_companies:
     scope: Canada
     status: usable
     notes: "Passed fresh daily-run on 2026-06-12 from the official Canada-filtered Workday URL, with Canada scope confirmed before pagination, 144 discovered jobs, 9 relevant saved, and 0 non-Canada rejections. Manual next-slice audit showed 0 collection misses: 1 saved_by_mvp, 1 extracted_but_rejected_by_scoring, and 2 outside_scope."
+  - company_name: NTT DATA
+    verified: true
+    verified_at: "2026-06-13"
+    scope: Canada
+    status: usable
+    notes: "Passed a fresh 2026-06-13 run from the official NTT DATA search-results page after applying the public Country=Canada facet before pagination. The run discovered 78 candidates across 4 pages, saved 9 relevant jobs, and the next-slice manual audit matched all 4 expected URLs as extracted_and_relevant."
   - company_name: Sun Life
     verified: true
     verified_at: "2026-06-10"

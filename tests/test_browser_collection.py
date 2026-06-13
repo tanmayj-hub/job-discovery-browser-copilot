@@ -272,6 +272,12 @@ def test_url_uses_location_scope_supports_njoyn_country_id_canada_param() -> Non
     ) is True
 
 
+def test_url_uses_location_scope_supports_country_equals_ca_param() -> None:
+    assert _url_uses_location_scope(
+        "https://jobs.canadalife.com/search/?optionsFacetsDD_country=CA&startrow=25"
+    ) is True
+
+
 def test_initial_source_scope_status_detects_confirmed_workday_canada_url() -> None:
     status = _initial_source_scope_status(
         "https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs"
@@ -355,6 +361,37 @@ def test_apply_source_scope_job_safety_gate_rejects_bmo_enus_urls_without_locati
     assert [job["title"] for job in allowed_jobs] == ["Software Developer"]
     assert rejected_count == 1
     assert unknown_count == 1
+    assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]
+
+
+def test_apply_source_scope_job_safety_gate_rejects_cgi_any_location_without_canada() -> None:
+    source_scope = _build_source_scope_status(
+        status=SOURCE_SCOPE_CONFIRMED,
+        confirmed=True,
+        method="url_filter",
+        reason="Canada URL confirmed.",
+        source_url_used="https://cgi.njoyn.com/CORP/xweb/xweb.asp?page=joblisting&CountryID=CA",
+    )
+    rejected_job = {
+        "title": "Azure DevOps / Cloud Infrastructure Engineer (Azure)",
+        "location": "Warsaw, Any CGI location",
+        "risk_flags": [],
+    }
+    allowed_jobs, rejected_count, unknown_count = _apply_source_scope_job_safety_gate(
+        [
+            rejected_job,
+            {
+                "title": "Control-M System Administrator",
+                "location": "Toronto, Canada",
+                "job_url": "https://cgi.njoyn.com/CORP/xweb/xweb.asp?Jobid=J0426-1288",
+            },
+        ],
+        source_scope_status=source_scope,
+    )
+
+    assert [job["title"] for job in allowed_jobs] == ["Control-M System Administrator"]
+    assert rejected_count == 1
+    assert unknown_count == 0
     assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]
 
 
@@ -524,3 +561,58 @@ def test_collect_company_jobs_confirms_bmo_scope_from_page_evidence(
     assert result["status"] == "completed"
     assert result["source_scope_confirmed"] is True
     assert result["source_scope_method"] == "page_evidence"
+
+
+def test_collect_company_jobs_confirms_ntt_scope_from_country_facet(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    company = _browser_company(
+        name="NTT DATA",
+        careers_url="https://careers.services.global.ntt/global/en/search-results",
+    )
+    upsert_companies(connection, [company])
+
+    monkeypatch.setattr("collectors.browser_collector.dismiss_cookie_banner", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.dismiss_ibm_language_prompt",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.navigate_to_job_search_page",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.detect_browser_barriers",
+        lambda **kwargs: [],
+    )
+    monkeypatch.setattr("collectors.browser_collector.find_search_input", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.apply_ntt_canada_filter",
+        lambda page, location_scope: "Canada (NTT country facet)",
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.extract_visible_job_cards_with_diagnostics",
+        lambda *args, **kwargs: (
+            [],
+            SimpleNamespace(
+                pagination_detected=False,
+                pagination_stop_reason="no_jobs_found",
+                pages_visited=["https://careers.services.global.ntt/global/en/search-results"],
+                jobs_extracted_per_page=[0],
+                page_html_snapshots=[],
+            ),
+        ),
+    )
+
+    result = collect_company_jobs(
+        connection,
+        company=company,
+        page=_FakePage(str(company["careers_url"])),
+    )
+
+    assert result["status"] == "completed"
+    assert result["source_scope_confirmed"] is True
+    assert result["source_scope_method"] == "ui_filter"
+    assert result["location_filter_method"] == "ntt_country_facet"

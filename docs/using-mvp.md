@@ -47,8 +47,11 @@ streamlit run src/dashboard/app.py
 ## Current Verified Company Status
 - Aviva Canada: verified, usable
 - BMO: needs_review (Canada-scoped collection fixed, but latest trusted run saved 0 relevant jobs)
+- Canada Life: verified, usable
+- CGI: needs_review (direct Canada board fixed, but manual recall is still unresolved)
 - IBM Consulting: verified, usable
 - Manulife: verified, usable
+- NTT DATA: verified, usable
 - Sun Life: verified, usable
 
 Only companies marked `verified: true` and `status: usable` are included in
@@ -60,6 +63,15 @@ For example, BMO now has a trusted Canada-scoped collection flow, but it still
 stays outside the verified-only slice because the latest trusted run saved `0`
 relevant jobs and currently serves as a clean audit signal rather than a
 trusted daily source of target-fit openings.
+
+Canada Life and NTT DATA are now part of the verified-only slice because both
+sources completed fresh Canada-scoped runs on 2026-06-13 and cleared their
+current manual next-slice checks without active collection misses.
+
+CGI now uses the direct Canada Njoyn board instead of the broad CGI landing
+page, but it still stays outside the verified-only slice because the current
+manual next-slice audit has unresolved URL recall gaps even after the source
+fixes.
 
 ## Trusted Run Rule
 Trusted MVP runs do not start from a broad/global careers listing and then rely

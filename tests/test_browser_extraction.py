@@ -4,6 +4,7 @@ from pathlib import Path
 
 from browser.extraction import (
     apply_ibm_canada_filter,
+    apply_ntt_canada_filter,
     detect_bmo_canada_page_evidence,
     dismiss_cookie_banner,
     dismiss_ibm_language_prompt,
@@ -394,6 +395,43 @@ class FakeIbmModalPage:
 
     def advance(self) -> None:
         return None
+
+
+class FakeNttCheckboxLocatorItem(FakeCheckboxLocatorItem):
+    def check(self, force: bool = False) -> None:  # noqa: ARG002
+        self.checked = True
+        self.page.filtered = True
+
+
+class FakeNttFilterPage:
+    def __init__(self) -> None:
+        self._url = "https://careers.services.global.ntt/global/en/search-results"
+        self.country_button = FakeLocatorItem(self, "Country")
+        self.canada = FakeNttCheckboxLocatorItem(self, "Canada")
+        self.filtered = False
+
+    @property
+    def url(self) -> str:
+        return self._url
+
+    def locator(self, selector: str):
+        mapping = {
+            "button:has-text('Country')": [self.country_button],
+            "input[name^='country_phs_'][aria-label*='Canada' i]": [self.canada],
+            "input[type='checkbox'][aria-label*='Canada' i]": [self.canada],
+        }
+        return FakeLocatorCollection(mapping.get(selector, []))
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def advance(self) -> None:
+        return None
+
+    def evaluate(self, script: str):
+        if 'a.au-target[href*="/job/"]' in script:
+            return 3 if self.filtered else 0
+        return []
 
 
 class FakeDenseIbmPaginationPage:
@@ -817,6 +855,80 @@ def test_extract_visible_job_cards_handles_ibm_dense_pagination_no_new_job_ids()
     assert diagnostics.pagination_stop_reason == "no_new_job_urls"
 
 
+class FakeCanadaLifePaginationPage:
+    def __init__(self, urls: list[str], html_pages: list[str]) -> None:
+        self.urls = urls
+        self.html_pages = html_pages
+        self.index = 0
+        self.next_item = FakeMultiPageLocatorItem(self, "Page 2", "/search?startrow=25")
+
+    @property
+    def url(self) -> str:
+        return self.urls[self.index]
+
+    def content(self) -> str:
+        return self.html_pages[self.index]
+
+    def locator(self, selector: str):
+        if selector == "li.active + li a[title^='Page ']":
+            if self.index < len(self.html_pages) - 1:
+                return FakeLocatorCollection([self.next_item])
+            return FakeLocatorCollection([])
+        if selector == "button, a, [role='button']":
+            return FakeLocatorCollection([])
+        if selector == "body":
+            return FakeBodyLocator("Canada Life jobs")
+        return FakeLocatorCollection([])
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def advance(self) -> None:
+        if self.index < len(self.html_pages) - 1:
+            self.index += 1
+
+
+def test_extract_visible_job_cards_handles_canada_life_numeric_pagination() -> None:
+    page1 = """
+    <main>
+      <article>
+        <a href="/job/London-Solutions-Architect-ON/1404013933/">Solutions Architect</a>
+      </article>
+    </main>
+    """
+    page2 = """
+    <main>
+      <article>
+        <a href="/job/London-Senior-Devops-Engineering-Specialist-ON/1400494133/">
+          Senior Devops Engineering Specialist
+        </a>
+      </article>
+    </main>
+    """
+    page = FakeCanadaLifePaginationPage(
+        urls=[
+            "https://jobs.canadalife.com/search/?optionsFacetsDD_country=CA",
+            "https://jobs.canadalife.com/search/?optionsFacetsDD_country=CA&startrow=25",
+        ],
+        html_pages=[page1, page2],
+    )
+
+    jobs, diagnostics = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name="Canada Life",
+        source_name="Canada Life",
+        source_mode="browser_allowed",
+        max_cards=20,
+        max_pages=2,
+    )
+
+    titles = {job["title"] for job in jobs}
+
+    assert titles == {"Solutions Architect", "Senior Devops Engineering Specialist"}
+    assert diagnostics.pagination_detected is True
+    assert diagnostics.jobs_extracted_per_page == [1, 1]
+
+
 def test_extract_visible_job_cards_uses_visible_bmo_rows_across_pages() -> None:
     page = FakeMultiPageBmoVisible(
         urls=[
@@ -984,6 +1096,15 @@ def test_ibm_helpers_return_none_safely_when_page_is_not_ibm() -> None:
     assert apply_ibm_canada_filter(page, ("Canada",)) is None
 
 
+def test_ntt_helper_applies_canada_country_facet() -> None:
+    page = FakeNttFilterPage()
+
+    filter_action = apply_ntt_canada_filter(page, ("Canada",))
+
+    assert filter_action == "Canada (NTT country facet)"
+    assert page.canada.is_checked() is True
+
+
 def test_has_interactive_job_cards_detects_live_view_job_elements() -> None:
     page = FakeInteractivePage()
 
@@ -1065,6 +1186,28 @@ def test_extract_jobs_from_html_skips_empty_state_job_board_shell() -> None:
         source_name="company-careers",
         source_mode="browser_allowed",
         base_url="https://careers.example.com",
+    )
+
+    assert jobs == []
+
+
+def test_extract_jobs_from_html_skips_view_job_details_shell_links() -> None:
+    html = """
+    <main>
+      <article>
+        <a href="https://cgi.njoyn.com/CORP/xweb/XWeb.asp?NTKN=c&Page=JobDetails&Jobid=J0626-0210">
+          View Job Details
+        </a>
+      </article>
+    </main>
+    """
+
+    jobs = extract_jobs_from_html(
+        html,
+        company_name="CGI",
+        source_name="CGI",
+        source_mode="browser_allowed",
+        base_url="https://cgi.njoyn.com/CORP/xweb/xweb.asp?page=joblisting",
     )
 
     assert jobs == []

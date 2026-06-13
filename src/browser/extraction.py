@@ -164,6 +164,7 @@ GENERIC_NON_JOB_TITLES = (
     "search results",
     "job search",
     "careers home",
+    "view job details",
     "view all jobs",
     "all jobs",
     "departments",
@@ -335,6 +336,13 @@ def is_bmo_careers_search_url(url: str) -> bool:
 
     parsed = urlparse(str(url or "").strip().lower())
     return parsed.netloc == "jobs.bmo.com" and "/search-results" in parsed.path
+
+
+def is_ntt_careers_search_url(url: str) -> bool:
+    """Return True when the URL is NTT DATA's public search-results page."""
+
+    parsed = urlparse(str(url or "").strip().lower())
+    return parsed.netloc == "careers.services.global.ntt" and "/search-results" in parsed.path
 
 
 def detect_bmo_canada_page_evidence(page: Page) -> dict[str, Any] | None:
@@ -538,6 +546,91 @@ def apply_ibm_canada_filter(
                     or "field_keyword_05%5b0%5d=canada" in current_url.lower()
                 ):
                     return "Canada (IBM location facet)"
+        except Exception:  # noqa: BLE001
+            continue
+    return None
+
+
+def _count_visible_ntt_job_links(page: Page) -> int:
+    """Return the count of visible NTT DATA result links on the current page."""
+
+    if not is_ntt_careers_search_url(page.url):
+        return 0
+
+    try:
+        count = page.evaluate(
+            """
+            () => {
+              const visible = (element) => {
+                if (!element || typeof element.getBoundingClientRect !== 'function') return false;
+                const style = window.getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return style.display !== 'none'
+                  && style.visibility !== 'hidden'
+                  && rect.width > 0
+                  && rect.height > 0;
+              };
+
+              return Array.from(
+                document.querySelectorAll('a.au-target[href*="/job/"]')
+              ).filter((node) => visible(node)).length;
+            }
+            """,
+        )
+    except Exception:  # noqa: BLE001
+        return 0
+
+    try:
+        return int(count or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def apply_ntt_canada_filter(
+    page: Page,
+    location_scope: Iterable[str],
+) -> str | None:
+    """Apply NTT DATA's public Canada country facet when the page exposes it."""
+
+    if not is_ntt_careers_search_url(page.url):
+        return None
+    normalized_scope = {
+        str(item).strip().lower() for item in location_scope if str(item).strip()
+    }
+    if "canada" not in normalized_scope:
+        return None
+
+    try:
+        country_button = page.locator("button:has-text('Country')").first
+        if country_button.is_visible():
+            country_button.click()
+            page.wait_for_timeout(500)
+    except Exception:  # noqa: BLE001
+        return None
+
+    selectors = (
+        "input[name^='country_phs_'][aria-label*='Canada' i]",
+        "input[type='checkbox'][aria-label*='Canada' i]",
+    )
+    for selector in selectors:
+        locator = page.locator(selector)
+        if locator.count() == 0 or not locator.first.is_visible():
+            continue
+        checkbox = locator.first
+        try:
+            if hasattr(checkbox, "is_checked") and checkbox.is_checked():
+                return "Canada (NTT country facet)"
+            if hasattr(checkbox, "check"):
+                checkbox.check(force=True)
+            else:
+                checkbox.click(force=True)
+            for _ in range(10):
+                page.wait_for_timeout(500)
+                is_checked = hasattr(checkbox, "is_checked") and checkbox.is_checked()
+                if is_checked and _count_visible_ntt_job_links(page) > 0:
+                    return "Canada (NTT country facet)"
+            if hasattr(checkbox, "is_checked") and checkbox.is_checked():
+                return "Canada (NTT country facet)"
         except Exception:  # noqa: BLE001
             continue
     return None
@@ -1720,9 +1813,12 @@ def dismiss_cookie_banner(page: Page) -> str | None:
         for selector in direct_selectors:
             locator = page.locator(selector)
             if locator.count() > 0 and locator.first.is_visible():
-                locator.first.click()
-                page.wait_for_timeout(1_000)
-                return selector
+                try:
+                    locator.first.click()
+                    page.wait_for_timeout(1_000)
+                    return selector
+                except Exception:  # noqa: BLE001
+                    continue
         if attempt < 5:
             page.wait_for_timeout(500)
 
@@ -1736,9 +1832,12 @@ def dismiss_cookie_banner(page: Page) -> str | None:
                 continue
             label = _safe_locator_inner_text(candidate).lower()
             if label in COOKIE_ACCEPT_TEXT_HINTS:
-                candidate.click()
-                page.wait_for_timeout(1_000)
-                return label
+                try:
+                    candidate.click()
+                    page.wait_for_timeout(1_000)
+                    return label
+                except Exception:  # noqa: BLE001
+                    continue
 
     result = page.evaluate(
         """
@@ -1822,6 +1921,8 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
         "[aria-label='Next']",
         "button[aria-label*='Next' i]",
         "a[aria-label*='Next' i]",
+        "li.active + li a[title^='Page ']",
+        "li.active + li a[href*='startrow=']",
     )
     for selector in priority_selectors:
         locator = page.locator(selector)

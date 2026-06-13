@@ -100,6 +100,10 @@ MANUAL_URL_AUDIT_STATUSES = {
     "extracted_but_rejected_by_scoring",
     "missed_by_collection",
     "outside_scope",
+    "inactive_or_expired",
+    "active_but_not_in_current_listing",
+    "outside_current_listing_scope",
+    "manual_intervention_required",
     "blocked_or_not_tested",
     "unknown",
 }
@@ -108,6 +112,10 @@ MANUAL_URL_AUDIT_STATUS_ORDER = [
     "extracted_and_relevant",
     "extracted_but_rejected_by_scoring",
     "outside_scope",
+    "inactive_or_expired",
+    "active_but_not_in_current_listing",
+    "outside_current_listing_scope",
+    "manual_intervention_required",
     "missed_by_collection",
     "blocked_or_not_tested",
     "unknown",
@@ -1040,6 +1048,22 @@ def _manual_identity_markers(manual_identity: dict[str, str]) -> list[str]:
         )
     if manual_identity["workday_job_id"]:
         markers.append(manual_identity["workday_job_id"])
+    if manual_identity["njoyn_job_id"]:
+        markers.extend(
+            [
+                f"Jobid={manual_identity['njoyn_job_id']}",
+                f"jobid={manual_identity['njoyn_job_id']}",
+                manual_identity["njoyn_job_id"],
+            ]
+        )
+    if manual_identity["njoyn_brid"]:
+        markers.extend(
+            [
+                f"BRID={manual_identity['njoyn_brid']}",
+                f"brid={manual_identity['njoyn_brid']}",
+                manual_identity["njoyn_brid"],
+            ]
+        )
     canonical_url = manual_identity["canonical_url"]
     if canonical_url:
         markers.append(canonical_url)
@@ -1697,12 +1721,19 @@ def _url_identity(url: str) -> dict[str, str]:
 
     parsed = urlparse(str(url or "").strip())
     query = parse_qs(parsed.query)
+    query_lower = {str(key).lower(): value for key, value in query.items()}
     ibm_job_id = ""
-    if query.get("jobId"):
-        ibm_job_id = str(query["jobId"][0]).strip()
+    if query_lower.get("jobid"):
+        ibm_job_id = str(query_lower["jobid"][0]).strip()
     workday_match = re.search(r"(R_\d+(?:-\d+)?|JR\d+(?:-\d+)?)", str(url or ""), re.I)
     workday_id = workday_match.group(1).upper() if workday_match else ""
     workday_base_id = re.sub(r"-\d+$", "", workday_id) if workday_id else ""
+    njoyn_job_id = ""
+    if query_lower.get("jobid"):
+        njoyn_job_id = str(query_lower["jobid"][0]).strip().upper()
+    njoyn_brid = ""
+    if query_lower.get("brid"):
+        njoyn_brid = str(query_lower["brid"][0]).strip()
     canonical = ""
     if parsed.scheme and parsed.netloc:
         canonical = (
@@ -1712,19 +1743,34 @@ def _url_identity(url: str) -> dict[str, str]:
         "ibm_job_id": ibm_job_id,
         "workday_job_id": workday_id,
         "workday_base_id": workday_base_id,
+        "njoyn_job_id": njoyn_job_id,
+        "njoyn_brid": njoyn_brid,
         "canonical_url": canonical,
     }
 
 
 def _url_identities_match(left: dict[str, str], right: dict[str, str]) -> bool:
-    if left["ibm_job_id"] and right["ibm_job_id"]:
-        return left["ibm_job_id"] == right["ibm_job_id"]
-    if left["workday_job_id"] and right["workday_job_id"]:
+    if left["ibm_job_id"] or right["ibm_job_id"]:
+        return bool(left["ibm_job_id"] and left["ibm_job_id"] == right["ibm_job_id"])
+    if left["workday_job_id"] or right["workday_job_id"]:
+        if not (left["workday_job_id"] and right["workday_job_id"]):
+            return False
         return (
             left["workday_job_id"] == right["workday_job_id"]
             or bool(left["workday_base_id"])
             and left["workday_base_id"] == right["workday_base_id"]
         )
+    if (
+        left["njoyn_job_id"]
+        or right["njoyn_job_id"]
+        or left["njoyn_brid"]
+        or right["njoyn_brid"]
+    ):
+        if left["njoyn_job_id"] and right["njoyn_job_id"]:
+            return left["njoyn_job_id"] == right["njoyn_job_id"]
+        if left["njoyn_brid"] and right["njoyn_brid"]:
+            return left["njoyn_brid"] == right["njoyn_brid"]
+        return False
     return bool(left["canonical_url"] and left["canonical_url"] == right["canonical_url"])
 
 
