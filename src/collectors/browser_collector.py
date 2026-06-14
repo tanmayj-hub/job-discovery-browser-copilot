@@ -940,6 +940,7 @@ def _url_uses_location_scope(url: str) -> bool:
     return (
         "locationcountry=" in normalized
         or "location_country=" in normalized
+        or "locationsearch=canada" in normalized
         or "field_keyword_05[0]=canada" in normalized
         or "field_keyword_05%5b0%5d=canada" in normalized
         or "country=ca" in normalized

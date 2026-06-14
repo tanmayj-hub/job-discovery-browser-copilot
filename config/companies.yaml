@@ -21,7 +21,7 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://jobs.rbc.com/en
+  careers_url: https://jobs.rbc.com/ca/en/search-results?from=140&s=1
 - name: TD
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -68,7 +68,7 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://www.scotiabank.com/careers/en/careers.html
+  careers_url: https://jobs.scotiabank.com/search/?createNewAlert=false&q=&locationsearch=canada
 - name: BMO
   sector: Banking & Capital Markets
   category: Bank/Market

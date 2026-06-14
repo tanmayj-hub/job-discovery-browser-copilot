@@ -54,3 +54,21 @@ verified_companies:
     scope: Canada
     status: usable
     notes: "Passed fresh daily-run and manual URL recall audit. Collection misses: 0. Some roles remain outside current scoring scope."
+  - company_name: TD
+    verified: true
+    verified_at: "2026-06-14"
+    scope: Canada
+    status: usable
+    notes: "Promoted after the direct Canada-filtered Workday URL trusted run completed with 182 discovered candidates, 9 relevant saves, and a clean current bank-slice manual URL audit of 3/3 saved_by_mvp."
+  - company_name: RBC
+    verified: false
+    verified_at: "2026-06-14"
+    scope: Canada
+    status: needs_review
+    notes: "The direct official search-results URL now collects 100 candidates across 10 pages in diagnostic mode, but the trusted run still cannot confirm Canada-only scope before pagination. The current manual bank-slice audit remains 0/4 with all expected URLs missed by collection."
+  - company_name: Scotiabank
+    verified: false
+    verified_at: "2026-06-14"
+    scope: Canada
+    status: needs_review
+    notes: "The direct official Canada-filtered search URL is now trusted and stable, with 258 discovered candidates and 6 relevant saves across 10 pages, but the current manual bank-slice audit remains incomplete at 1/5 matched and 4/5 missed by collection."

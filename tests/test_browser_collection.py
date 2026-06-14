@@ -285,6 +285,12 @@ def test_url_uses_location_scope_supports_country_equals_ca_param() -> None:
     ) is True
 
 
+def test_url_uses_location_scope_supports_scotiabank_locationsearch_canada() -> None:
+    assert _url_uses_location_scope(
+        "https://jobs.scotiabank.com/search/?createNewAlert=false&q=&locationsearch=canada"
+    ) is True
+
+
 def test_initial_source_scope_status_detects_confirmed_workday_canada_url() -> None:
     status = _initial_source_scope_status(
         "https://manulife.wd3.myworkdayjobs.com/en-US/MFCJH_Jobs"
@@ -302,6 +308,16 @@ def test_initial_source_scope_status_marks_bmo_locale_url_unconfirmed() -> None:
     assert status.confirmed is False
     assert status.status == "canada_scope_unconfirmed"
     assert status.method == "manual_audit_url"
+
+
+def test_initial_source_scope_status_detects_confirmed_scotiabank_canada_url() -> None:
+    status = _initial_source_scope_status(
+        "https://jobs.scotiabank.com/search/?createNewAlert=false&q=&locationsearch=canada"
+    )
+
+    assert status.confirmed is True
+    assert status.status == "canada_scope_confirmed"
+    assert status.method == "url_filter"
 
 
 def test_initial_source_scope_status_marks_broad_listing_unconfirmed() -> None:
