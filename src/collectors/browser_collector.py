@@ -10,6 +10,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 import yaml
+from bs4 import BeautifulSoup
 from playwright.sync_api import Error as PlaywrightError
 
 from browser.extraction import (
@@ -56,6 +57,36 @@ SOURCE_SCOPE_UNCONFIRMED = "canada_scope_unconfirmed"
 SOURCE_SCOPE_NEEDS_USER_URL = "needs_user_canada_url"
 SOURCE_SCOPE_FILTER_BLOCKED = "filter_blocked"
 SOURCE_SCOPE_MANUAL_INTERVENTION = "manual_intervention_required"
+CANADIAN_LOCATION_HINTS = (
+    "alberta",
+    "british columbia",
+    "calgary",
+    "canada",
+    "edmonton",
+    "halifax",
+    "manitoba",
+    "montreal",
+    "montréal",
+    "new brunswick",
+    "newfoundland",
+    "nova scotia",
+    "northwest territories",
+    "nunavut",
+    "ontario",
+    "prince edward",
+    "quebec",
+    "québec",
+    "regina",
+    "saskatchewan",
+    "saint-georges",
+    "st. john",
+    "st. john's",
+    "toronto",
+    "vancouver",
+    "victoria",
+    "winnipeg",
+    "yukon",
+)
 US_STATE_ABBREVIATIONS = (
     "AL",
     "AK",
@@ -281,7 +312,7 @@ def collect_company_jobs(
     careers_url = str(company.get("careers_url") or "").strip()
     location_scope = location_scope_override or load_source_scope_locations()
     max_pages_per_source = max_pages_per_source_override or load_browser_max_pages_per_source()
-    max_cards_per_source = max(20, max_pages_per_source * 20)
+    max_cards_per_source = _compute_max_cards_per_source(max_pages_per_source)
 
     classification = classify_source(
         {
@@ -446,6 +477,23 @@ def collect_company_jobs(
                     or (
                         "BMO's visible results page showed an active Canada filter and "
                         "Canada-only visible job links."
+                    ),
+                    source_url_used=page.url or careers_url,
+                )
+                location_scope_used = True
+        if not source_scope_status.confirmed:
+            national_bank_evidence = _detect_national_bank_canada_page_evidence(page)
+            if national_bank_evidence:
+                location_queries.append("Canada (National Bank page evidence)")
+                location_filter_method = "national_bank_page_evidence"
+                source_scope_status = _build_source_scope_status(
+                    status=SOURCE_SCOPE_CONFIRMED,
+                    confirmed=True,
+                    method=str(national_bank_evidence.get("method") or "page_evidence"),
+                    reason=str(national_bank_evidence.get("reason") or "").strip()
+                    or (
+                        "National Bank's public Canada careers board showed Canadian "
+                        "job locations before pagination."
                     ),
                     source_url_used=page.url or careers_url,
                 )
@@ -1000,6 +1048,56 @@ def _is_explicit_non_canada_job_url(job_url: str | None) -> bool:
     return "jobs.bmo.com" in normalized and "externalenus" in normalized
 
 
+def _detect_national_bank_canada_page_evidence(page) -> dict[str, str] | None:
+    parsed = urlparse(str(page.url or "").strip())
+    hostname = parsed.netloc.lower()
+    path = parsed.path.lower()
+    if "emplois.bnc.ca" not in hostname or "/careers/searchjobs" not in path:
+        return None
+
+    soup = BeautifulSoup(page.content(), "html.parser")
+    location_cells = [
+        _clean_location_text(cell.get_text(" ", strip=True))
+        for cell in soup.select("td[data-th*='Location']")
+    ]
+    visible_locations = [location for location in location_cells if location]
+    if len(visible_locations) < 3:
+        return None
+    if any(
+        _looks_explicitly_non_canadian_visible_location(location)
+        for location in visible_locations
+    ):
+        return None
+    if not any(_looks_canadian_visible_location(location) for location in visible_locations):
+        return None
+    return {
+        "confirmed": "true",
+        "method": "page_evidence",
+        "reason": (
+            "National Bank's public search-results page exposed Canadian job locations "
+            "before pagination without requiring a hidden location search workaround."
+        ),
+    }
+
+
+def _clean_location_text(value: str | None) -> str:
+    return " ".join(str(value or "").strip().split())
+
+
+def _looks_canadian_visible_location(location: str) -> bool:
+    normalized = str(location or "").strip().lower()
+    return any(hint in normalized for hint in CANADIAN_LOCATION_HINTS)
+
+
+def _looks_explicitly_non_canadian_visible_location(location: str) -> bool:
+    normalized = str(location or "").strip().lower()
+    if not normalized:
+        return False
+    if any(marker in normalized for marker in ("united states", "usa", "new york")):
+        return True
+    return bool(US_CITY_STATE_PATTERN.search(normalized))
+
+
 def _apply_source_scope_job_safety_gate(
     jobs: list[dict[str, Any]],
     *,
@@ -1050,3 +1148,9 @@ def _dedupe_collected_jobs(jobs: list[dict[str, Any]]) -> list[dict[str, Any]]:
             seen_fallbacks.add(fallback)
         deduped.append(job)
     return deduped
+
+
+def _compute_max_cards_per_source(max_pages_per_source: int) -> int:
+    """Size the per-source candidate cap to fit dense public boards safely."""
+
+    return max(100, max_pages_per_source * 60)

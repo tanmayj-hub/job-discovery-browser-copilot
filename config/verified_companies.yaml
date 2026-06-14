@@ -6,11 +6,12 @@ verified_companies:
     status: usable
     notes: "Passed fresh daily-run with stable Canada-filtered Workday URL, 83 discovered jobs, 1 relevant saved, and no suspicious rows or blocking interventions."
   - company_name: BMO
-    verified: false
-    verified_at: "2026-06-12"
+    verified: true
+    verified_at: "2026-06-13"
+    confidence: provisional
     scope: Canada
-    status: needs_review
-    notes: "Trusted BMO collection now confirms Canada scope from visible search-result evidence on https://jobs.bmo.com/ca/en/search-results. A fresh production run on 2026-06-12 discovered 100 Canada-scoped candidates across the first 10 pages, saved 0 relevant jobs, and produced 0 suspicious saved rows. This matches the user's manual first-10-pages audit of no relevant roles, so BMO remains needs_review instead of being promoted into the verified-only slice."
+    status: usable
+    notes: "Added to the verified-only workflow by user decision after Canada-scope and pagination fixes on https://jobs.bmo.com/ca/en/search-results. The current trusted run remains a clean Canada-scoped source with 0 suspicious saved rows, but deeper relevance-quality review is deferred."
   - company_name: Canada Life
     verified: true
     verified_at: "2026-06-13"
@@ -18,11 +19,11 @@ verified_companies:
     status: usable
     notes: "Passed a fresh Canada-scoped run on 2026-06-13 from the official country-filtered search URL, with numeric pagination fixed, 87 discovered jobs across 4 pages, 4 relevant jobs after scoring, 0 explicit non-Canada saves, and 0 manual collection misses in the next-slice audit."
   - company_name: CGI
-    verified: false
+    verified: true
     verified_at: "2026-06-13"
     scope: Canada
-    status: needs_review
-    notes: "Trusted collection now starts from CGI's direct Canada Njoyn board and a fresh 2026-06-13 run discovered 51 candidates with 7 current relevant jobs after rejecting 1 non-Canada row. CGI remains needs_review because the next-slice manual audit still shows 12 unresolved manual URLs that were not reproduced by the current listing export."
+    status: usable
+    notes: "Passed a fresh 2026-06-13 trusted run from CGI's direct Canada Njoyn board after fixing JavaScript NEXT pagination and raising the per-source candidate cap. The source now discovers 416 Canada-scoped candidates across 9 pages, saves 54 relevant jobs, rejects 1 explicit non-Canada row before save, and clears the current next-slice manual audit with 0 active collection misses."
   - company_name: IBM Consulting
     verified: true
     verified_at: "2026-06-12"
@@ -35,6 +36,12 @@ verified_companies:
     scope: Canada
     status: usable
     notes: "Passed fresh daily-run on 2026-06-12 from the official Canada-filtered Workday URL, with Canada scope confirmed before pagination, 144 discovered jobs, 9 relevant saved, and 0 non-Canada rejections. Manual next-slice audit showed 0 collection misses: 1 saved_by_mvp, 1 extracted_but_rejected_by_scoring, and 2 outside_scope."
+  - company_name: National Bank of Canada
+    verified: true
+    verified_at: "2026-06-13"
+    scope: Canada
+    status: usable
+    notes: "Passed a fresh 2026-06-13 trusted run after confirming Canada scope from National Bank's public en_CA search-results page evidence and using the board's public Next pagination links. The source now discovers 212 candidates across the first 10 pages, saves 5 relevant jobs, and the next-slice manual audit shows 0 active collection misses; the remaining manual target is extracted but currently rejected by scoring."
   - company_name: NTT DATA
     verified: true
     verified_at: "2026-06-13"

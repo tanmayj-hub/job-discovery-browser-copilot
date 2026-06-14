@@ -899,6 +899,58 @@ def test_write_company_collection_diagnostic_exports_relevant_and_rejected_candi
     assert {row["is_relevant"] for row in exported_rows} == {"true", "false"}
 
 
+def test_company_collection_diagnostic_keeps_ready_status_after_non_canada_rejection(
+    tmp_path: Path,
+) -> None:
+    output_path = tmp_path / "docs" / "audits" / "CGI-collection-diagnostic.md"
+    company = {
+        "name": "CGI",
+        "careers_url": "https://cgi.njoyn.com/CORP/xweb/xweb.asp?page=joblisting&CLID=21001&CountryID=CA&lang=1",
+        "source_mode": "browser_allowed",
+    }
+    collection_result = {
+        "starting_url": company["careers_url"],
+        "final_url": "https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=joblisting",
+        "source_mode": "browser_allowed",
+        "source_url_used": company["careers_url"],
+        "source_scope_status": "canada_scope_confirmed",
+        "source_scope_confirmed": True,
+        "source_scope_method": "url_filter",
+        "source_scope_reason": "The source URL contains an explicit Canada filter signal.",
+        "broad_diagnostic_collection": False,
+        "location_scope_used": True,
+        "location_scope": ["Canada"],
+        "location_queries": ["Canada (URL filter)"],
+        "location_filter_method": "url_filter",
+        "pagination_detected": True,
+        "max_pages_per_source": 10,
+        "pages_visited": [company["careers_url"]],
+        "jobs_extracted_per_page": [50],
+        "page_html_snapshots": [],
+        "pagination_stop_reason": "next_disabled_or_missing",
+        "jobs_discovered": 50,
+        "jobs_scored": 50,
+        "jobs_relevant": 5,
+        "non_canada_rejected": 1,
+        "unknown_location_relevant": 0,
+        "candidate_jobs": [],
+        "scored_jobs": [],
+        "relevant_jobs": [],
+    }
+
+    write_company_collection_diagnostic(
+        output_path=output_path,
+        company=company,
+        collection_result=collection_result,
+        manual_expected_jobs=[],
+    )
+
+    content = output_path.read_text(encoding="utf-8")
+
+    assert "- Decision: ready_for_verified_review" in content
+    assert "safety gate rejected explicit out-of-scope rows" in content
+
+
 def test_write_company_collection_diagnostic_reports_manual_ibm_raw_html_anchor_coverage(
     tmp_path: Path,
 ) -> None:

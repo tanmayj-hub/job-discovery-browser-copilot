@@ -30,11 +30,20 @@ def _ibm_job_article(job_id: str) -> str:
 
 
 class FakeLocatorItem:
-    def __init__(self, page, label: str, href: str | None = None, *, enabled: bool = True) -> None:
+    def __init__(
+        self,
+        page,
+        label: str,
+        href: str | None = None,
+        *,
+        enabled: bool = True,
+        onclick: str | None = None,
+    ) -> None:
         self.page = page
         self.label = label
         self.href = href
         self.enabled = enabled
+        self.onclick = onclick
 
     def is_visible(self) -> bool:
         return True
@@ -48,6 +57,8 @@ class FakeLocatorItem:
     def get_attribute(self, name: str) -> str | None:
         if name == "href":
             return self.href
+        if name == "onclick":
+            return self.onclick
         return None
 
     def click(self) -> None:
@@ -888,6 +899,38 @@ class FakeCanadaLifePaginationPage:
             self.index += 1
 
 
+class FakeNjoynJavascriptPaginationPage:
+    def __init__(self, urls: list[str], html_pages: list[str]) -> None:
+        self.urls = urls
+        self.html_pages = html_pages
+        self.index = 0
+
+    @property
+    def url(self) -> str:
+        return self.urls[self.index]
+
+    def content(self) -> str:
+        return self.html_pages[self.index]
+
+    def locator(self, selector: str):
+        if selector == "button, a, [role='button']":
+            if self.index < len(self.html_pages) - 1:
+                return FakeLocatorCollection(
+                    [FakeLocatorItem(self, "NEXT", "javascript:gotopage(2)")]
+                )
+            return FakeLocatorCollection([])
+        if selector == "body":
+            return FakeBodyLocator("CGI jobs")
+        return FakeLocatorCollection([])
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def advance(self) -> None:
+        if self.index < len(self.html_pages) - 1:
+            self.index += 1
+
+
 def test_extract_visible_job_cards_handles_canada_life_numeric_pagination() -> None:
     page1 = """
     <main>
@@ -927,6 +970,64 @@ def test_extract_visible_job_cards_handles_canada_life_numeric_pagination() -> N
     assert titles == {"Solutions Architect", "Senior Devops Engineering Specialist"}
     assert diagnostics.pagination_detected is True
     assert diagnostics.jobs_extracted_per_page == [1, 1]
+
+
+def test_extract_visible_job_cards_handles_njoyn_javascript_next_pagination() -> None:
+    page1 = """
+    <main>
+      <table>
+        <tr>
+          <th>Position ID</th><th>Title</th><th>Category</th><th>City</th><th>Country</th>
+        </tr>
+        <tr>
+          <td><a href="xweb.asp?Page=JobDetails&Jobid=J0426-1288&BRID=1291363">J0426-1288</a></td>
+          <td>Control-M System Administrator</td>
+          <td>ERP/CRM/Tools</td>
+          <td>Toronto</td>
+          <td>Canada</td>
+        </tr>
+      </table>
+    </main>
+    """
+    page2 = """
+    <main>
+      <table>
+        <tr>
+          <th>Position ID</th><th>Title</th><th>Category</th><th>City</th><th>Country</th>
+        </tr>
+        <tr>
+          <td><a href="xweb.asp?Page=JobDetails&Jobid=J0626-0759&BRID=1307869">J0626-0759</a></td>
+          <td>AWS Cloud Engineer</td>
+          <td>Infrastructure/Cloud</td>
+          <td>Montreal</td>
+          <td>Canada</td>
+        </tr>
+      </table>
+    </main>
+    """
+    page = FakeNjoynJavascriptPaginationPage(
+        urls=[
+            "https://cgi.njoyn.com/CORP/xweb/xweb.asp?page=joblisting&CLID=21001&CountryID=CA&lang=1",
+            "https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=joblisting",
+        ],
+        html_pages=[page1, page2],
+    )
+
+    jobs, diagnostics = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name="CGI",
+        source_name="CGI",
+        source_mode="browser_allowed",
+        max_cards=20,
+        max_pages=2,
+    )
+
+    titles = {job["title"] for job in jobs}
+
+    assert titles == {"Control-M System Administrator", "AWS Cloud Engineer"}
+    assert diagnostics.pagination_detected is True
+    assert diagnostics.jobs_extracted_per_page == [1, 1]
+    assert diagnostics.pagination_stop_reason == "max_pages_reached"
 
 
 def test_extract_visible_job_cards_uses_visible_bmo_rows_across_pages() -> None:

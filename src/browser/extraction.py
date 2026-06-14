@@ -1921,6 +1921,11 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
         "[aria-label='Next']",
         "button[aria-label*='Next' i]",
         "a[aria-label*='Next' i]",
+        "a[aria-label*='Go to Next Page' i]",
+        "a:has-text('NEXT')",
+        "a:has-text('Next')",
+        "button:has-text('NEXT')",
+        "button:has-text('Next')",
         "li.active + li a[title^='Page ']",
         "li.active + li a[href*='startrow=']",
     )
@@ -1936,6 +1941,9 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
         if not enabled:
             continue
         href = _safe_locator_attribute(candidate, "href")
+        onclick = _safe_locator_attribute(candidate, "onclick")
+        if _is_safe_same_page_pagination_action(href, onclick):
+            return candidate
         if href:
             resolved = _normalize_actionable_url(page.url, href)
             if resolved:
@@ -1974,6 +1982,9 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
         ):
             continue
         href = _safe_locator_attribute(candidate, "href")
+        onclick = _safe_locator_attribute(candidate, "onclick")
+        if _is_safe_same_page_pagination_action(href, onclick):
+            return candidate
         if href:
             resolved = _normalize_actionable_url(page.url, href)
             if not resolved:
@@ -1985,6 +1996,15 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
                 continue
         return candidate
     return None
+
+
+def _is_safe_same_page_pagination_action(href: str, onclick: str) -> bool:
+    normalized_href = str(href or "").strip().lower()
+    normalized_onclick = str(onclick or "").strip().lower()
+    return any(
+        action.startswith("javascript:gotopage(") or action.startswith("gotopage(")
+        for action in (normalized_href, normalized_onclick)
+    )
 
 
 def _job_identity_key(job: Mapping[str, Any]) -> tuple[str, str]:

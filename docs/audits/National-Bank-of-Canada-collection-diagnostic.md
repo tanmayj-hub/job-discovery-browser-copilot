@@ -3,7 +3,7 @@
 ## Source
 - Company: National Bank of Canada
 - Starting URL: https://emplois.bnc.ca/en_CA/careers
-- Final URL reached: https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&
+- Final URL reached: https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=180
 - Source mode: browser_allowed
 - ATS type: -
 - Cookie banner action: accept
@@ -11,30 +11,30 @@
 
 ## Source Scope Validation
 - Source URL used: https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&
-- Source scope status: canada_scope_unconfirmed
-- Canada scope confirmed before pagination: False
-- Source scope method: broad_unconfirmed
-- Source scope reason: A location search term was entered, but the source still did not expose a confirmable Canada-scoped URL before pagination. Broad collection continued only for a diagnostic run and must not be treated as verification evidence.
-- Broad diagnostic collection: True
+- Source scope status: canada_scope_confirmed
+- Canada scope confirmed before pagination: True
+- Source scope method: page_evidence
+- Source scope reason: National Bank's public search-results page exposed Canadian job locations before pagination without requiring a hidden location search workaround.
+- Broad diagnostic collection: False
 
 ## Location Scope
-- Location scope used: False
+- Location scope used: True
 - Configured locations: Canada
-- Location filter/search attempted: Canada
-- Exact filter method: location_search_input
+- Location filter/search attempted: Canada (National Bank page evidence)
+- Exact filter method: national_bank_page_evidence
 
 ## Pagination
 - Pagination detected: True
 - Next/load-more detection result: detected
 - Max pages per source: 10
-- Pages visited: 2
-- Jobs extracted per page: [23, 23]
-- Pagination stop reason: no_new_job_urls
+- Pages visited: 10
+- Jobs extracted per page: [23, 23, 23, 23, 23, 23, 23, 23, 23, 23]
+- Pagination stop reason: max_pages_reached
 
 ## Counts
-- Candidate jobs before scoring: 23
-- Jobs after scoring: 23
-- Relevant jobs after scoring: 4
+- Candidate jobs before scoring: 212
+- Jobs after scoring: 212
+- Relevant jobs after scoring: 5
 - Explicit non-Canada jobs rejected by safety gate: 0
 - Relevant jobs with unknown/blank location text: 0
 - Unique IBM jobIds extracted: 0
@@ -43,11 +43,19 @@
 
 ## Visited Pages
 - https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&
-- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&
+- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=20
+- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=40
+- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=60
+- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=80
+- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=100
+- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=120
+- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=140
+- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=160
+- https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=180
 
 ## Verification Decision
-- Decision: diagnostic_only
-- Reason: Broad collection was allowed only for diagnostics and must not be treated as trusted verification evidence.
+- Decision: ready_for_verified_review
+- Reason: Canada source scope was confirmed before pagination and no diagnostic-only fallback was required.
 
 ## Candidate Jobs Before Scoring
 - Reset | - | https://emplois.bnc.ca/en_CA/careers/searchjobs
@@ -73,30 +81,408 @@
 - Investment Advisory Service Associate | Investment Advisory Service Associate Saint-Georges, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/VISCI-ASSOCIE-SERVICE-CONSEIL-INVESTISSEMENT/33635
 - Searching for a job based on my interests | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&
 - 2 | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=20
+- Banking advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33644
+- Senior Director – Subsidiary Risk Governance | Senior Director – Subsidiary Risk Governance Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7R05-DIRECTEUR-PRINCIPAL/33646
+- Banking advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33649
+- Associate Advice Centre Manager | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVNL-DIRECTEUR-CENTRE-CONSEIL-ASSOCIE/33651
+- Chief Developer | Chief Developer Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I27-DEVELOPPEUR-PRINCIPAL/33653
+- Electronic Foreign Exchange Trading Analyst | Electronic Foreign Exchange Trading Analyst Montreal, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/39991-ANALYSTE/33659
+- Banking Advisor | Banking Advisor Montreal, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33674
+- Senior Advisor, Strategy and Growth | Senior Advisor, Strategy and Growth Toronto, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7S38-CONSEILLER-PRINCIPAL-Strategy-Growth-Ontario/33692
+- Residential Mortgage Specialist-Western Canada | Residential Mortgage Specialist-Western Canada 11 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Western-Canada-Residential-Mortgage-Specialist/28822
+- Residential Mortgage Specialist-Quebec province | Residential Mortgage Specialist-Quebec province 17 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Province-QC-DDH/29257
+- Residential Financing Manager-Canada | Residential Financing Manager-Canada 23 possible locations On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-Directeur-financement-r-sidentiel-Residential-Financing-Manager/29748
+- Residential Mortgage Specialist-Ontario | Residential Mortgage Specialist-Ontario 21 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Ontario-Residential-Mortgage-Specialist/29764
+- Residential Financing Specialist-Quebec province | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/Province-QC-SFR/31079
+- Chief Lead Full Stack Developer | Chief Lead Full Stack Developer Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I34-DEVELOPPEUR-PRINCIPAL-FULL-STACK/33285
+- Senior Architect – Cloud & Network Platforms | Senior Architect – Cloud & Network Platforms 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7I95-ARCHITECTE-PRINCIPAL-STRATEGIE-ET-LIVRAISON/33445
+- Banking Advisor | Banking Advisor Calgary, Alberta On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33619
+- Banking Advisor | Banking Advisor Montreal, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33648
+- Banking Advisor | Banking Advisor Brampton, Ontario On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33650
+- Chief Functional Analyst Capital Markets | Chief Functional Analyst Capital Markets Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I65-ANALYSTE-PRINCIPAL-FONCTIONNEL/33652
+- Customer Service Agent | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/Quebec-Canada-MTL-SH-Parent-S3V11-Agent-service-la-client-le/28004
+- << Prev | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=0
+- Business Development Manager Merchant Relations | Business Development Manager Merchant Relations 9 possible locations Remote | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V52-DIRECTEUR-DEV-AFFAIRES-RELATIONS-MARCHANDS/31582
+- Account Manager Business Flex | Account Manager Business Flex Edmonton, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES/33566
+- Account Manager Business Flex | Account Manager Business Flex Vancouver, British Columbia Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES/33567
+- Account Manager Business Flex | Account Manager Business Flex Saskatoon, Saskatchewan Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES/33569
+- Account Manager Business Flex | Account Manager Business Flex Calgary, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES/33602
+- Banking Advisor | Banking Advisor Sturgeon Falls, Ontario On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33624
+- Banking Advisor | Banking Advisor Montreal, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33638
+- Banking advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33422
+- Banking advisor | Banking advisor Montreal North, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33513
+- Executive Assistant | Executive Assistant Toronto, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T1S70-ADJOINT-DE-DIRECTION/33708
+- Business Development Manager, Equipment Financing Group | Business Development Manager, Equipment Financing Group Calgary, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3V06-Business-Development-Manager-Equipment-Financing-Group-Calgary/31260
+- Marketing Advisor | Marketing Advisor 5 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4K38-CONSEILLER/33528
+- Senior Manager Delivery Performance | Senior Manager Delivery Performance Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7I05-DIRECTEUR-PRINCIPAL/33534
+- Senior Advisor AML/ATF Regulatory Monitoring | Senior Advisor AML/ATF Regulatory Monitoring 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5R38-Conseiller-senior-Vigie-r-glementaire-RPCFAT/33535
+- Chief Business Analyst | Chief Business Analyst Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-P6S13-ANALYSTE-PRINCIPAL-D-AFFAIRES/31961
+- Senior Account Manager Commercial Agri-Food | Senior Account Manager Commercial Agri-Food 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6V27-DIRECTEUR-SAE-AGRO-ALIMENTAIRE/32342
+- Senior Advisor Innovation and Growth | Senior Advisor Innovation and Growth 5 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7S88-CONSEILLER-SENIOR/33464
+- Operational Excellence Chief Advisor | Operational Excellence Chief Advisor Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7R38-CONSEILLER-PRINCIPAL/33510
+- Senior Advisor PCMLTFA Compliance | Senior Advisor PCMLTFA Compliance Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-Conseiller-senior-LRPCFAT-March-s-des-Capitaux/33521
+- Digital Product Owner | Digital Product Owner Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5S46-PROPRIETAIRE-DE-PRODUIT-PRODUCT-OWNER/33525
+- Searching for a job based on my interests | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=40
+- IT Senior Analyst Network Security | IT Senior Analyst Network Security Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I63-ANALYSTE-PRINCIPAL-APPLICATIF/33531
+- SME Account Manager | SME Account Manager 6 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V26-DIRECTEUR-PME-L-vis/31110
+- Senior Analyst Corporate Accounting | Senior Analyst Corporate Accounting Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4F33-ANALYSTE-SENIOR/32698
+- Account Manager, Commercial Banking | Account Manager, Commercial Banking 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE/33320
+- Investment Banking Analyst or Associate Private Company | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/Alberta-Canada-70021-ANALYST-Calgary/33414
+- Vice President Investment Banking Private Company | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/Alberta-Canada-70016-VICE-PRESIDENT/33415
+- Operation Manager | Operation Manager Toronto, Ontario On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S05-DIRECTEUR-DE-SECTION/33436
+- Telecom and Cloud Platform Technical Lead | Telecom and Cloud Platform Technical Lead Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7I38-LEAD-TECHNIQUE-PLATEFORMES-T-L-COM-ET-CLOUD/33446
+- Senior Director Stress Testing | Senior Director Stress Testing Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7R05-DIRECTEUR-PRINCIPAL/33488
+- Banking Advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33501
+- Manager, Financing Solutions | Manager, Financing Solutions Saskatoon, Saskatchewan Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S21-DIRECTEUR-SOL-DE-FINANCEMENT/33511
+- Wealth Associate | Wealth Associate Chicoutimi, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/X1V80-ASSOCIE-E-EN-GESTION-DE-PATRIMOINE/33522
+- Senior Commercial Credit Risk Manager | Senior Commercial Credit Risk Manager Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5R27-DIRECTEUR-SENIOR-CREDIT/33526
+- Senior Manager Inside Sales | Senior Manager Inside Sales Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/VBVBF-DIRECTEUR-PRINCIPAL/31823
+- Senior Advisor AML/ATF Compliance | Senior Advisor AML/ATF Compliance 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/32531
+- Legal Counsel Litigation | Legal Counsel Litigation Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/J4J38-CONSEILLER-JURIDIQUE/33239
+- Senior Analyst Litigation | Senior Analyst Litigation Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S33-ANALYSTE-SENIOR/33240
+- Senior Account Manager Commercial Banking | Senior Account Manager Commercial Banking Calgary, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-Senior-Account-Manager-Calgary-South/33392
+- Director Commercial Banking | Director Commercial Banking Calgary, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6V20-Director-Commercial-Banking-Calgary-South/33393
+- Technology Associate | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/A3V80-ADJOINT/33426
+- Searching for a job based on my interests | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=60
+- Senior Legal Advisor | Senior Legal Advisor 6 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/J6J38-CONSEILLER-JURIDIQUE-SENIOR/33457
+- Banking Advisor | Banking Advisor Scarborough, Ontario On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33469
+- Lead Auditor | Lead Auditor Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-P6R43-AUDITEUR-PRINCIPAL/33479
+- Analyst Segregation & Buy-in | Analyst Segregation & Buy-in Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T2S33-ANALYSTE/33480
+- Manager Financing Solutions | Manager Financing Solutions Winnipeg, Manitoba Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S21-DIRECTEUR-SOL-DE-FINANCEMENT-Winnipeg/33493
+- Advisor Risk Model Validation | Advisor Risk Model Validation 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R38-CONSEILLER/33227
+- Senior Director IT Delivery and Innovation | Senior Director IT Delivery and Innovation Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-G8I05-DIRECTEUR-PRINCIPAL/33377
+- Senior Director Portfolio Management & Compliance | Senior Director Portfolio Management & Compliance 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7S41-Senior-Director-Portfolio-Management-Compliance-AB/30133
+- Account Manager Commercial Banking | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/COURTENAY-British-Columbia-Canada-P4V20-DIRECTEUR-SAE-Courtenay-BC/32142
+- Model Risk Governance Specialist Framework | Model Risk Governance Specialist Framework 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33041
+- Model Risk Governance Specialist Risk Oversight | Model Risk Governance Specialist Risk Oversight 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33042
+- Model Risk Governance Specialist Quantification | Model Risk Governance Specialist Quantification 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33044
+- Model Risk Governance Senior Analyst | Model Risk Governance Senior Analyst Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R38-CONSEILLER/33131
+- Senior Transformation Advisor | Senior Transformation Advisor 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6S38-CONSEILLER-SENIOR/33316
+- Banking Advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33333
+- Capital Markets Chief Business Analyst | Capital Markets Chief Business Analyst Toronto, Ontario On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6S13-ANALYSTE-PRINCIPAL-D-AFFAIRES/33391
+- Senior Banking Advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVOS-CONSEILLER-BANCAIRE-SENIOR/33398
+- Senior Wealth Associate | Senior Wealth Associate Toronto, Ontario On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/X2V80-ASSOCIE-E-PRINCIPAL-EN-GESTION-DE-PATRIMOINE/33399
+- Wealth Associate | Wealth Associate Quebec, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T1V84-ASSOCIE-EN-GESTION-DE-PATRIMOINE/33401
+- Wealth Associate | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/X1V80-ASSOCIE-E-EN-GESTION-DE-PATRIMOINE/33424
+- Searching for a job based on my interests | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=80
+- Wealth Associate | Wealth Associate Calgary, Alberta On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/A3V80-ADJOINT/33429
+- Banking Advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33432
+- Banking Advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33435
+- Investment Analyst | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V33-ANALYSTE-EN-PLACEMENT/32024
+- Senior Fullstack Developer - Capital Markets IT | Senior Fullstack Developer - Capital Markets IT Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I34-DEVELOPPEUR-PRINCIPAL-FULL-STACK/32284
+- Investment Analyst | Investment Analyst Saint-Felicien, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V33-ANALYSTE-EN-PLACEMENT/32422
+- Credit Underwriter | Credit Underwriter Calgary, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S21-DIRECTEUR-SOL-DE-FINANCEMENT/33304
+- Banking advisor | Banking advisor Toronto, Ontario On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33309
+- Senior Credit Underwriter | Senior Credit Underwriter Calgary, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5S22-DIRECTEUR-SOL-DE-FINANCEMENT/33318
+- Senior Documentation Specialist | Senior Documentation Specialist 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T3S51-AGENT-DE-COMPTES-SENIOR/33326
+- Banking advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33338
+- Banking advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33339
+- Director, National Client Group | Director, National Client Group Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/80082-DIRECTEUR-NCG-FIRMES-PROFESSIONNELLES-Montr-al/33416
+- Chief Advisor Third-Party Risk Management | Chief Advisor Third-Party Risk Management 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7R38-Conseiller-principal-Gestion-des-risques-de-tiers/32823
+- Senior Legal Counsel Compliance | Senior Legal Counsel Compliance Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/J6J38-CONSEILLER-JURIDIQUE-SENIOR/33223
+- Analyst Portfolio and Performance Analytical Lead | Analyst Portfolio and Performance Analytical Lead Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5A50-ANALYSTE-PRINCIPAL-DE-LA-DONNEE/33225
+- Lead Domain Architect - Insurance | Lead Domain Architect - Insurance Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7I85-ARCHITECTE-PRINCIPAL-DE-DOMAINE/33245
+- Manager Financing Solutions | Manager Financing Solutions Mississauga, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-P5S22-MFS-Mississauga/33255
+- Senior Account Manager Commercial Banking | Senior Account Manager Commercial Banking Terrebonne, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE-Terrebonne/33271
+- Banking advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33282
+- Searching for a job based on my interests | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=100
+- Manager Commercial Banking | Manager Commercial Banking Lethbridge, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V26-DIRECTEUR-PME/33306
+- Banking Advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33337
+- Senior Advisor Taxation | Senior Advisor Taxation 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5F18-CONSEILLER-SENIOR-FISCALITE/33353
+- Manager Credit Structuring | Manager Credit Structuring Calgary, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-P6S21-Manager-Credit-Structuring-Western-Canada-Advisory-Group/33356
+- Senior Advisor Financial Statements | Senior Advisor Financial Statements Toronto, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6F38-CONSEILLER-SENIOR/33363
+- Senior Director Fund Accounting | Senior Director Fund Accounting Toronto, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7F05-DIRECTEUR-PRINCIPAL/33368
+- Funds Accounting Director | Funds Accounting Director Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G6F05-DIRECTEUR/33373
+- Senior Advisor Derivatives And Financial Valuation | Senior Advisor Derivatives And Financial Valuation 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5F33-ANALYSTE-PRINCIPAL/33374
+- Senior Advisor Exchange-traded Funds | Senior Advisor Exchange-traded Funds 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5F33-ANALYSTE-PRINCIPAL/33375
+- Relational Private Banker | Relational Private Banker Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3V32-BANQUIER-PRIVE-RELATIONNEL/30170
+- Senior Cybersecurity Advisor | Senior Cybersecurity Advisor Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I54-CONSEILLER-SENIOR-EN-CYBER-SECURITE/31831
+- Senior Director Commercial Banking | Senior Director Commercial Banking Laval, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7V15-DIRECTEUR-PRINCIPAL-EQUIPE-Laval/32130
+- Vice President and Chief Information Security Officer | Vice President and Chief Information Security Officer 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/D5I04-VP-CHEF-DE-LA-SECURITE-DE-L-INFORMATION-CISO/33102
+- Banking advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33182
+- Senior Data Scientist | Senior Data Scientist Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5A10-SCIENTIFIQUE-SENIOR-DE-DONNEES/33184
+- Senior Trading Support Analyst | Senior Trading Support Analyst 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3S03-ANALYSTE-SENIOR-SUPPORT-AUX-CAMBISTES/33251
+- Manager Financing Solutions | Manager Financing Solutions 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S21-DIRECTEUR-SOL-DE-FINANCEMENT/33270
+- Corporate Finance Intern- Fall 2026 | Corporate Finance Intern- Fall 2026 Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Stage-Finance-corporative-Automne-2026/33298
+- Intern Accounting and Internal Audit | Intern Accounting and Internal Audit Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Stage-comptabilit-et-audit-interne-Automne-2026/33299
+- Technical Advisor Portfolio Management | Technical Advisor Portfolio Management 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Quebec-Canada-P2S38-CCM-Montreal-Deal-Team-Advisor/33302
+- Searching for a job based on my interests | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=120
+- Senior Manager Financing Solutions – Real Estate | Senior Manager Financing Solutions – Real Estate Calgary, Alberta Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6S41-Senior-MFS-Real-Estate-Calgary/33319
+- Vendor Review Analyst | Vendor Review Analyst Winnipeg, Manitoba Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-T1S33-ANALYSTE/33327
+- Senior Clerk | Senior Clerk Toronto, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/S4S72-PREPOSE-SENIOR/32974
+- Senior Advisor Model Validation | Senior Advisor Model Validation 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33228
+- Banking Advisor Advisory Center | Banking Advisor Advisory Center Montreal, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/P2V55/33274
+- Wealth Associate | Wealth Associate Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/A3V80-ADJOINT/33286
+- Wealth Associate | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/A3V80-ADJOINT/33301
+- Analyst or Associate | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/40014-ASSOCIE/33303
+- Account Manager Commercial Banking | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE/32490
+- Threat hunting practise Leader | Threat hunting practise Leader Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I54-CONSEILLER-SENIOR-EN-CYBER-SECURITE/33059
+- Senior Transformation Advisor | Senior Transformation Advisor Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7S88-CONSEILLER-SENIOR/33272
+- Wealth Associate | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/X1V80-ASSOCIE-E-EN-GESTION-DE-PATRIMOINE/33283
+- Senior DevOps Integrator | Senior DevOps Integrator Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I27-INT-GRATEUR-SENIOR-DEVOPS/32032
+- Senior Administration Agent | Senior Administration Agent Toronto, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T3S27-AGENT-SENIOR-ADMINISTRATION/33155
+- Senior Account Manager Commercial Banking | Senior Account Manager Commercial Banking 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE-Ottawa-Gatineau/33168
+- Account Manager Commercial Banking | Account Manager Commercial Banking Rouyn-Noranda, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE/33177
+- Bank Advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33196
+- Murex Chief Developer | Murex Chief Developer Toronto, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I90-DEVELOPPEUR-PRINCIPAL-MUREX/33210
+- Banking Advisor | Banking Advisor Montreal, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33257
+- Senior Director Product Research and Development | Senior Director Product Research and Development Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/B6S05-DIRECTEUR-PRINCIPAL/31358
+- Searching for a job based on my interests | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=140
+- Associate Director Infrastructures | Associate Director Infrastructures Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/70090-DIRECTEUR-ASSOCIE/32493
+- Business Development Manager | Business Development Manager Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V14-CHARGE-DE-COMPTES-SENIOR/32996
+- Model Risk Governance Specialist AI | Model Risk Governance Specialist AI 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33040
+- Senior Tax Compliance Advisor | Senior Tax Compliance Advisor Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5F18-CONSEILLER-SENIOR-FISCALITE/33130
+- Senior Compliance Advisor | Senior Compliance Advisor Toronto, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-Conseiller-senior-conformit-BNRI/33139
+- Associate or VP Electronic Trading Algorithms | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/70071-ASSOCIE/33187
+- Manager Financing Solutions | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5S21-DIRECTEUR-SOL-DE-FINANCEMENT/33188
+- Analyst | Analyst 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T2S33-ANALYSTE/33197
+- Customer Service Agent, Financing | Customer Service Agent, Financing Montreal, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-Agent-service-la-client-le-financement/33207
+- AVP & Market Lead, Commercial Banking | AVP & Market Lead, Commercial Banking Saskatoon, Saskatchewan Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G8V20-VP-ASSOCIE-ENTREPRISES-Saskatoon/33212
+- Banking advisor | Banking advisor Brampton, Ontario On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33217
+- Chief Advisor Financial Crime Validation | Chief Advisor Financial Crime Validation 4 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7A38-CONSEILLER-PRINCIPAL-VALIDATION/32802
+- Senior Director Data and Risk | Senior Director Data and Risk Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7A05-DIRECTEUR-PRINCIPAL-ANALYTIQUE/33057
+- Master Product Owner | Master Product Owner Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7S46-DIRECTEUR-PRINCIPAL-PROPRIETAIRE-DE-PRODUIT-PRODUCT-OWNER/33120
+- Governance Product Owner | Governance Product Owner Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6S46-PROPRIETAIRE-DE-PRODUIT-PRODUCT-OWNER/33132
+- Senior Analyst | Senior Analyst Richmond Hill, Ontario Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R38-CONSEILLER/33138
+- Senior Director Portfolio Management | Senior Director Portfolio Management Victoria, British Columbia Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Victoria-BC-British-Columbia-Canada-G7S41-DIRECTEUR-PRINCIPAL-MFS-Victoria-BC/33164
+- Financial Service Representative in investment | Financial Service Representative in investment 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/S4V81-RSF-INVESTISSEMENT/33194
+- Director | Director Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Directeur-sp-cialiste-ETF/31241
+- Senior Talent Acquisition Advisor | Senior Talent Acquisition Advisor 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5H38-CONSEILLER-SENIOR/32346
+- Searching for a job based on my interests | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=160
+- Senior Data Scientist Model Validation | Senior Data Scientist Model Validation 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6A10-SCIENTIFIQUE-SENIOR-DE-DONNEES-VALIDATION-MODELES/33069
+- Senior Financial Planner | Senior Financial Planner 5 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7V38-CONSEILLER-PRINCIPAL/33108
+- Senior Subsidiary Accounting Analyst | Senior Subsidiary Accounting Analyst Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4F33-ANALYSTE-SENIOR/33142
+- Banking Advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33151
+- Auditor | Auditor Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R43-AUDITEUR/33173
+- Lead Auditor | Lead Auditor Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R43-Auditeur-Principal-Marches-des-Capitaux/31066
+- Chief Application Integrator Analyst | Chief Application Integrator Analyst Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-P5I63-ANALYSTE-PRINCIPAL-APPLICATIF/31977
+- Advisor New Graduate Programs | Advisor New Graduate Programs Montreal, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S38-CONSEILLER/32119
+- Senior Engineering Developer, Site reliability | Senior Engineering Developer, Site reliability Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I74-DEVELOPPEUR-SENIOR-EN-INGENIERIE-FIABILITE-DES-SITES-SRE/32997
+- Business Development and Communication | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/A4V81-ASSOCIE-E-EN-COMMUNICATION-ET-DEVELOPPEMENT/33076
+- Banking advisor | Banking advisor Montreal, Quebec On-Site | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33089
+- Acount Manager Business Flex | Acount Manager Business Flex Quebec, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/QUEBEC-Quebec-Canada-P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES-Qu-bec/32924
+- Senior Manager Risk Strategy | Senior Manager Risk Strategy Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G8R05-DIRECTEUR-PRINCIPAL/33004
+- Operations Agent and Associate | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/S2V80-AGENT-AUX-OPERATIONS-ET-ADJOINT/33077
+- Branch Administrator | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/T1S46-Branch-Administrator/33082
+- Manager Financing solutions | Manager Financing solutions 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5S21-DIRECTEUR-SOL-DE-FINANCEMENT/33103
+- Business Development Manager, Equipment Finance | Business Development Manager, Equipment Finance 4 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3V06-DIRECTEUR-PME-ESPACE-AFFAIRES/32886
+- Account Manager, Commercial Banking | Account Manager, Commercial Banking 2 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE/32991
+- Banking Advisor | - | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33025
+- Estate planner | Estate planner Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7V38-CONSEILLER-PRINCIPAL/33043
+- Searching for a job based on my interests | - | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=180
 
 ## Scored Candidates
 - Chief Technical Support Analyst End-User IT Support | score 20 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Toronto, Ontario; support/ops signals: support | https://emplois.bnc.ca/en_CA/careers/JobDetail/TORONTO-Ontario-Canada-P5I62-ANALYSTE-PRINCIPAL-DE-SOUTIEN-TECHNIQUE/33612
 - Senior Solutions Architect | score 13 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Hybrid; adjacent customer-facing technical fit: Solutions Architect | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I75-ARCHITECTE-SENIOR-DE-SOLUTIONS/32846
 - Senior Data Solution Architect | score 13 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Hybrid; adjacent customer-facing technical fit: Solution Architect | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I75-ARCHITECTE-SENIOR-DE-SOLUTIONS-DONN-ES/33149
+- Murex Chief Developer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I90-DEVELOPPEUR-PRINCIPAL-MUREX/33210
+- Executive Assistant | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T1S70-ADJOINT-DE-DIRECTION/33708
+- Residential Mortgage Specialist-Western Canada | score 8 | relevant=False | tier=not_relevant | location signals: Canada, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Western-Canada-Residential-Mortgage-Specialist/28822
+- Residential Mortgage Specialist-Ontario | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Ontario-Residential-Mortgage-Specialist/29764
 - Chief Python Developer | score 8 | relevant=True | tier=core_target_fit | matched skills: Python; location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-P5I27-DEVELOPPEUR-PRINCIPAL/33737
+- Capital Markets Chief Business Analyst | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6S13-ANALYSTE-PRINCIPAL-D-AFFAIRES/33391
+- Banking advisor | score 8 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33309
 - Wealth Associate | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/A3V80-ADJOINT/33727
+- Wealth Associate | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/X1V80-ASSOCIE-E-EN-GESTION-DE-PATRIMOINE/33522
+- Wealth Associate | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T1V84-ASSOCIE-EN-GESTION-DE-PATRIMOINE/33401
+- Wealth Associate | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/A3V80-ADJOINT/33286
+- Vice President and Chief Information Security Officer | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/D5I04-VP-CHEF-DE-LA-SECURITE-DE-L-INFORMATION-CISO/33102
+- Vendor Review Analyst | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-T1S33-ANALYSTE/33327
+- Threat hunting practise Leader | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I54-CONSEILLER-SENIOR-EN-CYBER-SECURITE/33059
+- Telecom and Cloud Platform Technical Lead | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7I38-LEAD-TECHNIQUE-PLATEFORMES-T-L-COM-ET-CLOUD/33446
+- Technical Advisor Portfolio Management | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Quebec-Canada-P2S38-CCM-Montreal-Deal-Team-Advisor/33302
 - Team Lead Agriculture | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G6V15-DIRECTEUR-EQUIPE-ENTREPRISES-AGRI/32250
 - Sales Coordinator | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T2S36-COORDONNATEUR/33682
+- Residential Mortgage Specialist-Quebec province | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Province-QC-DDH/29257
+- Relational Private Banker | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3V32-BANQUIER-PRIVE-RELATIONNEL/30170
+- Operational Excellence Chief Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7R38-CONSEILLER-PRINCIPAL/33510
+- Model Risk Governance Specialist Risk Oversight | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33042
+- Model Risk Governance Specialist Quantification | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33044
+- Model Risk Governance Specialist Framework | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33041
+- Model Risk Governance Specialist AI | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33040
+- Master Product Owner | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7S46-DIRECTEUR-PRINCIPAL-PROPRIETAIRE-DE-PRODUIT-PRODUCT-OWNER/33120
+- Marketing Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4K38-CONSEILLER/33528
+- Legal Counsel Litigation | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/J4J38-CONSEILLER-JURIDIQUE/33239
 - Lead Expert | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/B7K05-DIRECTEUR-PRINCIPAL/33627
+- Lead Domain Architect - Insurance | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7I85-ARCHITECTE-PRINCIPAL-DE-DOMAINE/33245
+- Lead Auditor | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-P6R43-AUDITEUR-PRINCIPAL/33479
+- Lead Auditor | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R43-Auditeur-Principal-Marches-des-Capitaux/31066
+- Investment Analyst | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V33-ANALYSTE-EN-PLACEMENT/32422
 - Investment Advisory Service Associate | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCP-ASSOCIE-SERVICE-CONSEIL-INVESTISSEMENT/33676
 - Investment Advisory Service Associate | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/VISCI-ASSOCIE-SERVICE-CONSEIL-INVESTISSEMENT/33635
+- Intern Accounting and Internal Audit | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Stage-comptabilit-et-audit-interne-Automne-2026/33299
+- Governance Product Owner | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6S46-PROPRIETAIRE-DE-PRODUIT-PRODUCT-OWNER/33132
+- Financial Service Representative in investment | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/S4V81-RSF-INVESTISSEMENT/33194
+- Estate planner | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7V38-CONSEILLER-PRINCIPAL/33043
+- Digital Product Owner | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5S46-PROPRIETAIRE-DE-PRODUIT-PRODUCT-OWNER/33525
+- Credit Underwriter | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S21-DIRECTEUR-SOL-DE-FINANCEMENT/33304
+- Corporate Finance Intern- Fall 2026 | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Stage-Finance-corporative-Automne-2026/33298
+- Chief Lead Full Stack Developer | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I34-DEVELOPPEUR-PRINCIPAL-FULL-STACK/33285
 - Chief Functional analyst | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-P5I65-ANALYSTE-PRINCIPAL-FONCTIONNEL/33277
+- Chief Functional Analyst Capital Markets | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I65-ANALYSTE-PRINCIPAL-FONCTIONNEL/33652
+- Chief Developer | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I27-DEVELOPPEUR-PRINCIPAL/33653
+- Chief Business Analyst | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-P6S13-ANALYSTE-PRINCIPAL-D-AFFAIRES/31961
+- Chief Application Integrator Analyst | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-P5I63-ANALYSTE-PRINCIPAL-APPLICATIF/31977
+- Chief Advisor Third-Party Risk Management | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7R38-Conseiller-principal-Gestion-des-risques-de-tiers/32823
 - Chief Advisor Operational Risk Practice Lead | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7R38-Conseiller-principal-RO/32289
+- Chief Advisor Financial Crime Validation | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7A38-CONSEILLER-PRINCIPAL-VALIDATION/32802
+- Banking advisor | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33217
 - Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33705
+- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33650
+- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33624
+- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Ontario | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33469
+- Auditor | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R43-AUDITEUR/33173
+- Analyst Segregation & Buy-in | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T2S33-ANALYSTE/33480
+- Analyst Portfolio and Performance Analytical Lead | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5A50-ANALYSTE-PRINCIPAL-DE-LA-DONNEE/33225
+- Analyst | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T2S33-ANALYSTE/33197
+- Advisor Risk Model Validation | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R38-CONSEILLER/33227
 - Advisor - Guarantees and Standby Letters of Credit | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3S38-CONSEILLER/33601
+- AVP & Market Lead, Commercial Banking | score 4 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G8V20-VP-ASSOCIE-ENTREPRISES-Saskatoon/33212
+- Senior Trading Support Analyst | score 1 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Hybrid; support/ops signals: support | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3S03-ANALYSTE-SENIOR-SUPPORT-AUX-CAMBISTES/33251
 - Wealth Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/X1V80-ASSOCIE-E-EN-GESTION-DE-PATRIMOINE/33729
+- Wealth Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/X1V80-ASSOCIE-E-EN-GESTION-DE-PATRIMOINE/33424
+- Wealth Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/A3V80-ADJOINT/33429
+- Wealth Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/A3V80-ADJOINT/33301
+- Wealth Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/X1V80-ASSOCIE-E-EN-GESTION-DE-PATRIMOINE/33283
+- Vice President Investment Banking Private Company | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/Alberta-Canada-70016-VICE-PRESIDENT/33415
 - Treasury Manager | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V50-Calgary-Edmonton-Regina-DIRECTEUR-TRESORERIE/33629
+- Technology Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/A3V80-ADJOINT/33426
 - Senior data scientist | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5A10-SCIENTIFIQUE-SENIOR-DE-DONNEES/33623
+- Senior Wealth Associate | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario | https://emplois.bnc.ca/en_CA/careers/JobDetail/X2V80-ASSOCIE-E-PRINCIPAL-EN-GESTION-DE-PATRIMOINE/33399
+- Senior Transformation Advisor | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6S38-CONSEILLER-SENIOR/33316
+- Senior Transformation Advisor | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7S88-CONSEILLER-SENIOR/33272
+- Senior Tax Compliance Advisor | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5F18-CONSEILLER-SENIOR-FISCALITE/33130
+- Senior Talent Acquisition Advisor | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5H38-CONSEILLER-SENIOR/32346
+- Senior Subsidiary Accounting Analyst | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4F33-ANALYSTE-SENIOR/33142
+- Senior Manager Risk Strategy | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G8R05-DIRECTEUR-PRINCIPAL/33004
+- Senior Manager Inside Sales | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/VBVBF-DIRECTEUR-PRINCIPAL/31823
+- Senior Manager Financing Solutions – Real Estate | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6S41-Senior-MFS-Real-Estate-Calgary/33319
+- Senior Manager Delivery Performance | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7I05-DIRECTEUR-PRINCIPAL/33534
+- Senior Legal Counsel Compliance | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/J6J38-CONSEILLER-JURIDIQUE-SENIOR/33223
+- Senior Legal Advisor | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/J6J38-CONSEILLER-JURIDIQUE-SENIOR/33457
+- Senior Fullstack Developer - Capital Markets IT | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I34-DEVELOPPEUR-PRINCIPAL-FULL-STACK/32284
+- Senior Financial Planner | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7V38-CONSEILLER-PRINCIPAL/33108
+- Senior Engineering Developer, Site reliability | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I74-DEVELOPPEUR-SENIOR-EN-INGENIERIE-FIABILITE-DES-SITES-SRE/32997
+- Senior Documentation Specialist | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T3S51-AGENT-DE-COMPTES-SENIOR/33326
+- Senior Director – Subsidiary Risk Governance | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7R05-DIRECTEUR-PRINCIPAL/33646
+- Senior Director Stress Testing | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7R05-DIRECTEUR-PRINCIPAL/33488
+- Senior Director Product Research and Development | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/B6S05-DIRECTEUR-PRINCIPAL/31358
+- Senior Director Portfolio Management & Compliance | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7S41-Senior-Director-Portfolio-Management-Compliance-AB/30133
+- Senior Director Portfolio Management | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Victoria-BC-British-Columbia-Canada-G7S41-DIRECTEUR-PRINCIPAL-MFS-Victoria-BC/33164
+- Senior Director IT Delivery and Innovation | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-G8I05-DIRECTEUR-PRINCIPAL/33377
+- Senior Director Fund Accounting | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7F05-DIRECTEUR-PRINCIPAL/33368
+- Senior Director Data and Risk | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7A05-DIRECTEUR-PRINCIPAL-ANALYTIQUE/33057
+- Senior Director Commercial Banking | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G7V15-DIRECTEUR-PRINCIPAL-EQUIPE-Laval/32130
+- Senior DevOps Integrator | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I27-INT-GRATEUR-SENIOR-DEVOPS/32032
+- Senior Data Scientist Model Validation | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6A10-SCIENTIFIQUE-SENIOR-DE-DONNEES-VALIDATION-MODELES/33069
+- Senior Data Scientist | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5A10-SCIENTIFIQUE-SENIOR-DE-DONNEES/33184
+- Senior Cybersecurity Advisor | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I54-CONSEILLER-SENIOR-EN-CYBER-SECURITE/31831
+- Senior Credit Underwriter | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5S22-DIRECTEUR-SOL-DE-FINANCEMENT/33318
+- Senior Compliance Advisor | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-Conseiller-senior-conformit-BNRI/33139
+- Senior Commercial Credit Risk Manager | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5R27-DIRECTEUR-SENIOR-CREDIT/33526
+- Senior Clerk | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/S4S72-PREPOSE-SENIOR/32974
+- Senior Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVOS-CONSEILLER-BANCAIRE-SENIOR/33398
+- Senior Architect – Cloud & Network Platforms | score 0 | relevant=False | tier=not_relevant | matched skills: networking; location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7I95-ARCHITECTE-PRINCIPAL-STRATEGIE-ET-LIVRAISON/33445
+- Senior Analyst Litigation | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S33-ANALYSTE-SENIOR/33240
+- Senior Analyst Corporate Accounting | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4F33-ANALYSTE-SENIOR/32698
+- Senior Analyst | score 0 | relevant=False | tier=not_relevant | location signals: Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R38-CONSEILLER/33138
+- Senior Advisor, Strategy and Growth | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7S38-CONSEILLER-PRINCIPAL-Strategy-Growth-Ontario/33692
+- Senior Advisor Taxation | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5F18-CONSEILLER-SENIOR-FISCALITE/33353
+- Senior Advisor PCMLTFA Compliance | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-Conseiller-senior-LRPCFAT-March-s-des-Capitaux/33521
+- Senior Advisor Model Validation | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/33228
+- Senior Advisor Innovation and Growth | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7S88-CONSEILLER-SENIOR/33464
+- Senior Advisor Financial Statements | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6F38-CONSEILLER-SENIOR/33363
+- Senior Advisor Exchange-traded Funds | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5F33-ANALYSTE-PRINCIPAL/33375
+- Senior Advisor Derivatives And Financial Valuation | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5F33-ANALYSTE-PRINCIPAL/33374
+- Senior Advisor AML/ATF Regulatory Monitoring | score 0 | relevant=False | tier=not_relevant | matched skills: monitoring; location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5R38-Conseiller-senior-Vigie-r-glementaire-RPCFAT/33535
+- Senior Advisor AML/ATF Compliance | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6R38-CONSEILLER-SENIOR/32531
+- Senior Administration Agent | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/T3S27-AGENT-SENIOR-ADMINISTRATION/33155
+- Senior Account Manager Commercial Banking | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-Senior-Account-Manager-Calgary-South/33392
+- Senior Account Manager Commercial Banking | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE-Terrebonne/33271
+- Senior Account Manager Commercial Banking | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE-Ottawa-Gatineau/33168
+- Senior Account Manager Commercial Agri-Food | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6V27-DIRECTEUR-SAE-AGRO-ALIMENTAIRE/32342
 - Searching for a job based on my interests | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&
+- Searching for a job based on my interests | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=40
+- Searching for a job based on my interests | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=60
+- Searching for a job based on my interests | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=80
+- Searching for a job based on my interests | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=100
+- Searching for a job based on my interests | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=120
+- Searching for a job based on my interests | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=140
+- Searching for a job based on my interests | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=160
+- Searching for a job based on my interests | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=180
+- SME Account Manager | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V26-DIRECTEUR-PME-L-vis/31110
+- Residential Financing Specialist-Quebec province | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/Province-QC-SFR/31079
+- Residential Financing Manager-Canada | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-Directeur-financement-r-sidentiel-Residential-Financing-Manager/29748
 - Reset | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs
+- Operations Agent and Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/S2V80-AGENT-AUX-OPERATIONS-ET-ADJOINT/33077
 - Operations Agent | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/S2S75-AGENT-AUX-OPERATIONS/33723
+- Operation Manager | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S05-DIRECTEUR-DE-SECTION/33436
+- Model Risk Governance Senior Analyst | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R38-CONSEILLER/33131
+- Manager, Financing Solutions | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S21-DIRECTEUR-SOL-DE-FINANCEMENT/33511
+- Manager Financing solutions | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5S21-DIRECTEUR-SOL-DE-FINANCEMENT/33103
+- Manager Financing Solutions | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S21-DIRECTEUR-SOL-DE-FINANCEMENT-Winnipeg/33493
+- Manager Financing Solutions | score 0 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-P5S22-MFS-Mississauga/33255
+- Manager Financing Solutions | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S21-DIRECTEUR-SOL-DE-FINANCEMENT/33270
+- Manager Financing Solutions | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5S21-DIRECTEUR-SOL-DE-FINANCEMENT/33188
+- Manager Credit Structuring | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-P6S21-Manager-Credit-Structuring-Western-Canada-Advisory-Group/33356
+- Manager Commercial Banking | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V26-DIRECTEUR-PME/33306
+- Investment Banking Analyst or Associate Private Company | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/Alberta-Canada-70021-ANALYST-Calgary/33414
+- Investment Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V33-ANALYSTE-EN-PLACEMENT/32024
+- IT Senior Analyst Network Security | score 0 | relevant=False | tier=not_relevant | matched skills: networking; location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I63-ANALYSTE-PRINCIPAL-APPLICATIF/33531
+- Funds Accounting Director | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/G6F05-DIRECTEUR/33373
+- Electronic Foreign Exchange Trading Analyst | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/39991-ANALYSTE/33659
+- Director, National Client Group | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/80082-DIRECTEUR-NCG-FIRMES-PROFESSIONNELLES-Montr-al/33416
+- Director Commercial Banking | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6V20-Director-Commercial-Banking-Calgary-South/33393
+- Director | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Directeur-sp-cialiste-ETF/31241
+- Customer Service Agent, Financing | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-Agent-service-la-client-le-financement/33207
+- Customer Service Agent | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/Quebec-Canada-MTL-SH-Parent-S3V11-Agent-service-la-client-le/28004
+- Business Development and Communication | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/A4V81-ASSOCIE-E-EN-COMMUNICATION-ET-DEVELOPPEMENT/33076
+- Business Development Manager, Equipment Financing Group | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3V06-Business-Development-Manager-Equipment-Financing-Group-Calgary/31260
+- Business Development Manager, Equipment Finance | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3V06-DIRECTEUR-PME-ESPACE-AFFAIRES/32886
+- Business Development Manager Merchant Relations | score 0 | relevant=False | tier=not_relevant | location signals: Remote | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V52-DIRECTEUR-DEV-AFFAIRES-RELATIONS-MARCHANDS/31582
+- Business Development Manager | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V14-CHARGE-DE-COMPTES-SENIOR/32996
+- Branch Administrator | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/T1S46-Branch-Administrator/33082
 - Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33560
+- Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33644
+- Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33649
+- Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33422
+- Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33513
+- Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33338
+- Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33339
+- Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33282
+- Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33182
+- Banking advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33089
+- Banking Advisor Advisory Center | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/P2V55/33274
 - Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33714
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33674
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33619
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33648
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33638
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33501
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33333
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCB-CONSEILLER-BANCAIRE/33432
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33435
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33337
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33257
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVSA-CONSEILLER-BANCAIRE/33151
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33025
+- Bank Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVCI-CONSEILLER-BANCAIRE/33196
+- Associate or VP Electronic Trading Algorithms | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/70071-ASSOCIE/33187
+- Associate Director Infrastructures | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/70090-DIRECTEUR-ASSOCIE/32493
+- Associate Advice Centre Manager | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/VIVNL-DIRECTEUR-CENTRE-CONSEIL-ASSOCIE/33651
+- Analyst or Associate | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/40014-ASSOCIE/33303
+- Advisor New Graduate Programs | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S38-CONSEILLER/32119
+- Acount Manager Business Flex | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/QUEBEC-Quebec-Canada-P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES-Qu-bec/32924
+- Account Manager, Commercial Banking | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE/33320
+- Account Manager, Commercial Banking | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE/32991
+- Account Manager Commercial Banking | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/COURTENAY-British-Columbia-Canada-P4V20-DIRECTEUR-SAE-Courtenay-BC/32142
+- Account Manager Commercial Banking | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE/32490
+- Account Manager Commercial Banking | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5V20-DIRECTEUR-SAE/33177
+- Account Manager Business Flex | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES/33566
+- Account Manager Business Flex | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES/33567
+- Account Manager Business Flex | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES/33569
+- Account Manager Business Flex | score 0 | relevant=False | tier=not_relevant | location signals: Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V29-DIRECTEUR-PME-ESPACE-AFFAIRES/33602
+- << Prev | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=0
 - 2 | score 0 | relevant=False | tier=not_relevant | no core matches | https://emplois.bnc.ca/en_CA/careers/searchjobs/?listFilterMode=1&jobRecordsPerPage=20&jobOffset=20
 
 ## Relevant Jobs After Scoring
@@ -104,7 +490,35 @@
 - Chief Python Developer | score 8 | tier=core_target_fit | Chief Python Developer Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-P5I27-DEVELOPPEUR-PRINCIPAL/33737
 - Senior Data Solution Architect | score 13 | tier=adjacent_customer_facing_technical_fit | Senior Data Solution Architect Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I75-ARCHITECTE-SENIOR-DE-SOLUTIONS-DONN-ES/33149
 - Senior Solutions Architect | score 13 | tier=adjacent_customer_facing_technical_fit | Senior Solutions Architect Montreal, Quebec Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I75-ARCHITECTE-SENIOR-DE-SOLUTIONS/32846
+- Senior Trading Support Analyst | score 1 | tier=core_target_fit | Senior Trading Support Analyst 3 possible locations Hybrid | https://emplois.bnc.ca/en_CA/careers/JobDetail/P3S03-ANALYSTE-SENIOR-SUPPORT-AUX-CAMBISTES/33251
 
 ## Rejected But Interesting Jobs
+- Capital Markets Chief Business Analyst | score 8 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6S13-ANALYSTE-PRINCIPAL-D-AFFAIRES/33391
+- Vendor Review Analyst | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/Canada-T1S33-ANALYSTE/33327
+- Telecom and Cloud Platform Technical Lead | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7I38-LEAD-TECHNIQUE-PLATEFORMES-T-L-COM-ET-CLOUD/33446
+- Investment Analyst | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V33-ANALYSTE-EN-PLACEMENT/32422
 - Chief Functional analyst | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-P5I65-ANALYSTE-PRINCIPAL-FONCTIONNEL/33277
+- Chief Functional Analyst Capital Markets | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I65-ANALYSTE-PRINCIPAL-FONCTIONNEL/33652
+- Chief Business Analyst | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-P6S13-ANALYSTE-PRINCIPAL-D-AFFAIRES/31961
+- Chief Application Integrator Analyst | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/MONTREAL-Quebec-Canada-P5I63-ANALYSTE-PRINCIPAL-APPLICATIF/31977
+- Analyst Segregation & Buy-in | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/T2S33-ANALYSTE/33480
+- Analyst Portfolio and Performance Analytical Lead | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5A50-ANALYSTE-PRINCIPAL-DE-LA-DONNEE/33225
+- Analyst | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://emplois.bnc.ca/en_CA/careers/JobDetail/T2S33-ANALYSTE/33197
+- Senior Subsidiary Accounting Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4F33-ANALYSTE-SENIOR/33142
+- Senior Engineering Developer, Site reliability | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P6I74-DEVELOPPEUR-SENIOR-EN-INGENIERIE-FIABILITE-DES-SITES-SRE/32997
+- Senior DevOps Integrator | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I27-INT-GRATEUR-SENIOR-DEVOPS/32032
+- Senior Architect – Cloud & Network Platforms | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P7I95-ARCHITECTE-PRINCIPAL-STRATEGIE-ET-LIVRAISON/33445
+- Senior Analyst Litigation | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4S33-ANALYSTE-SENIOR/33240
+- Senior Analyst Corporate Accounting | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4F33-ANALYSTE-SENIOR/32698
+- Senior Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R38-CONSEILLER/33138
+- Senior Administration Agent | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/T3S27-AGENT-SENIOR-ADMINISTRATION/33155
+- Operations Agent and Associate | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/S2V80-AGENT-AUX-OPERATIONS-ET-ADJOINT/33077
 - Operations Agent | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/S2S75-AGENT-AUX-OPERATIONS/33723
+- Model Risk Governance Senior Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4R38-CONSEILLER/33131
+- Investment Banking Analyst or Associate Private Company | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/Alberta-Canada-70021-ANALYST-Calgary/33414
+- Investment Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P4V33-ANALYSTE-EN-PLACEMENT/32024
+- IT Senior Analyst Network Security | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/P5I63-ANALYSTE-PRINCIPAL-APPLICATIF/33531
+- Electronic Foreign Exchange Trading Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/39991-ANALYSTE/33659
+- Branch Administrator | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/T1S46-Branch-Administrator/33082
+- Associate Director Infrastructures | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/70090-DIRECTEUR-ASSOCIE/32493
+- Analyst or Associate | score 0 | Rejected because no positive scoring signals survived after penalties. | https://emplois.bnc.ca/en_CA/careers/JobDetail/40014-ASSOCIE/33303

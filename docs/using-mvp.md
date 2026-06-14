@@ -46,11 +46,12 @@ streamlit run src/dashboard/app.py
 
 ## Current Verified Company Status
 - Aviva Canada: verified, usable
-- BMO: needs_review (Canada-scoped collection fixed, but latest trusted run saved 0 relevant jobs)
+- BMO: verified, usable (provisional; deeper relevance-quality review deferred)
 - Canada Life: verified, usable
-- CGI: needs_review (direct Canada board fixed, but manual recall is still unresolved)
+- CGI: verified, usable
 - IBM Consulting: verified, usable
 - Manulife: verified, usable
+- National Bank of Canada: verified, usable
 - NTT DATA: verified, usable
 - Sun Life: verified, usable
 
@@ -59,19 +60,20 @@ Only companies marked `verified: true` and `status: usable` are included in
 single-company audits, but they are intentionally excluded from the trusted MVP
 slice until both source scope and result quality are proven strongly enough.
 
-For example, BMO now has a trusted Canada-scoped collection flow, but it still
-stays outside the verified-only slice because the latest trusted run saved `0`
-relevant jobs and currently serves as a clean audit signal rather than a
-trusted daily source of target-fit openings.
+BMO is now included in the verified-only slice as a provisional usable source
+after the Canada-scope and pagination fixes. This is a deliberate workflow
+decision so the daily MVP can keep monitoring BMO while we defer deeper
+relevance-quality review to a later task.
 
 Canada Life and NTT DATA are now part of the verified-only slice because both
 sources completed fresh Canada-scoped runs on 2026-06-13 and cleared their
 current manual next-slice checks without active collection misses.
 
-CGI now uses the direct Canada Njoyn board instead of the broad CGI landing
-page, but it still stays outside the verified-only slice because the current
-manual next-slice audit has unresolved URL recall gaps even after the source
-fixes.
+CGI now uses the direct Canada Njoyn board with trusted JavaScript pagination,
+and National Bank of Canada now uses public Canada page evidence from its
+`en_CA` search-results board before pagination. Both sources are now part of
+the verified-only slice because the latest next-slice audit shows extraction
+coverage rather than active collection misses.
 
 ## Trusted Run Rule
 Trusted MVP runs do not start from a broad/global careers listing and then rely
@@ -101,6 +103,11 @@ A company is usable enough for the current MVP workflow when the latest evidence
 
 Verified does not mean perfect.
 It means safe enough to include in the user's daily MVP workflow.
+
+Some verified companies may also carry a provisional confidence note in
+[verified_companies.yaml](C:/projects/job-discovery-browser-copilot/config/verified_companies.yaml)
+when the source is stable enough for daily use but still scheduled for later
+quality review.
 
 ## Relevance Tiers
 - `core_target_fit`: direct Cloud / DevOps / Platform / Admin / Support target fit

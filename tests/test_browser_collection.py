@@ -16,6 +16,8 @@ from collectors.browser_collector import (
     SOURCE_SCOPE_CONFIRMED,
     _apply_source_scope_job_safety_gate,
     _build_source_scope_status,
+    _compute_max_cards_per_source,
+    _detect_national_bank_canada_page_evidence,
     _initial_source_scope_status,
     _source_navigation_timeout_ms,
     _url_uses_location_scope,
@@ -198,6 +200,11 @@ browser:
     )
 
     assert load_browser_max_pages_per_source(config_path) == 8
+
+
+def test_compute_max_cards_per_source_allows_dense_public_boards() -> None:
+    assert _compute_max_cards_per_source(1) == 100
+    assert _compute_max_cards_per_source(10) == 600
 
 
 def test_load_audit_scope_locations_uses_canada_only_audit_config(tmp_path: Path) -> None:
@@ -420,6 +427,15 @@ class _FakePage:
         return _FakeLocator()
 
 
+class _FakeNationalBankPage(_FakePage):
+    def __init__(self, html: str) -> None:
+        super().__init__("https://emplois.bnc.ca/en_CA/careers/searchjobs")
+        self._html = html
+
+    def content(self) -> str:
+        return self._html
+
+
 def test_collect_company_jobs_blocks_unconfirmed_scope_before_extraction(
     tmp_path: Path,
     monkeypatch,
@@ -457,6 +473,49 @@ def test_collect_company_jobs_blocks_unconfirmed_scope_before_extraction(
     assert result["pagination_stop_reason"] == "scope_not_confirmed_before_pagination"
     assert result["source_scope_confirmed"] is False
     assert result["source_scope_method"] == "manual_audit_url"
+
+
+def test_detect_national_bank_canada_page_evidence_confirms_visible_canadian_results() -> None:
+    page = _FakeNationalBankPage(
+        """
+        <table>
+          <tr>
+            <td data-th="Location(s)">Montreal, Quebec</td>
+          </tr>
+          <tr>
+            <td data-th="Location(s)">Toronto, Ontario</td>
+          </tr>
+          <tr>
+            <td data-th="Location(s)">Calgary, Alberta</td>
+          </tr>
+        </table>
+        """
+    )
+
+    evidence = _detect_national_bank_canada_page_evidence(page)
+
+    assert evidence is not None
+    assert evidence["method"] == "page_evidence"
+
+
+def test_detect_national_bank_canada_page_evidence_rejects_non_canadian_rows() -> None:
+    page = _FakeNationalBankPage(
+        """
+        <table>
+          <tr>
+            <td data-th="Location(s)">Montreal, Quebec</td>
+          </tr>
+          <tr>
+            <td data-th="Location(s)">New York, NY</td>
+          </tr>
+          <tr>
+            <td data-th="Location(s)">Toronto, Ontario</td>
+          </tr>
+        </table>
+        """
+    )
+
+    assert _detect_national_bank_canada_page_evidence(page) is None
 
 
 def test_collect_company_jobs_allows_broad_collection_only_for_diagnostics(

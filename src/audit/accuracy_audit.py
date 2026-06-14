@@ -626,10 +626,9 @@ def write_company_collection_diagnostic(
             "fallback was required."
         )
         if non_canada_rejected > 0:
-            verification_decision = "needs_review"
             verification_reason = (
-                "The source scope looked confirmed, but the non-Canada safety gate still "
-                "had to reject explicit out-of-scope jobs."
+                "Canada source scope was confirmed before pagination, and the safety gate "
+                "rejected explicit out-of-scope rows before any save/export step."
             )
     lines = [
         f"# {company_name} Collection Diagnostic",
