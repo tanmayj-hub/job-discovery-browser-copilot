@@ -18,6 +18,7 @@ VERIFIED_COMPANIES_CONFIG_PATH = BASE_DIR / "config" / "verified_companies.yaml"
 STARTER_CAREER_URLS_PATH = BASE_DIR / "config" / "starter_career_urls.yaml"
 DATABASE_PATH = BASE_DIR / "data" / "job_discovery.db"
 EXPORTS_DIR = BASE_DIR / "data" / "exports"
+REVIEW_EXPORT_PATH = EXPORTS_DIR / "review" / "saved-jobs-review.csv"
 PENDING_APPLICATION_STATUSES = ("new", "saved", "reviewed", "needs_manual_review")
 JOB_STATUS_OPTIONS = [
     "new",
@@ -102,6 +103,22 @@ def get_dashboard_api() -> dict[str, Any]:
         "filter_source_status_items": filter_source_status_items,
         "prepare_source_status_rows": prepare_source_status_rows,
         "score_and_save_manual_job": score_and_save_manual_job,
+    }
+
+
+def get_review_api() -> dict[str, Any]:
+    """Load saved-job review helpers after the src path is available."""
+
+    from review.saved_job_review import (
+        build_saved_jobs_review_dashboard_rows,
+        export_saved_jobs_review,
+        load_review_export_preview,
+    )
+
+    return {
+        "build_saved_jobs_review_dashboard_rows": build_saved_jobs_review_dashboard_rows,
+        "export_saved_jobs_review": export_saved_jobs_review,
+        "load_review_export_preview": load_review_export_preview,
     }
 
 
@@ -752,6 +769,82 @@ def render_application_tracker_tab(connection: Any) -> None:
             selector_label="Review rejected job",
             key_prefix="rejected_jobs",
         )
+
+
+def render_saved_job_review_tab(connection: Any) -> None:
+    """Render the lightweight saved-job review workflow."""
+
+    review_api = get_review_api()
+    feedback = st.session_state.pop("saved_job_review_feedback", None)
+    preview_rows = review_api["build_saved_jobs_review_dashboard_rows"](
+        connection,
+        verified_companies_path=VERIFIED_COMPANIES_CONFIG_PATH,
+    )
+
+    render_section_heading("Saved Job Review")
+    st.caption(
+        "Export the latest verified saved jobs to a simple CSV, then mark each row as "
+        "`useful`, `maybe`, `not_useful`, or `false_positive` during your review session."
+    )
+
+    if feedback:
+        st.success(
+            f"Exported `{feedback['exported_rows']}` rows to `{feedback['output_path']}`."
+        )
+
+    action_col1, action_col2 = st.columns([1.2, 2])
+    with action_col1:
+        if st.button("Refresh review CSV", use_container_width=True):
+            rows = review_api["export_saved_jobs_review"](
+                connection,
+                verified_companies_path=VERIFIED_COMPANIES_CONFIG_PATH,
+                output_path=REVIEW_EXPORT_PATH,
+            )
+            st.session_state["saved_job_review_feedback"] = {
+                "exported_rows": len(rows),
+                "output_path": str(REVIEW_EXPORT_PATH),
+            }
+            st.rerun()
+    with action_col2:
+        st.caption(
+            "Review file: "
+            f"`{REVIEW_EXPORT_PATH}`"
+        )
+
+    if REVIEW_EXPORT_PATH.exists():
+        st.download_button(
+            "Download review CSV",
+            data=REVIEW_EXPORT_PATH.read_bytes(),
+            file_name=REVIEW_EXPORT_PATH.name,
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+    if not preview_rows:
+        st.info(
+            "No latest verified saved jobs are available yet. Run "
+            "`python -m src.main daily-run --verified-only` first."
+        )
+        return
+
+    st.dataframe(
+        preview_rows,
+        hide_index=True,
+        use_container_width=True,
+        column_config={
+            "Job URL": st.column_config.LinkColumn(
+                "Job URL",
+                width="small",
+                display_text="Open",
+            ),
+            "Match Reasons": st.column_config.TextColumn("Match Reasons", width="large"),
+        },
+    )
+    st.info(
+        "Edit the CSV locally to fill `user_decision` and `user_notes`. The dashboard "
+        "keeps this step lightweight on purpose so we can collect real review data "
+        "before changing scoring."
+    )
 
 
 def render_company_watchlist_tab(connection: Any) -> None:
@@ -1516,6 +1609,7 @@ def main() -> None:
         "Daily Summary",
         "Source Readiness",
         "Jobs Found",
+        "Saved Job Review",
         "Application Tracker",
         "Company Watchlist",
         "Missing URLs",
@@ -1535,6 +1629,8 @@ def main() -> None:
         render_source_readiness_tab(connection)
     elif selected_section == "Jobs Found":
         render_jobs_tab(connection)
+    elif selected_section == "Saved Job Review":
+        render_saved_job_review_tab(connection)
     elif selected_section == "Application Tracker":
         render_application_tracker_tab(connection)
     elif selected_section == "Company Watchlist":

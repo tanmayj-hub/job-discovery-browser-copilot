@@ -17,6 +17,7 @@ if str(PACKAGE_DIR) not in sys.path:
 COMPANIES_CONFIG_PATH = PROJECT_ROOT / "config" / "companies.yaml"
 VERIFIED_COMPANIES_CONFIG_PATH = PROJECT_ROOT / "config" / "verified_companies.yaml"
 DATABASE_PATH = PROJECT_ROOT / "data" / "job_discovery.db"
+REVIEW_EXPORT_PATH = PROJECT_ROOT / "data" / "exports" / "review" / "saved-jobs-review.csv"
 
 
 def get_collection_api():
@@ -126,6 +127,16 @@ def get_verified_companies_api():
     return {
         "get_usable_verified_company_names": get_usable_verified_company_names,
         "load_verified_company_records": load_verified_company_records,
+    }
+
+
+def get_review_api():
+    """Load saved-job review helpers after the src path is available."""
+
+    from review.saved_job_review import export_saved_jobs_review
+
+    return {
+        "export_saved_jobs_review": export_saved_jobs_review,
     }
 
 
@@ -582,6 +593,23 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Markdown output path for the score explanation.",
     )
+
+    review_parser = subparsers.add_parser(
+        "review",
+        help="Export lightweight saved-job review artifacts",
+    )
+    review_subparsers = review_parser.add_subparsers(dest="review_command", required=True)
+
+    review_export = review_subparsers.add_parser(
+        "export-saved-jobs",
+        help="Export the latest verified saved jobs for manual review",
+    )
+    review_export.add_argument(
+        "--output",
+        type=Path,
+        default=REVIEW_EXPORT_PATH,
+        help="CSV output path for the saved-job review file.",
+    )
     return parser
 
 
@@ -613,6 +641,7 @@ def main(argv: list[str] | None = None) -> int:
     onboarding_api = get_onboarding_api()
     reports_api = get_reports_api()
     audit_api = get_audit_api()
+    review_api = get_review_api()
     connection = storage_api["initialize_database"](DATABASE_PATH)
     seed_companies_if_needed(connection)
 
@@ -977,6 +1006,20 @@ def main(argv: list[str] | None = None) -> int:
             source=source,
         )
         print(explanation.to_dict())
+        return 0
+
+    if args.command == "review" and args.review_command == "export-saved-jobs":
+        rows = review_api["export_saved_jobs_review"](
+            connection,
+            verified_companies_path=VERIFIED_COMPANIES_CONFIG_PATH,
+            output_path=args.output,
+        )
+        print(
+            {
+                "exported_rows": len(rows),
+                "output_path": str(args.output),
+            }
+        )
         return 0
 
     raise ValueError(f"Unsupported command: {args.command}")
