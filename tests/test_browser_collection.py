@@ -25,6 +25,7 @@ from collectors.browser_collector import (
     collect_company_jobs,
     load_audit_max_pages_per_source,
     load_audit_scope_locations,
+    load_browser_max_pages_for_company,
     load_browser_max_pages_per_source,
     load_source_scope_locations,
 )
@@ -200,6 +201,25 @@ browser:
     )
 
     assert load_browser_max_pages_per_source(config_path) == 8
+
+
+def test_load_browser_max_pages_for_company_uses_company_override(tmp_path: Path) -> None:
+    config_path = tmp_path / "discovery.yaml"
+    config_path.write_text(
+        """
+source_scope:
+  locations:
+    - Canada
+browser:
+  max_pages_per_source: 8
+  per_company_max_pages:
+    Scotiabank: 15
+""",
+        encoding="utf-8",
+    )
+
+    assert load_browser_max_pages_for_company("Scotiabank", config_path) == 15
+    assert load_browser_max_pages_for_company("RBC", config_path) == 8
 
 
 def test_compute_max_cards_per_source_allows_dense_public_boards() -> None:
@@ -691,3 +711,58 @@ def test_collect_company_jobs_confirms_ntt_scope_from_country_facet(
     assert result["source_scope_confirmed"] is True
     assert result["source_scope_method"] == "ui_filter"
     assert result["location_filter_method"] == "ntt_country_facet"
+
+
+def test_collect_company_jobs_confirms_rbc_scope_from_country_facet(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    company = _browser_company(
+        name="RBC",
+        careers_url="https://jobs.rbc.com/ca/en/search-results?from=140&s=1",
+    )
+    upsert_companies(connection, [company])
+
+    monkeypatch.setattr("collectors.browser_collector.dismiss_cookie_banner", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.dismiss_ibm_language_prompt",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.navigate_to_job_search_page",
+        lambda page: None,
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.detect_browser_barriers",
+        lambda **kwargs: [],
+    )
+    monkeypatch.setattr("collectors.browser_collector.find_search_input", lambda page: None)
+    monkeypatch.setattr(
+        "collectors.browser_collector.apply_rbc_canada_filter",
+        lambda page, location_scope: "Canada (RBC country facet)",
+    )
+    monkeypatch.setattr(
+        "collectors.browser_collector.extract_visible_job_cards_with_diagnostics",
+        lambda *args, **kwargs: (
+            [],
+            SimpleNamespace(
+                pagination_detected=False,
+                pagination_stop_reason="no_jobs_found",
+                pages_visited=["https://jobs.rbc.com/ca/en/search-results?from=140&s=1"],
+                jobs_extracted_per_page=[0],
+                page_html_snapshots=[],
+            ),
+        ),
+    )
+
+    result = collect_company_jobs(
+        connection,
+        company=company,
+        page=_FakePage(str(company["careers_url"])),
+    )
+
+    assert result["status"] == "completed"
+    assert result["source_scope_confirmed"] is True
+    assert result["source_scope_method"] == "ui_filter"
+    assert result["location_filter_method"] == "rbc_country_facet"

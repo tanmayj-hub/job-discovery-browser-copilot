@@ -4,7 +4,7 @@
 - Companies audited: RBC, TD, Scotiabank
 - Manual filter used: Canada only
 - City/province/remote filters: not applied
-- Pages checked manually: first 10 pages per source
+- Pages checked manually: TD first 10 pages; RBC and Scotiabank first 15 pages
 
 ## Manual Expected URL Counts
 | Company | Expected URLs |
@@ -17,27 +17,28 @@
 | Status | Count |
 | --- | ---: |
 | saved_by_mvp | 3 |
-| extracted_and_relevant | 1 |
-| extracted_but_rejected_by_scoring | 0 |
+| extracted_and_relevant | 4 |
+| extracted_but_rejected_by_scoring | 1 |
 | outside_scope | 0 |
 | inactive_or_expired | 0 |
 | active_but_not_in_current_listing | 0 |
 | outside_current_listing_scope | 0 |
 | manual_intervention_required | 0 |
-| missed_by_collection | 8 |
+| missed_by_collection | 4 |
 | blocked_or_not_tested | 0 |
 | unknown | 0 |
 
 ## Per-Company Status Counts
 - RBC: missed_by_collection=4
 - TD: saved_by_mvp=3
-- Scotiabank: extracted_and_relevant=1, missed_by_collection=4
+- Scotiabank: extracted_and_relevant=4, extracted_but_rejected_by_scoring=1
 
 ## Per-Company Analysis
 ### RBC
 - Manual career page: https://jobs.rbc.com/ca/en/search-results?from=140&s=1
 - Filter used: Canada, sort by most recent, sub category= technology, project and program management, operations and business management.
 - Pages checked: first 15
+- Note: the current compare output is against the trusted broad Canada-only MVP listing. These manual RBC URLs were found with extra public subcategory filters that the trusted collector does not apply, so the remaining `missed_by_collection` rows should be treated carefully and not read as a broken Canada-scope confirmation.
 
 | Manual URL | Manual Title | Status | Matched Title | Score | Tier | Reasons | Rejection/Notes |
 | --- | --- | --- | --- | ---: | --- | --- | --- |
@@ -63,10 +64,10 @@
 | Manual URL | Manual Title | Status | Matched Title | Score | Tier | Reasons | Rejection/Notes |
 | --- | --- | --- | --- | ---: | --- | --- | --- |
 | https://jobs.scotiabank.com/job/Toronto-Developer%2C-Platform-Engineering-ON/600736517/ | - | extracted_and_relevant | Developer, Platform Engineering | 49 | core_target_fit | title matches target role: Platform Engineer; location signals: Toronto | Saved as relevant because the job had a positive score and at least one core non-location signal. |
-| https://jobs.scotiabank.com/job/Toronto-Private-Cloud-Engineer-ON-M1L4S2/602836217/ | - | missed_by_collection | - | - | not_relevant | - | - |
-| https://jobs.scotiabank.com/job/Toronto-Staff-Software-Engineer-%28Cloud-CICD-Platforms%29-ON-M5H-1H1/602658317/ | - | missed_by_collection | - | - | not_relevant | - | - |
-| https://jobs.scotiabank.com/job/Toronto-Software-Engineer%2C-%28Cloud-CICD-Platforms%29-ON-M5H-1H1/602664117/ | - | missed_by_collection | - | - | not_relevant | - | - |
-| https://jobs.scotiabank.com/job/Toronto-Senior-DevOps-Engineer-ON-M5H4A6/601192017/ | - | missed_by_collection | - | - | not_relevant | - | - |
+| https://jobs.scotiabank.com/job/Toronto-Private-Cloud-Engineer-ON-M1L4S2/602836217/ | - | extracted_and_relevant | Private Cloud Engineer | 49 | core_target_fit | title matches target role: Cloud Engineer; location signals: Toronto | Saved as relevant because the job had a positive score and at least one core non-location signal. |
+| https://jobs.scotiabank.com/job/Toronto-Staff-Software-Engineer-%28Cloud-CICD-Platforms%29-ON-M5H-1H1/602658317/ | - | extracted_but_rejected_by_scoring | Staff Software Engineer (Cloud CICD Platforms) | - | not_relevant | matched skills: CI/CD; location signals: Toronto | Rejected because no positive scoring signals survived after penalties. |
+| https://jobs.scotiabank.com/job/Toronto-Software-Engineer%2C-%28Cloud-CICD-Platforms%29-ON-M5H-1H1/602664117/ | - | extracted_and_relevant | Software Engineer, (Cloud CICD Platforms) | 8 | core_target_fit | matched skills: CI/CD; location signals: Toronto | Saved as relevant because the job had a positive score and at least one core non-location signal. |
+| https://jobs.scotiabank.com/job/Toronto-Senior-DevOps-Engineer-ON-M5H4A6/601192017/ | - | extracted_and_relevant | Senior DevOps Engineer | 34 | core_target_fit | title matches target role: DevOps Engineer; location signals: Toronto | Saved as relevant because the job had a positive score and at least one core non-location signal. |
 
 ## Scoring And Tier Analysis
 - `core_target_fit` keeps the original Cloud/DevOps/Admin/Support target intact.
@@ -75,6 +76,7 @@
 
 ## Recommended Fixes
 - Prioritize collection gaps first where the manual URL never appeared in scored candidates.
+- Review rejected-but-extracted rows next to confirm whether scoring should promote them.
 - Preserve the current core-target scoring path for rows already saved cleanly by the MVP.
 
 ## Remaining Limitations

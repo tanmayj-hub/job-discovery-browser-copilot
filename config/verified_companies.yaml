@@ -65,10 +65,10 @@ verified_companies:
     verified_at: "2026-06-14"
     scope: Canada
     status: needs_review
-    notes: "The direct official search-results URL now collects 100 candidates across 10 pages in diagnostic mode, but the trusted run still cannot confirm Canada-only scope before pagination. The current manual bank-slice audit remains 0/4 with all expected URLs missed by collection."
+    notes: "The direct official search-results URL now completes a trusted Canada-scoped run after applying RBC's public Country=Canada facet before pagination, with 100 discovered candidates, 4 relevant saves, and 0 explicit non-Canada saved rows. It remains out of the verified-only slice for now because the current manual bank audit uses extra subcategory filters that are not part of the trusted broad Canada-only policy, so the remaining 0/4 URL matches are not yet an apples-to-apples verification check."
   - company_name: Scotiabank
-    verified: false
+    verified: true
     verified_at: "2026-06-14"
     scope: Canada
-    status: needs_review
-    notes: "The direct official Canada-filtered search URL is now trusted and stable, with 258 discovered candidates and 6 relevant saves across 10 pages, but the current manual bank-slice audit remains incomplete at 1/5 matched and 4/5 missed by collection."
+    status: usable
+    notes: "Promoted after extending the trusted Canada-scoped pagination cap to 15 pages on the official locationsearch=canada board. The fresh run discovered 383 candidates, saved 6 relevant jobs, and the current bank-slice manual audit no longer has active collection misses: 4/5 expected URLs are extracted_and_relevant and 1/5 is extracted_but_rejected_by_scoring."

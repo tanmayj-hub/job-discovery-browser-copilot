@@ -28,16 +28,16 @@
 - Next/load-more detection result: detected
 - Max pages per source: 10
 - Pages visited: 9
-- Jobs extracted per page: [51, 51, 51, 51, 51, 51, 51, 51, 16]
+- Jobs extracted per page: [51, 51, 51, 51, 51, 51, 51, 51, 13]
 - Pagination stop reason: next_disabled_or_missing
 
 ## Counts
-- Candidate jobs before scoring: 416
-- Jobs after scoring: 416
+- Candidate jobs before scoring: 413
+- Jobs after scoring: 413
 - Relevant jobs after scoring: 53
 - Explicit non-Canada jobs rejected by safety gate: 1
 - Relevant jobs with unknown/blank location text: 0
-- Unique IBM jobIds extracted: 414
+- Unique IBM jobIds extracted: 411
 - Unique Workday job IDs extracted: 0
 - Scored candidates CSV: data\exports\audits\CGI-scored-candidates.csv
 
@@ -53,8 +53,8 @@
 - https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=joblisting
 
 ## Verification Decision
-- Decision: needs_review
-- Reason: The source scope looked confirmed, but the non-Canada safety gate still had to reject explicit out-of-scope jobs.
+- Decision: ready_for_verified_review
+- Reason: Canada source scope was confirmed before pagination, and the safety gate rejected explicit out-of-scope rows before any save/export step.
 
 ## Candidate Jobs Before Scoring
 - ServiceNow Administrator/Developer | Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0626-0750&BRID=1308405&lang=1
@@ -399,7 +399,6 @@
 - Agentic AI Architect | Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0126-1942&BRID=1264525&lang=1
 - Payroll Specialist | Montréal, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1595&BRID=1292927&lang=1
 - Director of Consulting Services | Fredericton, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1565&BRID=1292921&lang=1
-- Senior Full Stack Developer | Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1228&BRID=1290751&lang=1
 - Développeur/euse DevSecOps | Québec, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1212&BRID=1292531&lang=1
 - Sr. Business Analyst (Payments) | Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0226-0958&BRID=1274130&lang=1
 - Sr. Wire Payments Business System Analyst | Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0126-1552&BRID=1268841&lang=1
@@ -410,9 +409,7 @@
 - Conseiller sénior ou une conseillère séniore en stratégie et gouvernance de l'IA | Québec, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-0670&BRID=1291334&lang=1
 - Développeur sénior ou développeuse séniore en intelligence artificielle | Québec, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-0669&BRID=1291316&lang=1
 - Conseiller sénior ou une conseillère séniore en architecture de données-Databricks | Québec, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-0668&BRID=1291300&lang=1
-- Senior Support Advisor – Time Management | Montréal, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1229&BRID=1290786&lang=1
 - Azure Data Engineering Specialist | Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0126-0281&BRID=1259026&lang=1
-- Inside Sales Representative | Montréal, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1172&BRID=1290681&lang=1
 - Analyste-développeur IBM iSeries | Montréal, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1140&BRID=1290655&lang=1
 - Delivery Lead – QE Technology | Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0326-2902&BRID=1290523&lang=1
 - Azure Data Analyst | Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-0560&BRID=1290420&lang=1
@@ -472,7 +469,7 @@
 - Conseiller expert en gouvernance de portefeuille de projets | Québec, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J1225-1502&BRID=1257121&lang=1
 - Multilingual Service Desk Analyst (German/English) with work location Philippines (m/f/d) | Eschborn, Any CGI location | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0321-3585&BRID=804338&lang=1
 - Customer Service Agent | Montréal, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0725-0381&BRID=1220432&lang=1
-- J0226-0850 - Business Master Data Analyst | J0226-0850 - Business Master Data Analyst Category Business Analysis (functional and technical) City Sherbrooke Country Canada View Job Details J1125-1198 - Acc | https://cgi.njoyn.com/CORP/xweb/XWeb.asp?NTKN=c&Page=JobDetails&Jobid=J0226-0850&BRID=1273728&SBDID=1&searchFilled=
+- J1025-1057 - Full-Stack AI Developer | J1025-1057 - Full-Stack AI Developer Category Analytics and Emerging Digital Technologies City Montreal Country Canada View Job Details J1125-2224 - Lead Develo | https://cgi.njoyn.com/CORP/xweb/XWeb.asp?NTKN=c&Page=JobDetails&Jobid=J1025-1057&BRID=1241099&SBDID=1&searchFilled=
 
 ## Scored Candidates
 - Windows/Linux Systems Administrator – Cloud Focus (AWS/Azure) | score 69 | relevant=True | tier=core_target_fit | title matches target role: Systems Administrator; matched skills: AWS, Azure, Linux; location signals: Canada; support/ops signals: administrator, admin | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0226-1829&BRID=1276643&lang=1
@@ -488,6 +485,7 @@
 - AI Solution Architect — Intermediate | score 28 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Canada; adjacent customer-facing technical fit: Solution Architect | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0226-0191&BRID=1268963&lang=1
 - AI Solution Architect | score 28 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Canada; adjacent customer-facing technical fit: Solution Architect | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-1595&BRID=1301844&lang=1
 - Business Systems Analyst | score 26 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto, Canada; adjacent customer-facing technical fit: Business Systems Analyst (technical context) | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1929&BRID=1298294&lang=1
+- J1025-1057 - Full-Stack AI Developer | score 24 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Canada; support/ops signals: admin; adjacent customer-facing technical fit: Solution Architect | https://cgi.njoyn.com/CORP/xweb/XWeb.asp?NTKN=c&Page=JobDetails&Jobid=J1025-1057&BRID=1241099&SBDID=1&searchFilled=
 - Business Systems Analyst (BSA) - Payments | score 22 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Canada; adjacent customer-facing technical fit: Business Systems Analyst (technical context) | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1175&BRID=1290666&lang=1
 - Sr. L3 Support Analyst | score 20 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Toronto, Canada; support/ops signals: support | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-0933&BRID=1301634&lang=1
 - Sr. IT Release & Support Specialist | score 20 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Toronto, Canada; support/ops signals: support | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0626-0201&BRID=1305340&lang=1
@@ -502,7 +500,6 @@
 - Business Support Analyst | score 16 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Canada; support/ops signals: support | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0326-2797&BRID=1285786&lang=1
 - Application Support / Application Steward | score 16 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Canada; support/ops signals: support | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1590&BRID=1293954&lang=1
 - Senior AI Solution Architect | score 13 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Canada; adjacent customer-facing technical fit: Solution Architect | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0825-0783&BRID=1228322&lang=1
-- J0226-0850 - Business Master Data Analyst | score 13 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto, Canada; support/ops signals: admin; adjacent customer-facing technical fit: Solution Architect | https://cgi.njoyn.com/CORP/xweb/XWeb.asp?NTKN=c&Page=JobDetails&Jobid=J0226-0850&BRID=1273728&SBDID=1&searchFilled=
 - Middleware Administrator – IBM MQ & Messaging Systems (Intermediate) | score 12 | relevant=True | tier=core_target_fit | location signals: Canada; support/ops signals: administrator, admin | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-0008&BRID=1296137&lang=1
 - IT Service Operations Lead | score 12 | relevant=True | tier=core_target_fit | location signals: Canada; support/ops signals: operations | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-1293&BRID=1300885&lang=1
 - HR Systems and Operations Analyst | score 12 | relevant=True | tier=core_target_fit | location signals: Canada; support/ops signals: operations | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-2094&BRID=1302755&lang=1
@@ -639,7 +636,6 @@
 - Intermediate Data Engineering Specialist | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-2231&BRID=1295060&lang=1
 - Intermediate .NET Developer – Microsoft Ecosystem | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1782&BRID=1293302&lang=1
 - Integration Advisor Grand Livre | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0326-0091&BRID=1278532&lang=1
-- Inside Sales Representative | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1172&BRID=1290681&lang=1
 - Implementation Advisor - Payroll | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0126-1163&BRID=1290413&lang=1
 - IT Business Analyst (Intermediate) – Financial Systems | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0326-2884&BRID=1286350&lang=1
 - Human Resources Business Partner | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0626-0724&BRID=1307664&lang=1
@@ -773,7 +769,6 @@
 - Senior UKG Pro Payroll & WFM Configuration Specialist (US Payroll) | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-1052&BRID=1300221&lang=1
 - Senior Technical Project Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0626-0689&BRID=1307727&lang=1
 - Senior Technical Project Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-1911&BRID=1302477&lang=1
-- Senior Support Advisor – Time Management | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1229&BRID=1290786&lang=1
 - Senior Software Engineering Specialist | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-2110&BRID=1308341&lang=1
 - Senior Salesforce Developer (Financial Services Cloud) | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-2023&BRID=1302977&lang=1
 - Senior Salesforce Developer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-2372&BRID=1295707&lang=1
@@ -802,7 +797,6 @@
 - Senior Full Stack Developer/Lead | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0626-0198&BRID=1307131&lang=1
 - Senior Full Stack Developer - Nodejs and React | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0126-1533&BRID=1273473&lang=1
 - Senior Full Stack Developer (Azure) | score 0 | relevant=False | tier=not_relevant | matched skills: Azure; location signals: Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0126-0525&BRID=1260800&lang=1
-- Senior Full Stack Developer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1228&BRID=1290751&lang=1
 - Senior Frontend Developer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0326-2162&BRID=1285005&lang=1
 - Senior Financial Analyst – Accounting Policies Group | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-1089&BRID=1300294&lang=1
 - Senior Financial Analyst | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0626-0097&BRID=1304695&lang=1
@@ -945,7 +939,7 @@
 - Développeur Python | score 8 | tier=core_target_fit | Shawinigan, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0924-0195&BRID=1152458&lang=1
 - Windows/Linux Systems Administrator – Cloud Focus (AWS/Azure) | score 69 | tier=core_target_fit | Montreal, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0226-1829&BRID=1276643&lang=1
 - Solution Architect – AI Cloud Strategist | score 28 | tier=adjacent_customer_facing_technical_fit | Sherbrooke, Canada | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J1125-2226&BRID=1252104&lang=1
-- J0226-0850 - Business Master Data Analyst | score 13 | tier=adjacent_customer_facing_technical_fit | J0226-0850 - Business Master Data Analyst Category Business Analysis (functional and technical) City Sherbrooke Country Canada View Job Details J1125-1198 - Acc | https://cgi.njoyn.com/CORP/xweb/XWeb.asp?NTKN=c&Page=JobDetails&Jobid=J0226-0850&BRID=1273728&SBDID=1&searchFilled=
+- J1025-1057 - Full-Stack AI Developer | score 24 | tier=adjacent_customer_facing_technical_fit | J1025-1057 - Full-Stack AI Developer Category Analytics and Emerging Digital Technologies City Montreal Country Canada View Job Details J1125-2224 - Lead Develo | https://cgi.njoyn.com/CORP/xweb/XWeb.asp?NTKN=c&Page=JobDetails&Jobid=J1025-1057&BRID=1241099&SBDID=1&searchFilled=
 
 ## Rejected But Interesting Jobs
 - Testing Engineering | score 8 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0626-0453&BRID=1307263&lang=1
@@ -1024,7 +1018,6 @@
 - AI Specialist – Platform & Solutions | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0126-1675&BRID=1263781&lang=1
 - AI Automation Engineer (Data Products) | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J1025-1615&BRID=1242646&lang=1
 - Storage Administrator (Senior) | score 0 | Rejected because no positive scoring signals survived after penalties. | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-2547&BRID=1304495&lang=1
-- Senior Support Advisor – Time Management | score 0 | Rejected because no positive scoring signals survived after penalties. | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0426-1229&BRID=1290786&lang=1
 - Senior Software Engineering Specialist | score 0 | Rejected because no positive scoring signals survived after penalties. | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-2110&BRID=1308341&lang=1
 - Senior Salesforce Developer (Financial Services Cloud) | score 0 | Rejected because no positive scoring signals survived after penalties. | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-2023&BRID=1302977&lang=1
 - Senior QA Automation Analyst / SDET | score 0 | Rejected because no positive scoring signals survived after penalties. | https://cgi.njoyn.com/CORP/xweb/xweb.asp?NTKN=c&clid=21001&Page=JobDetails&Jobid=J0526-1760&BRID=1302498&lang=1

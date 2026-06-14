@@ -53,6 +53,7 @@ streamlit run src/dashboard/app.py
 - Manulife: verified, usable
 - National Bank of Canada: verified, usable
 - NTT DATA: verified, usable
+- Scotiabank: verified, usable
 - Sun Life: verified, usable
 - TD: verified, usable
 
@@ -80,10 +81,18 @@ TD is now part of the verified-only slice because the direct Canada-filtered
 Workday URL completed a fresh trusted run on 2026-06-14 and the current bank
 manual URL audit matched all `3 / 3` expected URLs as `saved_by_mvp`.
 
-RBC and Scotiabank remain outside the verified-only slice for now. RBC still
-needs a trusted public Country=Canada confirmation path before pagination, and
-Scotiabank still has active recall misses in the current manual bank-slice
-audit even after its Canada-filtered source URL was fixed.
+Scotiabank is now part of the verified-only slice because the official
+Canada-filtered board cleared its current collection recall gap after the
+trusted pagination cap was safely extended to 15 pages. The latest manual
+bank-slice audit shows `4 / 5` expected URLs as `extracted_and_relevant` and
+the final `1 / 5` as `extracted_but_rejected_by_scoring`, so the remaining
+gap is scoring-only rather than collection.
+
+RBC remains outside the verified-only slice for now. The trusted public
+Country=Canada confirmation path before pagination is now fixed, but the
+current manual expected URLs were gathered with extra subcategory filters that
+are not part of the trusted broad Canada-only MVP policy, so that audit still
+needs a cleaner apples-to-apples rerun before promotion.
 
 ## Trusted Run Rule
 Trusted MVP runs do not start from a broad/global careers listing and then rely

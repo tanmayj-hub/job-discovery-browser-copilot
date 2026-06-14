@@ -12,6 +12,8 @@ keyword_fallback:
 
 browser:
   max_pages_per_source: 10
+  per_company_max_pages:
+    Scotiabank: 15
 
 routing:
   api_fallback_to_browser: false

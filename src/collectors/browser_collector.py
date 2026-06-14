@@ -17,7 +17,9 @@ from browser.extraction import (
     _wait_for_visible_bmo_job_links,
     apply_ibm_canada_filter,
     apply_ntt_canada_filter,
+    apply_rbc_canada_filter,
     detect_bmo_canada_page_evidence,
+    detect_rbc_canada_page_evidence,
     dismiss_cookie_banner,
     dismiss_ibm_language_prompt,
     extract_visible_job_cards_with_diagnostics,
@@ -311,7 +313,10 @@ def collect_company_jobs(
     source_name = str(company.get("website_category") or company_name)
     careers_url = str(company.get("careers_url") or "").strip()
     location_scope = location_scope_override or load_source_scope_locations()
-    max_pages_per_source = max_pages_per_source_override or load_browser_max_pages_per_source()
+    max_pages_per_source = (
+        max_pages_per_source_override
+        or load_browser_max_pages_for_company(company_name)
+    )
     max_cards_per_source = _compute_max_cards_per_source(max_pages_per_source)
 
     classification = classify_source(
@@ -455,6 +460,33 @@ def collect_company_jobs(
                     confirmed=True,
                     method="ui_filter",
                     reason="NTT DATA's public Country facet was applied before pagination.",
+                    source_url_used=page.url or careers_url,
+                )
+                location_scope_used = True
+        if not source_scope_status.confirmed:
+            rbc_filter_query = apply_rbc_canada_filter(page, location_scope)
+            if rbc_filter_query:
+                location_queries.append(rbc_filter_query)
+                location_filter_method = "rbc_country_facet"
+                source_scope_status = _build_source_scope_status(
+                    status=SOURCE_SCOPE_CONFIRMED,
+                    confirmed=True,
+                    method="ui_filter",
+                    reason="RBC's public Country=Canada facet was applied before pagination.",
+                    source_url_used=page.url or careers_url,
+                )
+                location_scope_used = True
+        if not source_scope_status.confirmed:
+            rbc_evidence = detect_rbc_canada_page_evidence(page)
+            if rbc_evidence:
+                location_queries.append("Canada (RBC visible filter)")
+                location_filter_method = "rbc_page_evidence"
+                source_scope_status = _build_source_scope_status(
+                    status=SOURCE_SCOPE_CONFIRMED,
+                    confirmed=True,
+                    method=str(rbc_evidence.get("method") or "page_evidence"),
+                    reason=str(rbc_evidence.get("reason") or "").strip()
+                    or "RBC's visible results page showed an active Canada filter.",
                     source_url_used=page.url or careers_url,
                 )
                 location_scope_used = True
@@ -894,6 +926,30 @@ def load_browser_max_pages_per_source(
         value = int(raw_value)
     except (TypeError, ValueError):
         return DEFAULT_MAX_PAGES_PER_SOURCE
+    return max(1, value)
+
+
+def load_browser_max_pages_for_company(
+    company_name: str,
+    path: Path = DEFAULT_DISCOVERY_CONFIG_PATH,
+) -> int:
+    """Load a company-specific browser pagination cap when configured."""
+
+    default_value = load_browser_max_pages_per_source(path)
+    if not path.exists():
+        return default_value
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    browser_config = payload.get("browser", {})
+    if not isinstance(browser_config, dict):
+        return default_value
+    per_company = browser_config.get("per_company_max_pages", {})
+    if not isinstance(per_company, dict):
+        return default_value
+    raw_value = per_company.get(company_name)
+    try:
+        value = int(raw_value)
+    except (TypeError, ValueError):
+        return default_value
     return max(1, value)
 
 

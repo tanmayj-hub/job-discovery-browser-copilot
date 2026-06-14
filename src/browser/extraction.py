@@ -345,6 +345,98 @@ def is_ntt_careers_search_url(url: str) -> bool:
     return parsed.netloc == "careers.services.global.ntt" and "/search-results" in parsed.path
 
 
+def is_rbc_careers_search_url(url: str) -> bool:
+    """Return True when the URL is RBC's public Canada search-results page."""
+
+    parsed = urlparse(str(url or "").strip().lower())
+    return parsed.netloc == "jobs.rbc.com" and "/search-results" in parsed.path
+
+
+def detect_rbc_canada_page_evidence(page: Page) -> dict[str, Any] | None:
+    """Return trusted Canada-scope evidence from RBC's visible results page when available."""
+
+    if not is_rbc_careers_search_url(page.url):
+        return None
+
+    try:
+        evidence = page.evaluate(
+            """
+            () => {
+              const visible = (element) => {
+                if (!element || typeof element.getBoundingClientRect !== 'function') return false;
+                const style = window.getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return style.display !== 'none'
+                  && style.visibility !== 'hidden'
+                  && rect.width > 0
+                  && rect.height > 0;
+              };
+
+              const activeCanadaChip = Array.from(
+                document.querySelectorAll('button, a, span, div')
+              ).some((node) => {
+                if (!visible(node)) return false;
+                const text = (node.textContent || '').trim();
+                const parentText = (node.parentElement?.textContent || '').trim();
+                return text === 'Canada' && parentText.includes('Clear all');
+              });
+
+              const countryFacet = document.querySelector(
+                'input[data-ph-at-facetkey="facet-country"][data-ph-at-text="Canada"]'
+              );
+              const countryFacetChecked = Boolean(
+                countryFacet
+                && (
+                  countryFacet.checked
+                  || String(
+                    countryFacet.getAttribute('aria-checked') || ''
+                  ).toLowerCase() === 'true'
+                )
+              );
+
+              const visibleLinks = Array.from(
+                document.querySelectorAll('a[data-ph-at-id="job-link"]')
+              ).filter((node) => visible(node));
+
+              return {
+                activeCanadaChip,
+                countryFacetPresent: Boolean(countryFacet),
+                countryFacetChecked,
+                visibleJobLinkCount: visibleLinks.length,
+                sampleHrefs: visibleLinks.slice(0, 10).map((node) => node.href || ''),
+              };
+            }
+            """,
+        )
+    except Exception:  # noqa: BLE001
+        return None
+
+    if not isinstance(evidence, dict):
+        return None
+
+    visible_count = int(evidence.get("visibleJobLinkCount", 0) or 0)
+    if visible_count <= 0:
+        return None
+    if not (
+        evidence.get("activeCanadaChip")
+        or evidence.get("countryFacetChecked")
+    ):
+        return None
+
+    return {
+        "confirmed": True,
+        "method": "page_evidence",
+        "reason": (
+            "RBC's visible results page showed an active Canada filter before pagination."
+        ),
+        "visible_job_link_count": visible_count,
+        "active_canada_chip": bool(evidence.get("activeCanadaChip")),
+        "country_facet_present": bool(evidence.get("countryFacetPresent")),
+        "country_facet_checked": bool(evidence.get("countryFacetChecked")),
+        "sample_hrefs": list(evidence.get("sampleHrefs") or []),
+    }
+
+
 def detect_bmo_canada_page_evidence(page: Page) -> dict[str, Any] | None:
     """Return trusted Canada-scope evidence from BMO's visible results page when available."""
 
@@ -586,6 +678,41 @@ def _count_visible_ntt_job_links(page: Page) -> int:
         return 0
 
 
+def _count_visible_rbc_job_links(page: Page) -> int:
+    """Return the count of visible RBC result links on the current page."""
+
+    if not is_rbc_careers_search_url(page.url):
+        return 0
+
+    try:
+        count = page.evaluate(
+            """
+            () => {
+              const visible = (element) => {
+                if (!element || typeof element.getBoundingClientRect !== 'function') return false;
+                const style = window.getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return style.display !== 'none'
+                  && style.visibility !== 'hidden'
+                  && rect.width > 0
+                  && rect.height > 0;
+              };
+
+              return Array.from(
+                document.querySelectorAll('a[data-ph-at-id="job-link"]')
+              ).filter((node) => visible(node)).length;
+            }
+            """,
+        )
+    except Exception:  # noqa: BLE001
+        return 0
+
+    try:
+        return int(count or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
 def apply_ntt_canada_filter(
     page: Page,
     location_scope: Iterable[str],
@@ -631,6 +758,58 @@ def apply_ntt_canada_filter(
                     return "Canada (NTT country facet)"
             if hasattr(checkbox, "is_checked") and checkbox.is_checked():
                 return "Canada (NTT country facet)"
+        except Exception:  # noqa: BLE001
+            continue
+    return None
+
+
+def apply_rbc_canada_filter(
+    page: Page,
+    location_scope: Iterable[str],
+) -> str | None:
+    """Apply RBC's public Country=Canada facet when the page exposes it."""
+
+    if not is_rbc_careers_search_url(page.url):
+        return None
+    normalized_scope = {
+        str(item).strip().lower() for item in location_scope if str(item).strip()
+    }
+    if "canada" not in normalized_scope:
+        return None
+
+    try:
+        country_button = page.locator("button:has-text('Country')").first
+        if country_button.is_visible():
+            country_button.click()
+            page.wait_for_timeout(500)
+    except Exception:  # noqa: BLE001
+        return None
+
+    selectors = (
+        "label:has(input[data-ph-at-facetkey='facet-country'][data-ph-at-text='Canada'])",
+        "input[data-ph-at-facetkey='facet-country'][data-ph-at-text='Canada']",
+        "label:has-text('Canada')",
+    )
+    for selector in selectors:
+        locator = page.locator(selector)
+        if locator.count() == 0 or not locator.first.is_visible():
+            continue
+        candidate = locator.first
+        try:
+            if hasattr(candidate, "is_checked") and candidate.is_checked():
+                return "Canada (RBC country facet)"
+            if hasattr(candidate, "check"):
+                candidate.check(force=True)
+            else:
+                try:
+                    candidate.click(force=True)
+                except TypeError:
+                    candidate.click()
+            for _ in range(10):
+                page.wait_for_timeout(500)
+                evidence = detect_rbc_canada_page_evidence(page)
+                if evidence or _count_visible_rbc_job_links(page) > 0:
+                    return "Canada (RBC country facet)"
         except Exception:  # noqa: BLE001
             continue
     return None

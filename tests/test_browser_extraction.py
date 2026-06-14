@@ -5,7 +5,9 @@ from pathlib import Path
 from browser.extraction import (
     apply_ibm_canada_filter,
     apply_ntt_canada_filter,
+    apply_rbc_canada_filter,
     detect_bmo_canada_page_evidence,
+    detect_rbc_canada_page_evidence,
     dismiss_cookie_banner,
     dismiss_ibm_language_prompt,
     extract_jobs_from_html,
@@ -14,6 +16,7 @@ from browser.extraction import (
     has_interactive_job_cards,
     is_ibm_careers_search_url,
     is_probable_job_listing,
+    is_rbc_careers_search_url,
     navigate_to_job_search_page,
     search_with_location_term,
 )
@@ -441,6 +444,57 @@ class FakeNttFilterPage:
 
     def evaluate(self, script: str):
         if 'a.au-target[href*="/job/"]' in script:
+            return 3 if self.filtered else 0
+        return []
+
+
+class FakeRbcFacetLocatorItem(FakeLocatorItem):
+    def click(self, force: bool = False) -> None:  # noqa: ARG002
+        self.page.filtered = True
+
+
+class FakeRbcFilterPage:
+    def __init__(self) -> None:
+        self._url = "https://jobs.rbc.com/ca/en/search-results?from=140&s=1"
+        self.country_button = FakeLocatorItem(self, "Country")
+        self.canada_label = FakeRbcFacetLocatorItem(self, "Canada")
+        self.filtered = False
+
+    @property
+    def url(self) -> str:
+        return self._url
+
+    def locator(self, selector: str):
+        mapping = {
+            "button:has-text('Country')": [self.country_button],
+            "label:has(input[data-ph-at-facetkey='facet-country'][data-ph-at-text='Canada'])": [
+                self.canada_label
+            ],
+            "input[data-ph-at-facetkey='facet-country'][data-ph-at-text='Canada']": [],
+            "label:has-text('Canada')": [self.canada_label],
+        }
+        return FakeLocatorCollection(mapping.get(selector, []))
+
+    def wait_for_timeout(self, _timeout_ms: int) -> None:
+        return None
+
+    def advance(self) -> None:
+        return None
+
+    def evaluate(self, script: str):
+        if "countryFacetPresent" in script:
+            return {
+                "activeCanadaChip": self.filtered,
+                "countryFacetPresent": True,
+                "countryFacetChecked": self.filtered,
+                "visibleJobLinkCount": 3 if self.filtered else 0,
+                "sampleHrefs": [
+                    "https://jobs.rbc.com/ca/en/job/R-0000174266/DevOps-Platform-Solution-Engineer"
+                ]
+                if self.filtered
+                else [],
+            }
+        if 'a[data-ph-at-id="job-link"]' in script:
             return 3 if self.filtered else 0
         return []
 
@@ -1204,6 +1258,18 @@ def test_ntt_helper_applies_canada_country_facet() -> None:
 
     assert filter_action == "Canada (NTT country facet)"
     assert page.canada.is_checked() is True
+
+
+def test_rbc_helper_applies_canada_country_facet() -> None:
+    page = FakeRbcFilterPage()
+
+    filter_action = apply_rbc_canada_filter(page, ("Canada",))
+    evidence = detect_rbc_canada_page_evidence(page)
+
+    assert is_rbc_careers_search_url(page.url) is True
+    assert filter_action == "Canada (RBC country facet)"
+    assert evidence is not None
+    assert evidence["confirmed"] is True
 
 
 def test_has_interactive_job_cards_detects_live_view_job_elements() -> None:
