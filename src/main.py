@@ -18,6 +18,9 @@ COMPANIES_CONFIG_PATH = PROJECT_ROOT / "config" / "companies.yaml"
 VERIFIED_COMPANIES_CONFIG_PATH = PROJECT_ROOT / "config" / "verified_companies.yaml"
 DATABASE_PATH = PROJECT_ROOT / "data" / "job_discovery.db"
 REVIEW_EXPORT_PATH = PROJECT_ROOT / "data" / "exports" / "review" / "saved-jobs-review.csv"
+VERIFIED_REVIEW_SNAPSHOT_PATH = (
+    PROJECT_ROOT / "data" / "exports" / "review" / "latest-verified-saved-jobs.csv"
+)
 
 
 def get_collection_api():
@@ -133,9 +136,13 @@ def get_verified_companies_api():
 def get_review_api():
     """Load saved-job review helpers after the src path is available."""
 
-    from review.saved_job_review import export_saved_jobs_review
+    from review.saved_job_review import (
+        collect_review_export_companies,
+        export_saved_jobs_review,
+    )
 
     return {
+        "collect_review_export_companies": collect_review_export_companies,
         "export_saved_jobs_review": export_saved_jobs_review,
     }
 
@@ -1013,10 +1020,12 @@ def main(argv: list[str] | None = None) -> int:
             connection,
             verified_companies_path=VERIFIED_COMPANIES_CONFIG_PATH,
             output_path=args.output,
+            saved_jobs_snapshot_path=VERIFIED_REVIEW_SNAPSHOT_PATH,
         )
         print(
             {
                 "exported_rows": len(rows),
+                "companies_included": review_api["collect_review_export_companies"](rows),
                 "output_path": str(args.output),
             }
         )

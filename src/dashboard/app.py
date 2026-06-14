@@ -111,12 +111,14 @@ def get_review_api() -> dict[str, Any]:
 
     from review.saved_job_review import (
         build_saved_jobs_review_dashboard_rows,
+        collect_review_export_companies,
         export_saved_jobs_review,
         load_review_export_preview,
     )
 
     return {
         "build_saved_jobs_review_dashboard_rows": build_saved_jobs_review_dashboard_rows,
+        "collect_review_export_companies": collect_review_export_companies,
         "export_saved_jobs_review": export_saved_jobs_review,
         "load_review_export_preview": load_review_export_preview,
     }
@@ -783,8 +785,9 @@ def render_saved_job_review_tab(connection: Any) -> None:
 
     render_section_heading("Saved Job Review")
     st.caption(
-        "Export the latest verified saved jobs to a simple CSV, then mark each row as "
-        "`useful`, `maybe`, `not_useful`, or `false_positive` during your review session."
+        "Export the current verified saved-job queue to a simple CSV, then mark each row as "
+        "`useful`, `maybe`, `not_useful`, `false_positive`, `already_applied`, or "
+        "`saved_for_later`."
     )
 
     if feedback:
@@ -822,10 +825,25 @@ def render_saved_job_review_tab(connection: Any) -> None:
 
     if not preview_rows:
         st.info(
-            "No latest verified saved jobs are available yet. Run "
+            "No verified saved-job snapshot is available yet. Run "
             "`python -m src.main daily-run --verified-only` first."
         )
         return
+
+    companies_included = review_api["collect_review_export_companies"](
+        [
+            {
+                "company": str(row.get("Company") or "").strip(),
+            }
+            for row in preview_rows
+        ]
+    )
+    summary_col1, summary_col2 = st.columns([1, 2])
+    with summary_col1:
+        st.metric("Review Rows", len(preview_rows))
+    with summary_col2:
+        st.write("Companies included")
+        st.write(", ".join(companies_included) if companies_included else "-")
 
     st.dataframe(
         preview_rows,
@@ -838,12 +856,13 @@ def render_saved_job_review_tab(connection: Any) -> None:
                 display_text="Open",
             ),
             "Match Reasons": st.column_config.TextColumn("Match Reasons", width="large"),
+            "Risk Flags": st.column_config.TextColumn("Risk Flags", width="medium"),
         },
     )
     st.info(
-        "Edit the CSV locally to fill `user_decision` and `user_notes`. The dashboard "
-        "keeps this step lightweight on purpose so we can collect real review data "
-        "before changing scoring."
+        "Edit the CSV locally to fill `user_decision` and `user_notes`. Use only these "
+        "decision values: `useful`, `maybe`, `not_useful`, `false_positive`, "
+        "`already_applied`, `saved_for_later`."
     )
 
 

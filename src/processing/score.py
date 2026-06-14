@@ -84,6 +84,89 @@ TECHNICAL_SUPPORT_CONTEXT_TERMS = (
     "trading",
     "marketview",
 )
+ALWAYS_REJECT_TITLE_PATTERNS = (
+    "executive assistant",
+)
+CONDITIONAL_REJECT_TITLE_PATTERNS = (
+    "mortgage specialist",
+    "banking advisor",
+    "private banking officer",
+    "branch advisor",
+    "customer experience associate",
+    "wealth management associate program",
+    "customer service representative",
+    "client service representative",
+    "sales associate",
+    "client delivery associate",
+    "sales specialist",
+)
+STRONG_TECHNICAL_CONTEXT_TERMS = (
+    "cloud",
+    "platform",
+    "systems",
+    "software",
+    "infrastructure",
+    "devops",
+    "kubernetes",
+    "aws",
+    "azure",
+    "gcp",
+    "linux",
+    "security",
+    "integration",
+    "implementation",
+    "architecture",
+    "architect",
+    "engineer",
+    "technical support",
+    "support engineer",
+    "customer engineer",
+    "solutions engineer",
+    "technical account manager",
+    "data",
+    "api",
+)
+ADJACENT_TITLE_TECHNICAL_HINTS = (
+    "engineer",
+    "architect",
+    "technical",
+    "cloud",
+    "platform",
+    "systems",
+    "software",
+    "data",
+    "security",
+    "api",
+    "infrastructure",
+    "devops",
+    "support",
+)
+ADJACENT_TECHNICAL_CONTEXT_TERMS = (
+    "technical",
+    "platform",
+    "cloud",
+    "software",
+    "system",
+    "systems",
+    "implementation",
+    "integration",
+    "architecture",
+    "architect",
+    "salesforce",
+    "dynamics",
+    "crm",
+    "saas",
+    "data",
+    "security",
+    "api",
+    "infrastructure",
+    "devops",
+    "kubernetes",
+    "aws",
+    "azure",
+    "gcp",
+    "linux",
+)
 
 
 def _read_yaml(path: Path) -> dict[str, Any]:
@@ -127,7 +210,7 @@ def _build_search_text(job: dict[str, Any], fields: tuple[str, ...] = SEARCH_FIE
 def _match_first(text: str, phrases: list[str]) -> str | None:
     for phrase in phrases:
         normalized = phrase.strip().lower()
-        if normalized and normalized in text:
+        if _contains_phrase(text, normalized):
             return phrase
     return None
 
@@ -136,7 +219,7 @@ def _match_many(text: str, lookup: dict[str, list[str]]) -> list[str]:
     matches: list[str] = []
     for canonical, patterns in lookup.items():
         normalized_patterns = [pattern.strip().lower() for pattern in patterns if pattern.strip()]
-        if any(pattern in text for pattern in normalized_patterns):
+        if any(_contains_phrase(text, pattern) for pattern in normalized_patterns):
             matches.append(canonical)
     return matches
 
@@ -148,6 +231,17 @@ def _clamp_score(value: int) -> int:
 def _clean_search_text(value: str) -> str:
     text = re.sub(r"<[^>]+>", " ", value)
     return " ".join(text.split())
+
+
+def _contains_phrase(text: str, phrase: str) -> bool:
+    normalized_text = str(text or "").strip().lower()
+    normalized_phrase = str(phrase or "").strip().lower()
+    if not normalized_text or not normalized_phrase:
+        return False
+    escaped = re.escape(normalized_phrase)
+    escaped = escaped.replace(r"\ ", r"\s+")
+    pattern = re.compile(rf"(?<!\w){escaped}(?!\w)")
+    return bool(pattern.search(normalized_text))
 
 
 def is_relevant_score(
@@ -230,6 +324,24 @@ def _filter_contextual_skill_matches(
     return filtered_matches
 
 
+def _has_strong_technical_context(text: str) -> bool:
+    return any(_contains_phrase(text, term) for term in STRONG_TECHNICAL_CONTEXT_TERMS)
+
+
+def _has_adjacent_title_technical_hint(title_text: str) -> bool:
+    return any(_contains_phrase(title_text, term) for term in ADJACENT_TITLE_TECHNICAL_HINTS)
+
+
+def _match_rejected_title_pattern(title_text: str) -> str | None:
+    for pattern in ALWAYS_REJECT_TITLE_PATTERNS:
+        if _contains_phrase(title_text, pattern):
+            return pattern
+    for pattern in CONDITIONAL_REJECT_TITLE_PATTERNS:
+        if _contains_phrase(title_text, pattern):
+            return pattern
+    return None
+
+
 def _analyze_job_score(
     job: dict[str, Any],
     *,
@@ -243,6 +355,37 @@ def _analyze_job_score(
     title_text = _normalize_text(job.get("title"))
     full_text = _build_search_text(job)
     location_text = _normalize_text(job.get("location"))
+
+    rejected_title_pattern = _match_rejected_title_pattern(title_text)
+    if rejected_title_pattern in ALWAYS_REJECT_TITLE_PATTERNS:
+        return {
+            "final_score": 0,
+            "match_reasons": [],
+            "risk_flags": [f"hard reject title: {rejected_title_pattern}"],
+            "positive_keyword_matches": [],
+            "negative_keyword_matches": [rejected_title_pattern],
+            "title_matches": [],
+            "description_matches": [],
+            "location_scope_signals": [],
+            "support_signal_matches": [],
+            "relevance_tier": NOT_RELEVANT_TIER,
+        }
+    if (
+        rejected_title_pattern in CONDITIONAL_REJECT_TITLE_PATTERNS
+        and not _has_strong_technical_context(full_text)
+    ):
+        return {
+            "final_score": 0,
+            "match_reasons": [],
+            "risk_flags": [f"hard reject title: {rejected_title_pattern}"],
+            "positive_keyword_matches": [],
+            "negative_keyword_matches": [rejected_title_pattern],
+            "title_matches": [],
+            "description_matches": [],
+            "location_scope_signals": [],
+            "support_signal_matches": [],
+            "relevance_tier": NOT_RELEVANT_TIER,
+        }
 
     match_score = 0
     match_reasons: list[str] = []
@@ -287,7 +430,8 @@ def _analyze_job_score(
     matched_locations = [
         location
         for location in keywords.get("locations", [])
-        if location.strip().lower() in location_text or location.strip().lower() in full_text
+        if _contains_phrase(location_text, location.strip().lower())
+        or _contains_phrase(full_text, location.strip().lower())
     ]
     if matched_locations:
         location_points = min(
@@ -323,19 +467,33 @@ def _analyze_job_score(
         for signal in adjacent_context_terms
     }
     adjacent_context_matches = _match_many(full_text, adjacent_context_lookup)
+    adjacent_technical_context_lookup = {
+        signal: [signal]
+        for signal in ADJACENT_TECHNICAL_CONTEXT_TERMS
+    }
+    adjacent_technical_context_matches = _match_many(
+        full_text,
+        adjacent_technical_context_lookup,
+    )
     has_conditional_adjacent_context = bool(
         adjacent_context_matches or matched_skills or matched_support
     )
+    has_adjacent_technical_context = bool(
+        adjacent_technical_context_matches
+        or matched_skills
+        or matched_support
+        or _has_adjacent_title_technical_hint(title_text)
+    )
 
     title_adjacent_role = _match_first(title_text, adjacent_roles)
-    if title_adjacent_role:
+    if title_adjacent_role and has_adjacent_technical_context:
         match_score += int(weights["adjacent_role_in_title"])
         title_matches.append(title_adjacent_role)
         positive_keyword_matches.append(title_adjacent_role)
         match_reasons.append(f"{ADJACENT_REASON_PREFIX}: {title_adjacent_role}")
     else:
         text_adjacent_role = _match_first(full_text, adjacent_roles)
-        if text_adjacent_role:
+        if text_adjacent_role and has_adjacent_technical_context:
             match_score += int(weights["adjacent_role_in_text"])
             description_matches.append(text_adjacent_role)
             positive_keyword_matches.append(text_adjacent_role)

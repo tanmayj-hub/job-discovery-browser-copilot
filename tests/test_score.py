@@ -291,3 +291,129 @@ def test_business_systems_analyst_with_platform_context_can_be_adjacent_fit() ->
 
     assert explanation["is_relevant"] is True
     assert explanation["relevance_tier"] == "adjacent_customer_facing_technical_fit"
+
+
+def test_expert_banking_advisor_is_rejected() -> None:
+    explanation = explain_job_score(
+        {
+            "title": "Expert Banking Advisor",
+            "location": "Toronto, Ontario, Canada",
+            "description": "Advise retail clients on branch products and daily banking needs.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert any("hard reject title" in flag for flag in explanation["risk_flags"])
+
+
+def test_mortgage_specialist_is_rejected_without_technical_context() -> None:
+    explanation = explain_job_score(
+        {
+            "title": "Mortgage Specialist",
+            "location": "Toronto, Ontario, Canada",
+            "description": "Grow a mortgage portfolio and advise clients on lending products.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert explanation["final_score"] == 0
+
+
+def test_executive_assistant_is_hard_rejected() -> None:
+    explanation = explain_job_score(
+        {
+            "title": "Executive Assistant",
+            "location": "Toronto, Ontario, Canada",
+            "description": "Support leadership calendars, travel, and meeting coordination.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert any(
+        "hard reject title: executive assistant" == flag
+        for flag in explanation["risk_flags"]
+    )
+
+
+def test_client_delivery_associate_without_technical_context_is_rejected() -> None:
+    explanation = explain_job_score(
+        {
+            "title": "Client Delivery Associate",
+            "location": "Toronto, Ontario, Canada",
+            "description": "Coordinate client meetings, reporting, and account follow-up.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert explanation["final_score"] == 0
+
+
+def test_customer_success_engineer_with_technical_context_remains_relevant() -> None:
+    explanation = explain_job_score(
+        {
+            "title": "Customer Success Engineer",
+            "location": "Toronto, Ontario, Canada",
+            "description": (
+                "Guide customer onboarding for cloud platform adoption, API integration, "
+                "and Kubernetes production readiness."
+            ),
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is True
+    assert explanation["relevance_tier"] == "adjacent_customer_facing_technical_fit"
+
+
+def test_delivery_consultant_without_technical_context_is_rejected() -> None:
+    explanation = explain_job_score(
+        {
+            "title": "Delivery Consultant",
+            "location": "Toronto, Ontario, Canada",
+            "description": "Coordinate client meetings, timelines, and status reporting.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert explanation["relevance_tier"] == "not_relevant"
+
+
+def test_sales_associate_with_aws_substring_noise_is_not_relevant() -> None:
+    explanation = explain_job_score(
+        {
+            "title": "Sales Associate",
+            "location": "Toronto, Ontario, Canada",
+            "description": "Grow store traffic and support weekend retail campaigns.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert explanation["positive_keyword_matches"] == []
+
+
+def test_customer_experience_associate_does_not_gain_false_iam_match() -> None:
+    explanation = explain_job_score(
+        {
+            "title": "Customer Experience Associate - Part-time",
+            "location": "Toronto, Ontario, Canada",
+            "description": "Help clients with branch transactions and day-to-day questions.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert explanation["is_relevant"] is False
+    assert "IAM" not in explanation["positive_keyword_matches"]

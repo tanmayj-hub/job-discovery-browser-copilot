@@ -139,6 +139,44 @@ quality review.
 - The Jobs Found view defaults to verified companies only.
 - The Daily Summary view includes verified-company counts, latest new/updated counts, and a verified source-health table.
 - Use Source Readiness for a fuller source-health view when you want more than the compact verified summary.
+- Use Saved Job Review to export the current trusted saved-job queue for manual triage.
+- The review export now reflects the latest verified-only snapshot, not just newly changed rows.
+- The review export excludes rejected jobs and excludes non-verified companies such as `RBC`.
+
+## Current Review Queue
+After the latest narrowed scoring pass on `2026-06-14`:
+
+- trusted verified-only run: `93` saved jobs
+- review export: `93` rows
+- companies with saved jobs in the review queue:
+  - Aviva Canada
+  - CGI
+  - Canada Life
+  - IBM Consulting
+  - Manulife
+  - NTT DATA
+  - National Bank of Canada
+  - Sun Life
+  - TD
+
+Verified companies can still remain usable even when a given run saves `0` jobs.
+In the latest queue, `BMO` and `Scotiabank` stayed in the verified usable set, but the
+narrowed scoring pass did not keep any jobs for them in the saved-job review CSV.
+
+## Export The Review Queue
+
+```bash
+python -m src.main review export-saved-jobs
+```
+
+This writes:
+
+```text
+data/exports/review/saved-jobs-review.csv
+```
+
+The dashboard's Saved Job Review section surfaces the same queue, with clickable job links,
+match reasons, risk flags, and provisional source flags.
 
 ## Add The Next Verified Company
 Use this sequence when we want to promote another company into the verified-only

@@ -22,6 +22,7 @@ from reports.source_observability import (
     is_error_status,
     summarize_source_metrics,
 )
+from review.saved_job_review import write_verified_saved_jobs_snapshot
 from storage.db import (
     build_job_identity,
     get_companies,
@@ -592,6 +593,12 @@ def build_daily_artifact_paths(
     )
 
 
+def build_verified_review_snapshot_path(exports_dir: Path) -> Path:
+    """Return the stable saved-job snapshot path for verified-only review workflows."""
+
+    return exports_dir / "review" / "latest-verified-saved-jobs.csv"
+
+
 def write_daily_report(
     path: Path,
     *,
@@ -1050,6 +1057,12 @@ def run_daily_workflow(
     source_metrics = summarize_source_metrics(routing_results)
     artifacts = build_daily_artifact_paths(exports_dir, run_date=effective_date)
     write_jobs_csv(artifacts.csv_path, saved_jobs)
+    if run_scope == "verified_only":
+        write_verified_saved_jobs_snapshot(
+            saved_jobs,
+            verified_companies_path=config_path.parent / "verified_companies.yaml",
+            output_path=build_verified_review_snapshot_path(exports_dir),
+        )
     interventions_needed = get_intervention_queue(connection)
     intervention_history = get_intervention_history(connection)
     write_daily_report(
