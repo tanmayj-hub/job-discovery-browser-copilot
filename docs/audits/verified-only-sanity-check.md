@@ -44,7 +44,7 @@
 - Result: the dashboard is usable for daily review of the current verified slice.
 
 ## Next Bank Status
-- RBC: scope fix is complete, but the current manual URL set used extra subcategory filters and is not yet an apples-to-apples verification pack for the trusted broad Canada-only policy. Status stays `needs_review`.
+- RBC: scope fix is complete, but the current manual URL set used extra subcategory filters and is not yet an apples-to-apples verification pack for the trusted broad Canada-only policy. Status stays `needs_manual_audit` until the clean pack in [RBC-clean-canada-only-audit-pack.md](/C:/projects/job-discovery-browser-copilot/docs/audits/RBC-clean-canada-only-audit-pack.md) is reviewed.
 - Scotiabank: deeper safe pagination removed the active collection misses. Status is now `usable`.
 
 ## Conclusion

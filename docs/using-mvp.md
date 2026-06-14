@@ -88,11 +88,13 @@ bank-slice audit shows `4 / 5` expected URLs as `extracted_and_relevant` and
 the final `1 / 5` as `extracted_but_rejected_by_scoring`, so the remaining
 gap is scoring-only rather than collection.
 
-RBC remains outside the verified-only slice for now. The trusted public
-Country=Canada confirmation path before pagination is now fixed, but the
-current manual expected URLs were gathered with extra subcategory filters that
-are not part of the trusted broad Canada-only MVP policy, so that audit still
-needs a cleaner apples-to-apples rerun before promotion.
+RBC remains outside the verified-only slice for now with status
+`needs_manual_audit`. The trusted public Country=Canada confirmation path
+before pagination is now fixed, but the older manual expected URLs were
+gathered with extra subcategory filters that are not part of the trusted broad
+Canada-only MVP policy. RBC now needs a clean apples-to-apples manual audit
+using only the same broad Canada-only listing and page cap as the MVP before
+promotion.
 
 ## Trusted Run Rule
 Trusted MVP runs do not start from a broad/global careers listing and then rely

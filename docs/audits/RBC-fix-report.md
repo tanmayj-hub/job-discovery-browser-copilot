@@ -1,37 +1,48 @@
 # RBC Fix Report
 
-## Issue Found
-- The official RBC results board was real, but the trusted MVP run could not confirm Canada scope before pagination.
-- The public page needed a safe pre-pagination `Country=Canada` interaction instead of locale-only URL evidence.
+## Current Trusted Source
+- Official source URL: `https://jobs.rbc.com/ca/en/search-results?from=140&s=1`
+- Canada scope method: public `Country=Canada` facet applied before pagination
+- Trusted policy: Canada-only broad listing, with no subcategory, function, keyword, city, province, remote, or hybrid filters
 
-## Fix Applied
-- Kept the direct official source URL:
-  `https://jobs.rbc.com/ca/en/search-results?from=140&s=1`
-- Added a safe public RBC `Country=Canada` facet flow in the browser collector.
-- Added trusted visible-page evidence so the run records Canada scope as confirmed before pagination.
-
-## Fresh Results
-- Trusted run: `100` discovered, `100` scored, `4` relevant, `4` saved.
-- Diagnostic run: `100` discovered, `4` relevant, `10` pages visited, stop reason `max_pages_reached`.
-- Extra 15-page diagnostic check: `150` discovered, `5` relevant, and the 4 manually expected RBC URLs still did not appear in the broad Canada-only listing.
+## Fresh Trusted Run
+- Status: completed
 - Source scope status: `canada_scope_confirmed`
-- Explicit non-Canada saved jobs: `0`
-- Suspicious saved rows in the latest verified-only smoke: `0`
+- Source scope method: `ui_filter`
+- Source scope reason: RBC's public `Country=Canada` facet was applied before pagination.
+- Final URL reached: `https://jobs.rbc.com/ca/en/search-results?from=90&s=1`
+- Pages visited: `10`
+- Pagination stop reason: `max_pages_reached`
+- Jobs discovered: `100`
+- Jobs scored: `100`
+- Relevant jobs saved: `4`
+- Explicit non-Canada rejected: `0`
+- Suspicious saved rows in the clean trusted run: `0`
 
-## Manual Recall Interpretation
-- The current manual expected RBC URLs were gathered with extra manual subcategory filters:
-  `technology`, `project and program management`, and `operations and business management`.
-- Those extra filters are not part of the trusted MVP collect-first policy.
-- Because the same 4 URLs still do not appear even after a 15-page Canada-only diagnostic run, the remaining mismatch is best treated as `outside_current_listing_scope` for the current trusted MVP slice, not as a broken Canada filter.
+## Saved Jobs From The Clean Canada-Only Run
+| Title | Location | Score | Tier | URL |
+| --- | --- | ---: | --- | --- |
+| Lead Business Systems Analyst | TORONTO, Ontario, Canada | 30 | adjacent_customer_facing_technical_fit | https://jobs.rbc.com/ca/en/job/R-0000169486/Lead-Business-Systems-Analyst |
+| Senior Solution Architect-AI/ML | TORONTO, Ontario, Canada | 21 | adjacent_customer_facing_technical_fit | https://jobs.rbc.com/ca/en/job/R-0000167744/Senior-Solution-Architect-AI-ML |
+| Senior Business Systems Analyst | TORONTO, Ontario, Canada | 15 | adjacent_customer_facing_technical_fit | https://jobs.rbc.com/ca/en/job/R-0000167721/Senior-Business-Systems-Analyst |
+| Expert Banking Advisor | BROSSARD, Quebec, Canada | 8 | core_target_fit | https://jobs.rbc.com/ca/en/job/R-0000145401/Expert-Banking-Advisor |
+
+## Old Manual URL Scope Decision
+- The earlier RBC manual URLs were gathered using extra public subcategory filters.
+- Those filters are outside the current trusted MVP collection policy.
+- The four old URLs do not appear in the broad Canada-only scored-candidate export for the current page cap.
+- Under the current policy, those rows should not be treated as `missed_by_collection`.
 
 ## Verification Decision
-- Decision: `needs_review`
+- Decision: `needs_manual_audit`
 
-## Why It Was Not Promoted In This Task
-- The source-scope blocker is fixed.
-- The remaining audit mismatch is now a workflow-comparison problem, not a Canada-filter problem.
-- Before promotion, RBC still needs a cleaner apples-to-apples manual audit pack that matches the trusted broad Canada-only MVP policy.
+## Why RBC Was Not Promoted In This Task
+- The trusted RBC run itself is healthy.
+- Canada scope is confirmed before pagination.
+- The remaining gap is not a proven collection bug under the current policy.
+- RBC still needs a clean manual audit performed apples-to-apples against the broad Canada-only listing used by the MVP.
 
-## Recommended Next Step
-- Keep RBC available for single-company runs.
-- When we revisit RBC, build a manual audit pack that uses the same broad Canada-only source scope as the trusted collector, then re-evaluate promotion.
+## Next Requirement To Promote RBC
+- Complete the manual review pack in [docs/audits/RBC-clean-canada-only-audit-pack.md](/C:/projects/job-discovery-browser-copilot/docs/audits/RBC-clean-canada-only-audit-pack.md).
+- If the user finds broad Canada-only RBC jobs inside the same page cap that the MVP should have captured but did not, then RBC should stay blocked for more collector work.
+- If the user does not find such misses, RBC can be promoted safely in the next pass.

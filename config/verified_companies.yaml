@@ -64,8 +64,8 @@ verified_companies:
     verified: false
     verified_at: "2026-06-14"
     scope: Canada
-    status: needs_review
-    notes: "The direct official search-results URL now completes a trusted Canada-scoped run after applying RBC's public Country=Canada facet before pagination, with 100 discovered candidates, 4 relevant saves, and 0 explicit non-Canada saved rows. It remains out of the verified-only slice for now because the current manual bank audit uses extra subcategory filters that are not part of the trusted broad Canada-only policy, so the remaining 0/4 URL matches are not yet an apples-to-apples verification check."
+    status: needs_manual_audit
+    notes: "Trusted Canada-only RBC collection now works from the official public search-results board after applying the Country=Canada facet before pagination: 100 discovered, 4 relevant saves, 0 explicit non-Canada saved rows, and 0 suspicious saved rows. RBC stays outside the verified-only slice until a clean manual audit is completed using the same broad Canada-only policy without extra subcategory, team, or role filters."
   - company_name: Scotiabank
     verified: true
     verified_at: "2026-06-14"
