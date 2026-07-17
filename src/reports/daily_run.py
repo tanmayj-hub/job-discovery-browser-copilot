@@ -22,7 +22,7 @@ from reports.source_observability import (
     is_error_status,
     summarize_source_metrics,
 )
-from review.saved_job_review import write_verified_saved_jobs_snapshot
+from review.saved_job_review import export_saved_jobs_review, write_verified_saved_jobs_snapshot
 from storage.db import (
     build_job_identity,
     get_companies,
@@ -135,6 +135,8 @@ class DailyRunResult:
     jobs_inserted: int
     jobs_updated: int
     jobs_unchanged: int
+    active_saved_jobs: int
+    review_export_rows: int
     duplicates_skipped: int
     jobs_saved: list[dict[str, Any]]
     suspicious_saved_rows: list[dict[str, Any]]
@@ -638,6 +640,8 @@ def write_daily_report(
     jobs_inserted: int,
     jobs_updated: int,
     jobs_unchanged: int,
+    active_saved_jobs: int,
+    review_export_rows: int,
     duplicates_skipped: int,
     suspicious_saved_rows: list[dict[str, Any]],
     location_scope_used: bool,
@@ -661,11 +665,13 @@ def write_daily_report(
         f"- Companies skipped: {len(companies_skipped)}",
         f"- Jobs discovered before scoring: {jobs_discovered}",
         f"- Jobs scored: {jobs_scored}",
-        f"- Jobs relevant: {jobs_relevant}",
-        f"- Jobs saved: {len(jobs)}",
-        f"- Jobs inserted: {jobs_inserted}",
+        f"- Jobs relevant in current run: {jobs_relevant}",
+        f"- Jobs persisted in current run: {len(jobs)}",
+        f"- Jobs new: {jobs_inserted}",
         f"- Jobs updated: {jobs_updated}",
         f"- Jobs unchanged: {jobs_unchanged}",
+        f"- Active saved jobs: {active_saved_jobs}",
+        f"- Review export rows: {review_export_rows}",
         f"- Duplicates skipped before scoring: {duplicates_skipped}",
         f"- Explicit non-Canada jobs rejected by safety gate: {non_canada_rejected}",
         f"- Location scope used: {location_scope_used}",
@@ -687,16 +693,18 @@ def write_daily_report(
         "| Metric | Value |",
         "| --- | ---: |",
         f"| Jobs scored | {jobs_scored} |",
-        f"| Jobs relevant | {jobs_relevant} |",
-        f"| Jobs saved | {len(jobs)} |",
+        f"| Jobs relevant in current run | {jobs_relevant} |",
+        f"| Jobs persisted in current run | {len(jobs)} |",
         "",
         "## Storage And Dedupe",
         "| Metric | Value |",
         "| --- | ---: |",
-        f"| Jobs inserted | {jobs_inserted} |",
+        f"| Jobs new | {jobs_inserted} |",
         f"| Jobs updated | {jobs_updated} |",
         f"| Jobs unchanged | {jobs_unchanged} |",
         f"| Duplicates skipped | {duplicates_skipped} |",
+        f"| Active saved jobs | {active_saved_jobs} |",
+        f"| Review export rows | {review_export_rows} |",
         "",
         "## Routing Summary",
         "| Metric | Value |",
@@ -742,7 +750,8 @@ def write_daily_report(
             (
                 "| Company | Source | Mode | ATS | Collector | Status | Scope | "
                 "Scope Method | Readiness | Fallback | Intervention | Discovered | "
-                "Scored | Relevant | Saved | Non-Canada Rejected | Inserted | "
+                "Scored | Relevant Current Run | Persisted Current Run | "
+                "Non-Canada Rejected | New | "
                 "Updated | Unchanged | Duplicates | Last Error |"
             ),
             (
@@ -1093,11 +1102,37 @@ def run_daily_workflow(
     source_metrics = summarize_source_metrics(routing_results)
     artifacts = build_daily_artifact_paths(exports_dir, run_date=effective_date)
     write_jobs_csv(artifacts.csv_path, saved_jobs)
+    active_saved_jobs = 0
+    review_export_rows = 0
     if run_scope == "verified_only":
+        verified_companies_path = config_path.parent / "verified_companies.yaml"
+        verified_company_names = {
+            str(record.get("company_name") or "").strip()
+            for record in yaml.safe_load(verified_companies_path.read_text(encoding="utf-8")).get(
+                "verified_companies", []
+            )
+            if record.get("verified") and str(record.get("status") or "").strip() == "usable"
+        }
+        active_verified_jobs = [
+            job
+            for job in get_jobs(connection)
+            if str(job.get("company_name") or "").strip() in verified_company_names
+            and str(job.get("status") or "new").strip() != "rejected"
+        ]
+        active_saved_jobs = len(active_verified_jobs)
+        snapshot_path = build_verified_review_snapshot_path(exports_dir)
         write_verified_saved_jobs_snapshot(
-            saved_jobs,
+            active_verified_jobs,
             verified_companies_path=config_path.parent / "verified_companies.yaml",
-            output_path=build_verified_review_snapshot_path(exports_dir),
+            output_path=snapshot_path,
+        )
+        review_export_rows = len(
+            export_saved_jobs_review(
+                connection,
+                verified_companies_path=verified_companies_path,
+                output_path=exports_dir / "review" / "saved-jobs-review.csv",
+                saved_jobs_snapshot_path=snapshot_path,
+            )
         )
     interventions_needed = get_intervention_queue(connection)
     intervention_history = get_intervention_history(connection)
@@ -1117,6 +1152,8 @@ def run_daily_workflow(
         jobs_inserted=save_summary["jobs_inserted"],
         jobs_updated=save_summary["jobs_updated"],
         jobs_unchanged=save_summary["jobs_unchanged"],
+        active_saved_jobs=active_saved_jobs,
+        review_export_rows=review_export_rows,
         duplicates_skipped=duplicates_skipped,
         suspicious_saved_rows=suspicious_saved_rows,
         location_scope_used=location_scope_used,
@@ -1138,6 +1175,8 @@ def run_daily_workflow(
         jobs_inserted=save_summary["jobs_inserted"],
         jobs_updated=save_summary["jobs_updated"],
         jobs_unchanged=save_summary["jobs_unchanged"],
+        active_saved_jobs=active_saved_jobs,
+        review_export_rows=review_export_rows,
         duplicates_skipped=duplicates_skipped,
         jobs_saved=saved_jobs,
         suspicious_saved_rows=suspicious_saved_rows,

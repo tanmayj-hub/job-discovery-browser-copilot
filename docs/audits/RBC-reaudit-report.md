@@ -16,11 +16,9 @@ The fresh merged audit matched 29 of 31 manually supplied RBC URLs:
 - 6 saved by the MVP.
 - 15 extracted and relevant in the audit result.
 - 8 extracted but rejected by the existing scoring rules.
-- 2 not present in the fresh Canada/newest-first pages 1-75:
-  - `R-0000178346` AI Quality Engineer
-  - `R-0000178580` Director, SRE and AI Ops, GFT
-
-The direct public job URLs could not be independently checked with a non-browser HTTP client because RBC closed those connections. Their current active/expired state is therefore unknown rather than assumed. This is a manual-recall gap, not evidence of a scope or pagination failure.
+- 2 active jobs were not present in the fresh Canada/newest-first pages 1-75:
+  - `R-0000178346` AI Quality Engineer: `active_but_not_in_current_listing`. The user confirmed it is active and potentially adjacent to the target scope through CI/CD and cloud skills. It was not evidence of a page-1-75 extraction miss because it was absent from that audited listing.
+  - `R-0000178580` Director, SRE and AI Ops, GFT: `active_but_not_in_current_listing`. The user confirmed it is active, but Director-level and outside the target seniority scope. It remains a useful scoring-rejection example if it returns to the broad listing.
 
 ## Decision
-RBC remains `manual_recall_incomplete` and is excluded from verified-only runs. It can be promoted only after a user confirms the two URLs are inactive/outside the current listing or a fresh official browser check establishes their status. The collection implementation itself is stable and the audit-only 75-page result is complete.
+RBC is promoted to `usable` for verified-only runs. Canada scope and Most Recent were confirmed before pagination; all audit pages 1-75 were covered without duplicate fingerprints; the safety gate found zero explicit non-Canada relevant rows; and no active in-scope collection miss remains. Production remains capped at 20 pages. The 75-page traversal was audit-only.

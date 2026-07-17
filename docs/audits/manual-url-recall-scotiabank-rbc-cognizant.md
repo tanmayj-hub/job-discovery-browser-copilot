@@ -24,12 +24,12 @@
 | active_but_not_in_current_listing | 0 |
 | outside_current_listing_scope | 0 |
 | manual_intervention_required | 0 |
-| missed_by_collection | 2 |
+| active_but_not_in_current_listing | 2 |
 | blocked_or_not_tested | 13 |
 | unknown | 0 |
 
 ## Per-Company Status Counts
-- RBC: saved_by_mvp=6, extracted_and_relevant=15, extracted_but_rejected_by_scoring=8, missed_by_collection=2
+- RBC: saved_by_mvp=6, extracted_and_relevant=15, extracted_but_rejected_by_scoring=8, active_but_not_in_current_listing=2
 - Cognizant: blocked_or_not_tested=13
 - Scotiabank: extracted_and_relevant=35, extracted_but_rejected_by_scoring=29, outside_scope=1
 
@@ -62,11 +62,11 @@
 | https://jobs.rbc.com/ca/en/job/R-0000165577/DevOps-Data-Engineer | - | extracted_but_rejected_by_scoring | DevOps Data Engineer | 12 | not_relevant | location signals: Toronto, Ontario, Canada | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
 | https://jobs.rbc.com/ca/en/job/R-0000173122/Cloud-Security-Architect-Global-Security | - | extracted_but_rejected_by_scoring | Cloud Security Architect (Global Security) | 12 | not_relevant | location signals: Toronto, Ontario, Canada | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
 | https://jobs.rbc.com/ca/en/job/R-0000168166/Senior-IAM-Systems-Engineer-Global-Security | - | extracted_and_relevant | Senior IAM Systems Engineer (Global Security) | 1 | core_target_fit | matched skills: IAM; location signals: Toronto, Ontario, Canada | Saved as relevant because the job had a positive score and at least one core non-location signal. |
-| https://jobs.rbc.com/ca/en/job/R-0000178346/AI-Quality-Engineer | - | missed_by_collection | - | - | not_relevant | - | - |
+| https://jobs.rbc.com/ca/en/job/R-0000178346/AI-Quality-Engineer | - | active_but_not_in_current_listing | - | - | not_relevant | - | User confirmed the posting is active and potentially adjacent to Cloud/CI-CD work. It was absent from the fresh Canada + Most Recent pages 1-75, so it is not an in-scope page-range extraction miss. |
 | https://jobs.rbc.com/ca/en/job/R-0000177144/Sr-Administrator | - | extracted_but_rejected_by_scoring | Sr. Administrator. | 12 | not_relevant | location signals: Toronto, Ontario, Canada | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
 | https://jobs.rbc.com/ca/en/job/R-0000164593/Application-Administrator | - | extracted_and_relevant | Application Administrator | 20 | core_target_fit | location signals: Toronto, Ontario, Canada; support/ops signals: administrator | Saved as relevant because the job had a positive score and at least one core non-location signal. |
 | https://jobs.rbc.com/ca/en/job/R-0000175098/Lead-Solution-Architect | - | extracted_and_relevant | Lead Solution Architect | 36 | adjacent_customer_facing_technical_fit | location signals: Toronto, Ontario, Canada; adjacent customer-facing technical fit: Solution Architect | Saved as an adjacent customer-facing technical fit because the role matched the secondary relevance bucket. |
-| https://jobs.rbc.com/ca/en/job/R-0000178580/Director-SRE-and-AI-Ops-GFT | - | missed_by_collection | - | - | not_relevant | - | - |
+| https://jobs.rbc.com/ca/en/job/R-0000178580/Director-SRE-and-AI-Ops-GFT | - | active_but_not_in_current_listing | - | - | not_relevant | - | User confirmed the posting is active but Director-level and outside target seniority. It should be rejected by scoring if it returns to the broad listing. |
 | https://jobs.rbc.com/ca/en/job/R-0000168932/Principal-ML-Ops-Engineer-Azure | - | extracted_and_relevant | Principal ML Ops Engineer, Azure | 1 | core_target_fit | matched skills: Azure; location signals: Toronto, Ontario, Canada | Saved as relevant because the job had a positive score and at least one core non-location signal. |
 | https://jobs.rbc.com/ca/en/job/R-0000173020/Application-Support-Analyst-GFT-Halifax | - | extracted_and_relevant | Application Support Analyst, GFT - Halifax | 16 | core_target_fit | matched skills: support; location signals: Canada; support/ops signals: support | Saved as relevant because the job had a positive score and at least one core non-location signal. |
 | https://jobs.rbc.com/ca/en/job/R-0000177942/Sr-Technical-Systems-Analyst-Database-Activity-Monitoring-GCS | - | extracted_and_relevant | Sr. Technical Systems Analyst – Database Activity Monitoring (GCS) | 16 | core_target_fit | matched skills: monitoring; location signals: Toronto, Ontario, Canada | Saved as relevant because the job had a positive score and at least one core non-location signal. |

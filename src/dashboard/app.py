@@ -1452,6 +1452,7 @@ def render_daily_summary_tab(connection: Any) -> None:
     intervention_history = storage_api["get_intervention_history"](connection)
     source_rows = storage_api["get_source_status_rows"](connection)
     dashboard_api = get_dashboard_api()
+    review_api = get_review_api()
     verified_api = get_verified_api()
     export_files = get_export_files()
     verified_records = verified_api["load_verified_company_records"](VERIFIED_COMPANIES_CONFIG_PATH)
@@ -1468,6 +1469,9 @@ def render_daily_summary_tab(connection: Any) -> None:
         verified_source_rows,
         verified_company_names,
     )
+    active_verified_jobs = [
+        job for job in verified_jobs if str(job.get("status") or "new") != "rejected"
+    ]
     pending_verified_jobs = [
         job
         for job in current_verified_jobs
@@ -1482,6 +1486,9 @@ def render_daily_summary_tab(connection: Any) -> None:
     last_run_timestamp = verified_api["derive_last_run_timestamp"](verified_source_rows)
     latest_inserted = sum(int(row.get("jobs_inserted", 0) or 0) for row in verified_source_rows)
     latest_updated = sum(int(row.get("jobs_updated", 0) or 0) for row in verified_source_rows)
+    latest_unchanged = sum(int(row.get("jobs_unchanged", 0) or 0) for row in verified_source_rows)
+    latest_relevant = sum(int(row.get("jobs_relevant", 0) or 0) for row in verified_source_rows)
+    review_export_rows = review_api["load_review_export_preview"](REVIEW_EXPORT_PATH)
 
     render_section_heading("Daily Summary")
     metric_col1, metric_col2, metric_col3, metric_col4, metric_col5, metric_col6 = st.columns(6)
@@ -1506,7 +1513,7 @@ def render_daily_summary_tab(connection: Any) -> None:
         )
         st.metric("Verified Companies", verified_count)
     with verified_metric_col2:
-        st.metric("Current Verified Jobs", len(current_verified_jobs))
+        st.metric("Active Saved Jobs", len(active_verified_jobs))
     with verified_metric_col3:
         st.metric("Pending Queue", len(pending_verified_jobs))
     with verified_metric_col4:
@@ -1514,12 +1521,24 @@ def render_daily_summary_tab(connection: Any) -> None:
     with verified_metric_col5:
         st.metric("Rejected Queue", len(rejected_verified_jobs))
 
-    verified_metric_col6, verified_metric_col7, verified_metric_col8 = st.columns(3)
+    (
+        verified_metric_col6,
+        verified_metric_col7,
+        verified_metric_col8,
+        verified_metric_col9,
+    ) = st.columns(4)
     with verified_metric_col6:
-        st.metric("New Jobs (Latest Run)", latest_inserted)
+        st.metric("Relevant (Current Run)", latest_relevant)
     with verified_metric_col7:
-        st.metric("Updated Jobs (Latest Run)", latest_updated)
+        st.metric("New Jobs (Current Run)", latest_inserted)
     with verified_metric_col8:
+        st.metric("Updated Jobs (Current Run)", latest_updated)
+    with verified_metric_col9:
+        st.metric("Review Export Rows", len(review_export_rows))
+    verified_metric_col10, verified_metric_col11 = st.columns(2)
+    with verified_metric_col10:
+        st.metric("Unchanged Jobs (Current Run)", latest_unchanged)
+    with verified_metric_col11:
         st.metric("Last Run", last_run_timestamp or "-")
 
     source_metric_col1, source_metric_col2, source_metric_col3, source_metric_col4 = st.columns(4)
@@ -1527,11 +1546,11 @@ def render_daily_summary_tab(connection: Any) -> None:
     with source_metric_col1:
         st.metric("Total Sources Checked", overview["total_sources_checked"])
     with source_metric_col2:
-        st.metric("Jobs Discovered", overview["jobs_discovered_latest"])
+        st.metric("Discovered (Latest Sources)", overview["jobs_discovered_latest"])
     with source_metric_col3:
-        st.metric("Jobs Relevant", overview["jobs_relevant_latest"])
+        st.metric("Relevant (Latest Sources)", overview["jobs_relevant_latest"])
     with source_metric_col4:
-        st.metric("Jobs Saved", overview["jobs_saved_latest"])
+        st.metric("Persisted Relevant (Latest Sources)", overview["jobs_saved_latest"])
     with source_metric_col5:
         st.metric("API Sources Used", overview["api_sources_used"])
     with source_metric_col6:
@@ -1589,7 +1608,7 @@ def render_daily_summary_tab(connection: Any) -> None:
                 "Source URL": row.get("source_url") or "-",
                 "Status": row.get("status") or "-",
                 "Discovered": int(row.get("jobs_discovered", 0) or 0),
-                "Relevant Saved": int(row.get("jobs_saved", 0) or 0),
+                "Relevant Current Run": int(row.get("jobs_relevant", 0) or 0),
                 "Intervention": row.get("latest_pending_reason") or "-",
             }
             for row in verified_source_rows

@@ -9,11 +9,14 @@ python -m src.main daily-run --verified-only
 This refreshes the current trusted Canada-scoped job set from the verified usable companies
 and writes a stable verified review snapshot.
 
-Current post-fix baseline from the latest trusted run on `2026-06-14`:
-- companies checked: `11`
-- jobs discovered: `1898`
-- jobs saved after scoring: `93`
-- review export rows: `93`
+Run counts describe different stages and should not be compared as if they are
+the same queue:
+- `jobs_discovered`: raw public listings observed in this run before scoring.
+- `jobs_scored`: deduplicated current-run candidates evaluated locally.
+- `jobs_relevant_current_run`: current-run candidates that passed scoring and Canada safety checks.
+- `jobs_new`, `jobs_updated`, `jobs_unchanged`: persistence outcomes for those relevant current-run candidates.
+- `active_saved_jobs`: all non-rejected saved jobs for currently usable verified companies.
+- `review_export_rows`: active saved jobs written to the dashboard review CSV.
 
 ## Open The Dashboard
 
@@ -59,7 +62,7 @@ Allowed `user_decision` values:
 - role outside Cloud / DevOps / Solutions / Technical Customer Success scope
 
 The review export now intentionally:
-- includes unchanged saved jobs from the latest trusted verified-only run
+- includes all active non-rejected saved jobs for usable verified companies, including unchanged rows from earlier runs
 - excludes non-verified companies such as `RBC`
 - excludes rejected jobs
 - includes provisional verified companies such as `BMO` when they have saved jobs

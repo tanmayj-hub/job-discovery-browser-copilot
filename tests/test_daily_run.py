@@ -193,6 +193,8 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert result.jobs_inserted == 3
     assert result.jobs_updated == 0
     assert result.jobs_unchanged == 0
+    assert result.active_saved_jobs == 0
+    assert result.review_export_rows == 0
     assert result.duplicates_skipped == 2
     assert len(result.jobs_saved) == 3
     assert result.location_scope_used is True
@@ -204,10 +206,12 @@ def test_daily_run_uses_sample_collectors_and_creates_exports(tmp_path: Path) ->
     assert "Run Summary" in report_text
     assert "Jobs discovered before scoring: 5" in report_text
     assert "Jobs scored: 3" in report_text
-    assert "Jobs relevant: 3" in report_text
-    assert "Jobs inserted: 3" in report_text
+    assert "Jobs relevant in current run: 3" in report_text
+    assert "Jobs new: 3" in report_text
     assert "Jobs updated: 0" in report_text
     assert "Jobs unchanged: 0" in report_text
+    assert "Active saved jobs: 0" in report_text
+    assert "Review export rows: 0" in report_text
     assert "Duplicates skipped before scoring: 2" in report_text
     assert "## Collection" in report_text
     assert "## Evaluation" in report_text
