@@ -391,6 +391,7 @@ def collect_company_jobs(
         notes="browser collection started",
     )
 
+    operation = "open official careers URL"
     try:
         starting_url = careers_url
         page.goto(
@@ -408,7 +409,13 @@ def collect_company_jobs(
         initial_language = dismiss_ibm_language_prompt(page)
         if initial_language:
             dismissed_language_steps.append(initial_language)
-        navigated_url = navigate_to_job_search_page(page)
+        # RBC's configured source is already the public search-results board.
+        # Its landing-page helper can compete with the board's SPA route change.
+        navigated_url = (
+            None
+            if is_rbc_careers_search_url(page.url or careers_url)
+            else navigate_to_job_search_page(page)
+        )
         if navigated_url:
             navigated_cookie = dismiss_cookie_banner(page)
             if navigated_cookie:
@@ -424,6 +431,7 @@ def collect_company_jobs(
         dismissed_language_prompt = " -> ".join(dismissed_language_steps) or None
         source_scope_status = _initial_source_scope_status(page.url or careers_url)
 
+        operation = "read initial result surface"
         initial_html = _page_content_with_retry(page)
         initial_text = page.locator("body").inner_text(timeout=3_000)
         has_search_input = find_search_input(page) is not None
@@ -441,6 +449,7 @@ def collect_company_jobs(
                 dismissed_cookie_steps.append(retry_cookie)
                 dismissed_cookie = " -> ".join(dismissed_cookie_steps)
                 page.wait_for_timeout(500)
+                operation = "read consent-retry result surface"
                 initial_html = _page_content_with_retry(page)
                 initial_text = page.locator("body").inner_text(timeout=3_000)
                 early_barriers = detect_browser_barriers(
@@ -696,6 +705,7 @@ def collect_company_jobs(
             page.wait_for_timeout(3_000)
         sort_result = _apply_sort_policy(page, policy=page_policy)
 
+        operation = "extract paginated job cards"
         extraction_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
             page,
             company_name=company_name,
@@ -753,6 +763,7 @@ def collect_company_jobs(
         if post_search_language:
             dismissed_language_steps.append(post_search_language)
             dismissed_language_prompt = " -> ".join(dismissed_language_steps)
+        operation = "read post-extraction result surface"
         current_html = _page_content_with_retry(page)
         current_text = page.locator("body").inner_text(timeout=3_000)
         late_barriers = detect_browser_barriers(
@@ -908,13 +919,13 @@ def collect_company_jobs(
             source_name=source_name,
             signals=[BARRIER_SIGNAL_EXTRACTION_FAILED],
             source_url=careers_url,
-            notes=f"Playwright error: {exc}",
+            notes=f"Playwright error during {operation}: {exc}",
         )
         finish_daily_run(
             connection,
             run_id,
             status="error",
-            notes=f"Playwright error: {exc}",
+            notes=f"Playwright error during {operation}: {exc}",
         )
         return {
             "company_name": company_name,
@@ -928,7 +939,7 @@ def collect_company_jobs(
             "jobs_saved": 0,
             "location_scope_used": False,
             "keyword_scope_used": False,
-            "error": str(exc),
+            "error": f"{operation}: {exc}",
             "jobs": [],
             **initial_scope_status.to_dict(),
         }

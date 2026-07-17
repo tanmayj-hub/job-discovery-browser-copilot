@@ -2233,13 +2233,13 @@ def _wait_for_page_settle(
     poll_delay_ms: int = 250,
 ) -> tuple[str, str]:
     latest_url = page.url
-    latest_html = page.content()
+    latest_html = _read_page_content_when_stable(page)
     stable_polls = 0
 
     for _ in range(max_polls):
         page.wait_for_timeout(poll_delay_ms)
         current_url = page.url
-        current_html = page.content()
+        current_html = _read_page_content_when_stable(page)
         if current_url == latest_url and current_html == latest_html:
             stable_polls += 1
             if stable_polls >= 1 and (
