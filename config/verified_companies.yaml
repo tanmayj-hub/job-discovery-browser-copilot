@@ -76,5 +76,5 @@ verified_companies:
     verified: false
     verified_at: "2026-07-17"
     scope: Canada
-    status: needs_review
-    notes: "Task 12.14 configured the official Canada-scoped all-pages policy, but the live board did not expose a stable extractable listing in this environment. It remains unverified pending a fresh all-pages candidate snapshot and manual URL recall."
+    status: blocked_by_cloudflare
+    notes: "The official Canada-scoped board returned HTTP 403 with Cloudflare security verification before its job application loaded. No bypass was attempted. Excluded from verified-only and normal daily retries; retain for a future manual/source-health recheck."

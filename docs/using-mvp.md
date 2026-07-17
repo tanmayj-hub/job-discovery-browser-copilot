@@ -61,6 +61,9 @@ Only companies marked `verified: true` and `status: usable` are included in
 `--verified-only` runs. Companies marked `needs_review` remain available for
 single-company audits, but they are intentionally excluded from the trusted MVP
 slice until both source scope and result quality are proven strongly enough.
+Sources marked `blocked_by_cloudflare` are excluded from verified-only and
+normal daily retries. Recheck them manually only when their official public
+board is accessible without an anti-bot challenge.
 
 BMO is now included in the verified-only slice as a provisional usable source
 after the Canada-scope and pagination fixes. This is a deliberate workflow
@@ -88,13 +91,15 @@ bank-slice audit shows `4 / 5` expected URLs as `extracted_and_relevant` and
 the final `1 / 5` as `extracted_but_rejected_by_scoring`, so the remaining
 gap is scoring-only rather than collection.
 
-RBC remains outside the verified-only slice for now with status
-`needs_manual_audit`. The trusted public Country=Canada confirmation path
-before pagination is now fixed, but the older manual expected URLs were
-gathered with extra subcategory filters that are not part of the trusted broad
-Canada-only MVP policy. RBC now needs a clean apples-to-apples manual audit
-using only the same broad Canada-only listing and page cap as the MVP before
-promotion.
+RBC remains outside the verified-only slice while its audit-only deep scan is
+being validated. Its production run stays Canada-scoped and capped at 20 pages;
+the deeper audit does not change normal collection behavior.
+
+Cognizant remains outside the verified-only slice with status
+`blocked_by_cloudflare`. The official Canada URL returned HTTP 403 and a
+Cloudflare security-verification screen before its job board loaded. The MVP
+does not bypass that protection, so Cognizant is not retried in normal daily
+runs.
 
 ## Trusted Run Rule
 Trusted MVP runs do not start from a broad/global careers listing and then rely
