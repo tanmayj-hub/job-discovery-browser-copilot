@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Iterable, Mapping
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
+from time import perf_counter
 from typing import Any
 from urllib.parse import urljoin, urlparse
 
@@ -252,6 +253,10 @@ class ExtractionDiagnostics:
     pagination_complete: bool = False
     pagination_stop_normal: bool = False
     pagination_engineering_fix_required: bool = False
+    page_numbers: list[int] = field(default_factory=list)
+    page_fingerprints: list[str] = field(default_factory=list)
+    page_timings_ms: list[dict[str, float]] = field(default_factory=list)
+    full_page_serializations: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -1646,6 +1651,76 @@ def _extract_visible_bmo_job_cards(
     return jobs
 
 
+def _extract_visible_rbc_job_cards(
+    page: Page,
+    *,
+    company_name: str,
+    source_name: str,
+    source_mode: str,
+) -> list[dict[str, Any]]:
+    """Extract RBC's visible Phenom cards without serializing the whole SPA document."""
+
+    if not is_rbc_careers_search_url(page.url):
+        return []
+
+    try:
+        items = page.evaluate(
+            """
+            () => {
+              const visible = (element) => {
+                if (!element || typeof element.getBoundingClientRect !== 'function') return false;
+                const style = window.getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return style.display !== 'none' && style.visibility !== 'hidden'
+                  && rect.width > 0 && rect.height > 0;
+              };
+              return Array.from(document.querySelectorAll('a[data-ph-at-id="job-link"]'))
+                .filter((node) => visible(node))
+                .map((node) => {
+                  const card = node.closest('li, article, section, div');
+                  return {
+                    title: (
+                      node.getAttribute('data-ph-at-job-title-text')
+                      || node.textContent
+                      || ''
+                    ).trim(),
+                    href: (node.getAttribute('href') || '').trim(),
+                    location: (
+                      node.getAttribute('data-ph-at-job-location-text')
+                      || node.getAttribute('data-ph-at-job-location-area-text')
+                      || ''
+                    ).trim(),
+                    datePosted: (node.getAttribute('data-ph-at-job-post-date-text') || '').trim(),
+                    description: ((card?.innerText) || '').replace(/\\s+/g, ' ').trim(),
+                  };
+                });
+            }
+            """,
+        )
+    except Exception:  # noqa: BLE001
+        return []
+
+    jobs: list[dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        job = _build_job_record(
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+            title=_clean_text(item.get("title")),
+            base_url=page.url,
+            href=str(item.get("href") or "").strip(),
+            location=_clean_text(item.get("location")) or None,
+            description=_clean_text(item.get("description")),
+            date_posted=_clean_text(item.get("datePosted")) or None,
+            allow_base_url_fallback=False,
+        )
+        if job is not None:
+            jobs.append(job)
+    return jobs
+
+
 def _extract_from_tables(
     soup: BeautifulSoup,
     *,
@@ -2231,15 +2306,29 @@ def _wait_for_page_settle(
     before_html: str,
     max_polls: int = 6,
     poll_delay_ms: int = 250,
+    prefer_lightweight_fingerprint: bool = False,
 ) -> tuple[str, str]:
+    """Wait for a page transition and one stable result fingerprint.
+
+    RBC's public board replaces a very large SPA tree between result pages. Its
+    visible job links provide a smaller and more reliable transition signal than
+    serializing the full document on every poll.
+    """
+
     latest_url = page.url
-    latest_html = _read_page_content_when_stable(page)
+    latest_html = _result_fingerprint(
+        page,
+        prefer_lightweight=prefer_lightweight_fingerprint,
+    )
     stable_polls = 0
 
     for _ in range(max_polls):
         page.wait_for_timeout(poll_delay_ms)
         current_url = page.url
-        current_html = _read_page_content_when_stable(page)
+        current_html = _result_fingerprint(
+            page,
+            prefer_lightweight=prefer_lightweight_fingerprint,
+        )
         if current_url == latest_url and current_html == latest_html:
             stable_polls += 1
             if stable_polls >= 1 and (
@@ -2252,6 +2341,32 @@ def _wait_for_page_settle(
         stable_polls = 0
 
     return latest_url, latest_html
+
+
+def _result_fingerprint(page: Page, *, prefer_lightweight: bool) -> str:
+    """Return a compact ordered result identity, falling back only when needed."""
+
+    if prefer_lightweight:
+        try:
+            items = page.evaluate(
+                """
+                () => Array.from(document.querySelectorAll('a[data-ph-at-id="job-link"]'))
+                  .filter((node) => {
+                    const style = window.getComputedStyle(node);
+                    const rect = node.getBoundingClientRect();
+                    return style.display !== 'none' && style.visibility !== 'hidden'
+                      && rect.width > 0 && rect.height > 0;
+                  })
+                  .map((node) => node.href || node.getAttribute('href') || '')
+                  .filter(Boolean)
+                """,
+            )
+            if isinstance(items, list) and items:
+                sample = [str(item).strip() for item in items if str(item).strip()]
+                return "|".join([str(len(sample)), *sample[:3], *sample[-3:]])
+        except Exception:  # noqa: BLE001
+            pass
+    return _read_page_content_when_stable(page)
 
 
 def _read_page_content_when_stable(page: Page, *, retries: int = 10) -> str:
@@ -2282,6 +2397,36 @@ def _page_reports_final_result_set(page: Page) -> bool:
     return int(match.group(1)) >= int(match.group(2))
 
 
+def advance_to_page_start(page: Page, *, page_start: int) -> bool:
+    """Advance a live board to a 1-based audit page without collecting skipped pages."""
+
+    if page_start < 1:
+        raise ValueError("page_start must be at least 1")
+    use_lightweight_fingerprint = is_rbc_careers_search_url(page.url)
+    for _ in range(1, page_start):
+        target = _find_safe_pagination_target(page)
+        if target is None:
+            return False
+        before_url = page.url
+        before_fingerprint = _result_fingerprint(
+            page,
+            prefer_lightweight=use_lightweight_fingerprint,
+        )
+        try:
+            target.click(no_wait_after=True)
+        except TypeError:
+            target.click()
+        after_url, after_fingerprint = _wait_for_page_settle(
+            page,
+            before_url=before_url,
+            before_html=before_fingerprint,
+            prefer_lightweight_fingerprint=use_lightweight_fingerprint,
+        )
+        if after_url == before_url and after_fingerprint == before_fingerprint:
+            return False
+    return True
+
+
 def extract_visible_job_cards_with_diagnostics(
     page: Page,
     *,
@@ -2293,6 +2438,7 @@ def extract_visible_job_cards_with_diagnostics(
     page_policy: str = "capped",
     target_page_cap: int | None = None,
     capture_page_html: bool = False,
+    page_start: int = 1,
 ) -> tuple[list[dict[str, Any]], ExtractionDiagnostics]:
     """Extract plausible jobs and return pagination diagnostics for the pass."""
 
@@ -2318,50 +2464,89 @@ def extract_visible_job_cards_with_diagnostics(
     pages_visited: list[str] = []
     jobs_extracted_per_page: list[int] = []
     page_html_snapshots: list[dict[str, str]] = []
+    page_numbers: list[int] = []
+    page_fingerprints: list[str] = []
+    page_timings_ms: list[dict[str, float]] = []
+    full_page_serializations = 0
     seen_job_identities: set[tuple[str, str]] = set()
     pagination_detected = False
     pagination_stop_reason = "next_disabled_or_missing"
 
-    _wait_for_visible_bmo_job_links(page)
-    interactive_jobs = _extract_from_interactive_cards(
-        page,
-        company_name=company_name,
-        source_name=source_name,
-        source_mode=source_mode,
-    )
-    candidates.extend(interactive_jobs)
-    seen_job_identities.update(_job_identity_key(job) for job in interactive_jobs)
+    is_rbc = is_rbc_careers_search_url(page.url)
 
-    visible_bmo_jobs = _extract_visible_bmo_job_cards(
-        page,
-        company_name=company_name,
-        source_name=source_name,
-        source_mode=source_mode,
-    )
-    candidates.extend(visible_bmo_jobs)
-    seen_job_identities.update(_job_identity_key(job) for job in visible_bmo_jobs)
+    def extract_current_page() -> tuple[list[dict[str, Any]], str, float, float, int]:
+        """Use live cards first; parse HTML only for an empty/unsupported surface."""
 
-    current_url = page.url
-    current_html = _read_page_content_when_stable(page)
-    current_jobs = (
-        []
-        if visible_bmo_jobs
-        else extract_jobs_from_html(
-            current_html,
+        started_at = perf_counter()
+        _wait_for_visible_bmo_job_links(page)
+        rbc_jobs = _extract_visible_rbc_job_cards(
+            page,
             company_name=company_name,
             source_name=source_name,
             source_mode=source_mode,
-            base_url=current_url,
-            max_cards=max_cards,
         )
+        visible_bmo_jobs = _extract_visible_bmo_job_cards(
+            page,
+            company_name=company_name,
+            source_name=source_name,
+            source_mode=source_mode,
+        )
+        interactive_jobs = (
+            []
+            if (rbc_jobs or visible_bmo_jobs)
+            else _extract_from_interactive_cards(
+                page,
+                company_name=company_name,
+                source_name=source_name,
+                source_mode=source_mode,
+            )
+        )
+        live_jobs = rbc_jobs or visible_bmo_jobs or interactive_jobs
+        extraction_ms = (perf_counter() - started_at) * 1_000
+        fingerprint_started_at = perf_counter()
+        _result_fingerprint(page, prefer_lightweight=is_rbc)
+        fingerprint_ms = (perf_counter() - fingerprint_started_at) * 1_000
+        html = ""
+        serializations = 0
+        if not live_jobs:
+            html = _read_page_content_when_stable(page)
+            serializations = 1
+            live_jobs = extract_jobs_from_html(
+                html,
+                company_name=company_name,
+                source_name=source_name,
+                source_mode=source_mode,
+                base_url=page.url,
+                max_cards=max_cards,
+            )
+        # RBC diagnostics use extracted candidate identities for recall; keeping
+        # one enormous HTML snapshot per page would reintroduce the audit bottleneck.
+        if capture_page_html and not is_rbc and not html:
+            html = _read_page_content_when_stable(page)
+            serializations += 1
+        return live_jobs, html, extraction_ms, fingerprint_ms, serializations
+
+    current_url = page.url
+    current_page_candidates, current_html, extraction_ms, fingerprint_ms, serialization_count = (
+        extract_current_page()
     )
-    current_page_candidates = visible_bmo_jobs or current_jobs
+    full_page_serializations += serialization_count
     pages_visited.append(current_url)
     jobs_extracted_per_page.append(len(current_page_candidates))
-    if capture_page_html:
+    page_numbers.append(page_start)
+    page_fingerprints.append(_result_fingerprint(page, prefer_lightweight=is_rbc))
+    page_timings_ms.append(
+        {
+            "extraction": round(extraction_ms, 2),
+            "fingerprint": round(fingerprint_ms, 2),
+            "settle": 0.0,
+            "full_page_serializations": float(serialization_count),
+        }
+    )
+    if capture_page_html and current_html:
         page_html_snapshots.append({"url": current_url, "html": current_html})
-    candidates.extend(current_jobs)
-    seen_job_identities.update(_job_identity_key(job) for job in current_jobs)
+    candidates.extend(current_page_candidates)
+    seen_job_identities.update(_job_identity_key(job) for job in current_page_candidates)
 
     for _ in range(max(0, max_pages - 1)):
         if _page_reports_final_result_set(page):
@@ -2376,47 +2561,44 @@ def extract_visible_job_cards_with_diagnostics(
             break
         pagination_detected = True
         before_url = page.url
-        before_html = _read_page_content_when_stable(page)
+        before_html = _result_fingerprint(page, prefer_lightweight=is_rbc)
         try:
             target.click(no_wait_after=True)
         except TypeError:
             # Lightweight test doubles and older Playwright interfaces may not
             # accept the navigation-wait override.
             target.click()
+        settle_started_at = perf_counter()
         after_url, after_html = _wait_for_page_settle(
             page,
             before_url=before_url,
             before_html=before_html,
+            prefer_lightweight_fingerprint=is_rbc,
         )
+        settle_ms = (perf_counter() - settle_started_at) * 1_000
         _wait_for_visible_bmo_job_links(page)
         after_url = page.url
-        after_html = _read_page_content_when_stable(page)
         if after_url == before_url and after_html == before_html:
             pagination_stop_reason = "pagination_control_failed"
             break
 
-        page_visible_bmo_jobs = _extract_visible_bmo_job_cards(
-            page,
-            company_name=company_name,
-            source_name=source_name,
-            source_mode=source_mode,
+        page_candidates, after_html, extraction_ms, fingerprint_ms, serialization_count = (
+            extract_current_page()
         )
-        page_jobs = (
-            []
-            if page_visible_bmo_jobs
-            else extract_jobs_from_html(
-                after_html,
-                company_name=company_name,
-                source_name=source_name,
-                source_mode=source_mode,
-                base_url=after_url,
-                max_cards=max_cards,
-            )
-        )
-        page_candidates = page_visible_bmo_jobs or page_jobs
+        full_page_serializations += serialization_count
         pages_visited.append(after_url)
         jobs_extracted_per_page.append(len(page_candidates))
-        if capture_page_html:
+        page_numbers.append(page_start + len(page_numbers))
+        page_fingerprints.append(_result_fingerprint(page, prefer_lightweight=is_rbc))
+        page_timings_ms.append(
+            {
+                "extraction": round(extraction_ms, 2),
+                "fingerprint": round(fingerprint_ms, 2),
+                "settle": round(settle_ms, 2),
+                "full_page_serializations": float(serialization_count),
+            }
+        )
+        if capture_page_html and after_html:
             page_html_snapshots.append({"url": after_url, "html": after_html})
 
         new_jobs = [
@@ -2450,6 +2632,10 @@ def extract_visible_job_cards_with_diagnostics(
         total_candidates_before_dedupe=len(candidates),
         total_candidates_after_dedupe=len(deduped),
         page_html_snapshots=page_html_snapshots,
+        page_numbers=page_numbers,
+        page_fingerprints=page_fingerprints,
+        page_timings_ms=page_timings_ms,
+        full_page_serializations=full_page_serializations,
     )
     return deduped, diagnostics
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import json
 import re
 import sqlite3
 from collections import defaultdict
@@ -120,6 +121,165 @@ MANUAL_URL_AUDIT_STATUS_ORDER = [
     "blocked_or_not_tested",
     "unknown",
 ]
+
+
+def _chunk_metadata_path(csv_path: Path) -> Path:
+    return csv_path.with_suffix(".chunk.json")
+
+
+def write_company_audit_chunk_metadata(
+    *,
+    csv_path: Path,
+    company: dict[str, Any],
+    collection_result: dict[str, Any],
+) -> Path:
+    """Persist deterministic, audit-only coverage evidence beside a chunk CSV."""
+
+    metadata_path = _chunk_metadata_path(csv_path)
+    payload = {
+        "company": str(company.get("name") or "").strip(),
+        "official_source": str(company.get("careers_url") or "").strip(),
+        "source_scope_confirmed": bool(collection_result.get("source_scope_confirmed")),
+        "source_scope_method": str(collection_result.get("source_scope_method") or ""),
+        "sort_requested": str(collection_result.get("sort_requested") or ""),
+        "sort_used": str(collection_result.get("sort_used") or ""),
+        "sort_status": str(collection_result.get("sort_status") or ""),
+        "requested_page_start": int(collection_result.get("requested_page_start", 1) or 1),
+        "requested_page_end": int(collection_result.get("requested_page_end", 1) or 1),
+        "page_numbers": [int(value) for value in collection_result.get("page_numbers", [])],
+        "page_fingerprints": [
+            str(value) for value in collection_result.get("page_fingerprints", [])
+        ],
+        "pages_visited": [str(value) for value in collection_result.get("pages_visited", [])],
+        "pagination_stop_reason": str(collection_result.get("pagination_stop_reason") or ""),
+        "pagination_complete": bool(collection_result.get("pagination_complete")),
+        "jobs_discovered": int(collection_result.get("jobs_discovered", 0) or 0),
+        "jobs_relevant": int(collection_result.get("jobs_relevant", 0) or 0),
+        "full_page_serializations": int(
+            collection_result.get("full_page_serializations", 0) or 0
+        ),
+        "page_timings_ms": collection_result.get("page_timings_ms", []),
+        "operation_timings_ms": collection_result.get("operation_timings_ms", {}),
+    }
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    metadata_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    return metadata_path
+
+
+def merge_company_audit_chunks(
+    *,
+    company_name: str,
+    inputs: list[Path],
+    output_path: Path,
+    report_path: Path,
+) -> dict[str, Any]:
+    """Merge deterministic audit chunks only when their coverage evidence agrees."""
+
+    metadata_rows: list[dict[str, Any]] = []
+    for csv_path in inputs:
+        metadata_path = _chunk_metadata_path(csv_path)
+        if not metadata_path.exists():
+            raise ValueError(f"missing audit chunk metadata: {metadata_path}")
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        if str(metadata.get("company") or "") != company_name:
+            raise ValueError(f"chunk company mismatch: {csv_path}")
+        if not bool(metadata.get("source_scope_confirmed")):
+            raise ValueError(f"chunk has unconfirmed Canada scope: {csv_path}")
+        metadata_rows.append(metadata)
+
+    metadata_rows.sort(key=lambda item: int(item["requested_page_start"]))
+    expected_page = int(metadata_rows[0]["requested_page_start"]) if metadata_rows else 1
+    page_gaps: list[int] = []
+    duplicate_pages: list[int] = []
+    duplicate_fingerprints: list[str] = []
+    seen_pages: set[int] = set()
+    seen_fingerprints: set[str] = set()
+    source_values = {str(row.get("official_source") or "") for row in metadata_rows}
+    sort_values = {
+        (str(row.get("sort_requested") or ""), str(row.get("sort_used") or ""))
+        for row in metadata_rows
+    }
+    for row in metadata_rows:
+        start = int(row["requested_page_start"])
+        end = int(row["requested_page_end"])
+        if start != expected_page:
+            page_gaps.extend(range(expected_page, start))
+        expected_page = end + 1
+        for page_number in row.get("page_numbers", []):
+            page_number = int(page_number)
+            if page_number in seen_pages:
+                duplicate_pages.append(page_number)
+            seen_pages.add(page_number)
+        for fingerprint in row.get("page_fingerprints", []):
+            fingerprint = str(fingerprint)
+            if fingerprint and fingerprint in seen_fingerprints:
+                duplicate_fingerprints.append(fingerprint)
+            seen_fingerprints.add(fingerprint)
+
+    all_rows: list[dict[str, str]] = []
+    for csv_path in inputs:
+        with csv_path.open(newline="", encoding="utf-8") as handle:
+            all_rows.extend(csv.DictReader(handle))
+    unique_rows: list[dict[str, str]] = []
+    seen_jobs: set[str] = set()
+    for row in all_rows:
+        identity = normalize_job_url(str(row.get("url") or "")) or normalize_job_text(
+            f"{row.get('title', '')}|{row.get('location', '')}"
+        )
+        if identity in seen_jobs:
+            continue
+        seen_jobs.add(identity)
+        unique_rows.append(row)
+    _write_csv(output_path, SCORED_CANDIDATE_FIELDS, unique_rows)
+
+    target_pages = list(range(int(metadata_rows[0]["requested_page_start"]), expected_page))
+    missing_pages = sorted(set(target_pages) - seen_pages)
+    complete = (
+        len(source_values) == 1
+        and len(sort_values) == 1
+        and not page_gaps
+        and not missing_pages
+        and not duplicate_pages
+        and not duplicate_fingerprints
+    )
+    result = {
+        "company": company_name,
+        "target_pages": target_pages,
+        "actual_pages": sorted(seen_pages),
+        "page_gaps": page_gaps + missing_pages,
+        "duplicate_pages": sorted(set(duplicate_pages)),
+        "duplicate_fingerprints": len(duplicate_fingerprints),
+        "discovered_before_dedupe": len(all_rows),
+        "unique_discovered": len(unique_rows),
+        "relevant": sum(row.get("is_relevant") == "true" for row in unique_rows),
+        "complete": complete,
+        "verification_eligible": complete,
+        "chunks": [str(path) for path in inputs],
+    }
+    report_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.write_text(
+        "\n".join(
+            [
+                f"# {company_name} Chunked Collection Audit",
+                "",
+                f"- Target pages: {target_pages[0]}-{target_pages[-1]}",
+                f"- Actual pages covered: {', '.join(map(str, result['actual_pages']))}",
+                f"- Chunk list: {', '.join(result['chunks'])}",
+                f"- Page gaps: {result['page_gaps'] or 'none'}",
+                f"- Duplicate pages: {result['duplicate_pages'] or 'none'}",
+                f"- Duplicate fingerprints: {result['duplicate_fingerprints']}",
+                f"- Total discovered before dedupe: {result['discovered_before_dedupe']}",
+                f"- Unique discovered: {result['unique_discovered']}",
+                f"- Scored: {result['unique_discovered']}",
+                f"- Relevant/saved: {result['relevant']}",
+                f"- Complete: {result['complete']}",
+                f"- Verification eligibility: {result['verification_eligible']}",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return result
 
 
 @dataclass(slots=True)
@@ -571,6 +731,15 @@ def write_company_collection_diagnostic(
     jobs_per_page = [
         int(count) for count in collection_result.get("jobs_extracted_per_page", [])
     ]
+    page_numbers = [int(value) for value in collection_result.get("page_numbers", [])]
+    page_fingerprints = [
+        str(value) for value in collection_result.get("page_fingerprints", []) if str(value)
+    ]
+    requested_page_end = (
+        collection_result.get("requested_page_end")
+        or collection_result.get("max_pages_per_source")
+        or "-"
+    )
     page_html_snapshots = [
         snapshot
         for snapshot in collection_result.get("page_html_snapshots", [])
@@ -666,6 +835,11 @@ def write_company_collection_diagnostic(
         ),
         "",
         "## Pagination",
+        (
+            "- Requested page range: "
+            f"{collection_result.get('requested_page_start') or 1}-"
+            f"{requested_page_end}"
+        ),
         f"- Page policy: {collection_result.get('page_policy') or 'capped'}",
         f"- Target page cap: {collection_result.get('target_page_cap') or 'all available'}",
         f"- Pagination detected: {bool(collection_result.get('pagination_detected', False))}",
@@ -679,6 +853,8 @@ def write_company_collection_diagnostic(
         ),
         f"- Max pages per source: {collection_result.get('max_pages_per_source') or '-'}",
         f"- Pages visited: {len(pages_visited)}",
+        f"- Actual page numbers: {page_numbers or '-'}",
+        f"- Page fingerprints captured: {len(page_fingerprints)}",
         f"- Jobs extracted per page: {jobs_per_page or '-'}",
         f"- Pagination stop reason: {collection_result.get('pagination_stop_reason') or '-'}",
         f"- Pagination complete: {bool(collection_result.get('pagination_complete', False))}",
@@ -710,6 +886,21 @@ def write_company_collection_diagnostic(
         "",
         "## Visited Pages",
     ]
+    operation_timings = collection_result.get("operation_timings_ms", {})
+    page_timings = collection_result.get("page_timings_ms", [])
+    if operation_timings or page_timings:
+        lines.extend(
+            [
+                "",
+                "## Timing",
+                f"- Operation timings (ms): {operation_timings or '-'}",
+                f"- Page timing samples (ms): {page_timings or '-'}",
+                (
+                    "- Full-page serializations: "
+                    f"{collection_result.get('full_page_serializations', 0)}"
+                ),
+            ]
+        )
     if pages_visited:
         lines.extend(f"- {url}" for url in pages_visited)
     else:

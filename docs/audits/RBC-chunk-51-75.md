@@ -1,0 +1,720 @@
+# RBC Collection Diagnostic
+
+## Audit Range
+- Requested pages: 51-75
+- Actual pages scanned: 51-75
+- Deterministic start: advanced through the scoped, newest-first public board without exporting pages 1-50.
+- Duplicate page fingerprints: none
+- Chunk state: complete; requested end reached.
+
+## Source
+- Company: RBC
+- Starting URL: https://jobs.rbc.com/ca/en/search-results
+- Final URL reached: https://jobs.rbc.com/ca/en/search-results?from=740&s=1
+- Source mode: browser_allowed
+- ATS type: -
+- Cookie banner action: #onetrust-accept-btn-handler
+- Language prompt action: none
+
+## Source Scope Validation
+- Source URL used: https://jobs.rbc.com/ca/en/search-results
+- Source scope status: canada_scope_confirmed
+- Canada scope confirmed before pagination: True
+- Source scope method: ui_filter
+- Source scope reason: RBC's public Country=Canada facet was applied before pagination.
+- Broad diagnostic collection: False
+
+## Location Scope
+- Location scope used: True
+- Configured locations: Canada
+- Location filter/search attempted: Canada (RBC country facet)
+- Exact filter method: rbc_country_facet
+
+## Pagination
+- Page policy: capped
+- Target page cap: 75
+- Pagination detected: True
+- Next/load-more detection result: detected
+- Max pages per source: 25
+- Pages visited: 25
+- Jobs extracted per page: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
+- Pagination stop reason: max_pages_reached
+- Pagination complete: False
+- Normal stop: False
+- Engineering fix required: False
+
+## Sort Policy
+- Sort requested: most_recent
+- Sort used: Most recent
+- Sort status: confirmed
+- Sort method: ui_control
+- Sort reason: Applied the public newest-first results control before pagination.
+
+## Counts
+- Candidate jobs before scoring: 250
+- Jobs after scoring: 250
+- Relevant jobs after scoring: 22
+- Explicit non-Canada jobs rejected by safety gate: 0
+- Relevant jobs with unknown/blank location text: 0
+- Unique IBM jobIds extracted: 0
+- Unique Workday job IDs extracted: 0
+- Scored candidates CSV: data\exports\audits\RBC-chunk-51-75.csv
+
+## Visited Pages
+- https://jobs.rbc.com/ca/en/search-results?from=500&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=510&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=520&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=530&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=540&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=550&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=560&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=570&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=580&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=590&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=600&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=610&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=620&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=630&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=640&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=650&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=660&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=670&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=680&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=690&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=700&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=710&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=720&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=730&s=1
+- https://jobs.rbc.com/ca/en/search-results?from=740&s=1
+
+## Verification Decision
+- Decision: ready_for_verified_review
+- Reason: Canada source scope was confirmed before pagination and no diagnostic-only fallback was required.
+
+## Manual Expected Coverage
+- Manual expected URLs provided: 31
+- Matching manual expected URLs found: 13 / 31
+- Manual expected URLs still missing: 18
+
+| Manual URL | Manual Title | Raw HTML | Anchor href | Script/JSON | Extracted | Scored | Saved by MVP | Status | Reason |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| https://jobs.rbc.com/ca/en/job/R-0000174753/Senior-Cloud-Engineer | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000160071/Digital-Platform-Engineering-Technical-Product-Owner | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000160538/Senior-DevOps-Engineer | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179431/Senior-Manager-DevOps-Engineering | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179572/Senior-Site-Reliability-Engineer | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000177388/Application-Support-Engineer | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000176722/Senior-Site-Reliability-Engineer | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000176580/Sr-IAM-Engineer-Vault-Specialist-CyberArk-Hashicorp-Global-Security | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179335/Senior-IAM-Systems-Support-Analyst-Global-security | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179867/Staff-Data-platform-Engineer-GFT | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000180099/IAM-Director-Customer-Identity-Access-Management-Controls-Global-Security | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000178766/Senior-DevOps-Engineer | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000178411/Solution-Architect | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000171090/Lead-System-Administrator | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000178414/GFT-Lead-Solutions-Architect | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179708/AI-Analyst | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000165735/Lead-System-Engineer-Global-Security | - | no | no | no | yes | yes | no | extracted_but_rejected_by_scoring | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
+| https://jobs.rbc.com/ca/en/job/R-0000178089/DevOps-Engineer-Workday-Integrations | - | no | no | no | yes | yes | no | extracted_and_relevant | Saved as relevant because the job had a positive score and at least one core non-location signal. |
+| https://jobs.rbc.com/ca/en/job/R-0000165577/DevOps-Data-Engineer | - | no | no | no | yes | yes | no | extracted_but_rejected_by_scoring | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
+| https://jobs.rbc.com/ca/en/job/R-0000173122/Cloud-Security-Architect-Global-Security | - | no | no | no | yes | yes | no | extracted_but_rejected_by_scoring | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
+| https://jobs.rbc.com/ca/en/job/R-0000168166/Senior-IAM-Systems-Engineer-Global-Security | - | no | no | no | yes | yes | no | extracted_and_relevant | Saved as relevant because the job had a positive score and at least one core non-location signal. |
+| https://jobs.rbc.com/ca/en/job/R-0000178346/AI-Quality-Engineer | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000177144/Sr-Administrator | - | no | no | no | yes | yes | no | extracted_but_rejected_by_scoring | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. |
+| https://jobs.rbc.com/ca/en/job/R-0000164593/Application-Administrator | - | no | no | no | yes | yes | no | extracted_and_relevant | Saved as relevant because the job had a positive score and at least one core non-location signal. |
+| https://jobs.rbc.com/ca/en/job/R-0000175098/Lead-Solution-Architect | - | no | no | no | yes | yes | no | extracted_and_relevant | Saved as an adjacent customer-facing technical fit because the role matched the secondary relevance bucket. |
+| https://jobs.rbc.com/ca/en/job/R-0000178580/Director-SRE-and-AI-Ops-GFT | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000168932/Principal-ML-Ops-Engineer-Azure | - | no | no | no | yes | yes | no | extracted_and_relevant | Saved as relevant because the job had a positive score and at least one core non-location signal. |
+| https://jobs.rbc.com/ca/en/job/R-0000173020/Application-Support-Analyst-GFT-Halifax | - | no | no | no | yes | yes | no | extracted_and_relevant | Saved as relevant because the job had a positive score and at least one core non-location signal. |
+| https://jobs.rbc.com/ca/en/job/R-0000177942/Sr-Technical-Systems-Analyst-Database-Activity-Monitoring-GCS | - | no | no | no | yes | yes | no | extracted_and_relevant | Saved as relevant because the job had a positive score and at least one core non-location signal. |
+| https://jobs.rbc.com/ca/en/job/R-0000152065/Lead-Solution-Architect | - | no | no | no | yes | yes | no | extracted_and_relevant | Saved as an adjacent customer-facing technical fit because the role matched the secondary relevance bucket. |
+| https://jobs.rbc.com/ca/en/job/R-0000173104/Senior-Middleware-Technical-Support-Administrator | - | no | no | no | yes | yes | no | extracted_and_relevant | Saved as relevant because the job had a positive score and at least one core non-location signal. |
+
+## Candidate Jobs Before Scoring
+- Senior Manager, National Compliance | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177114/Senior-Manager-National-Compliance
+- Director, Lead Solutions Architect, IAM | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178793/Director-Lead-Solutions-Architect-IAM
+- Director, Strategic Execution | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178652/Director-Strategic-Execution
+- Senior Java Developer - GFT TORONTO | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178996/Senior-Java-Developer-GFT-TORONTO
+- Director, Identity Intelligence (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178450/Director-Identity-Intelligence-Global-Security
+- Associate Director, Credit Modeling & Methodology | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179510/Associate-Director-Credit-Modeling-Methodology
+- Financial Advisor | COLWOOD, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179557/Financial-Advisor
+- Administrative Assistant | BEDFORD, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000177760/Administrative-Assistant
+- Branch Manager, 33 City Centre Dr Branch | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174907/Branch-Manager-33-City-Centre-Dr-Branch
+- Client Advisor - Etobicoke (Bilingual: English and Russian/Ukrainian/Spanish/Vietnamese/Mandarin/Cantonese) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000163827/Client-Advisor-Etobicoke-Bilingual-English-and-Russian-Ukrainian-Spanish-Vietnamese-Mandarin-Cantonese
+- Lead System Engineer (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165735/Lead-System-Engineer-Global-Security
+- Senior Manager, Client Engagement | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178817/Senior-Manager-Client-Engagement
+- Director, Compliance - Global Asset Management | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169933/Director-Compliance-Global-Asset-Management
+- Relationship Manager Intern, Business Market | VICTORIA, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000165390/Relationship-Manager-Intern-Business-Market
+- Lead Data Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170663/Lead-Data-Engineer
+- Senior Software Developer – Trading application | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000172407/Senior-Software-Developer-Trading-application
+- Associate | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175185/Associate
+- Senior Relationship Manager, Commercial Financial Services | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000178413/Senior-Relationship-Manager-Commercial-Financial-Services
+- Commercial Banking Advisor | WINNIPEG, Manitoba, Canada | https://jobs.rbc.com/ca/en/job/R-0000179709/Commercial-Banking-Advisor
+- Director, Business Management (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178007/Director-Business-Management-Global-Security
+- Payment Escalation Officer | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000178979/Payment-Escalation-Officer
+- Lead Employee Relations Regulatory Compliance Specialist | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000172800/Lead-Employee-Relations-Regulatory-Compliance-Specialist
+- Technical Product Manager | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179411/Technical-Product-Manager
+- Senior Manager, Employee Relations Strategy and Programs | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178851/Senior-Manager-Employee-Relations-Strategy-and-Programs
+- Equity Research Associate - Transportation/Aerospace/Industrials | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179630/Equity-Research-Associate-Transportation-Aerospace-Industrials
+- Relationship Manager, Commercial Financial Services Intern | KELOWNA, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179361/Relationship-Manager-Commercial-Financial-Services-Intern
+- Senior Software Developer | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000159322/Senior-Software-Developer
+- Lead Product Manager | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176954/Lead-Product-Manager
+- Senior Multimedia Learning Designer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177243/Senior-Multimedia-Learning-Designer
+- Associate Advisor | OAKVILLE, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179298/Associate-Advisor
+- Senior Software Developer, Workday Integrations & Extend | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174299/Senior-Software-Developer-Workday-Integrations-Extend
+- Associate Director | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179601/Associate-Director
+- Associate Operations Representative - Deposit Processing | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000179507/Associate-Operations-Representative-Deposit-Processing
+- Equity Research Associate - North American Industrials | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179627/Equity-Research-Associate-North-American-Industrials
+- DevOps Engineer - Workday Integrations | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178089/DevOps-Engineer-Workday-Integrations
+- Senior Manager- Analytics & Insights | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179645/Senior-Manager-Analytics-Insights
+- Client Advisor | WADENA, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000179208/Client-Advisor
+- Director, AI Business Enablement | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177672/Director-AI-Business-Enablement
+- Client Advisor | ORANGEVILLE, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179422/Client-Advisor
+- Commercial Banking Advisor Intern | PRINCE GEORGE, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179631/Commercial-Banking-Advisor-Intern
+- Commercial Banking Advisor Intern | VICTORIA, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179635/Commercial-Banking-Advisor-Intern
+- Senior Data Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174420/Senior-Data-Engineer
+- Capital Markets, Global Investment Banking Analyst | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000179135/Capital-Markets-Global-Investment-Banking-Analyst
+- Client Advisor | GATINEAU, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000175886/Client-Advisor
+- .NET Developer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000155639/-NET-Developer
+- Manager, Sales Practices | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178167/Manager-Sales-Practices
+- Analyst, US Securities Settlements | BEDFORD, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179434/Analyst-US-Securities-Settlements
+- Senior Manager, Analytics Engineer | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170453/Senior-Manager-Analytics-Engineer
+- Senior Software Developer | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000169611/Senior-Software-Developer
+- Associate Director, Senior Software Engineer (.Net C#) | BEDFORD, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000161475/Associate-Director-Senior-Software-Engineer-Net-C
+- Client Advisor | HANNA, Alberta, Canada | https://jobs.rbc.com/ca/en/job/R-0000178943/Client-Advisor
+- Business Analyst SME | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000163130/Business-Analyst-SME
+- Trust Officer | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000174964/Trust-Officer
+- Senior Staff Engineer | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000164171/Senior-Staff-Engineer
+- Director, Program Delivery | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178744/Director-Program-Delivery
+- Senior QE Analyst | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165700/Senior-QE-Analyst
+- Manager, Product Control | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171880/Manager-Product-Control
+- Client Advisor | SACKVILLE, New Brunswick, Canada | https://jobs.rbc.com/ca/en/job/R-0000179145/Client-Advisor
+- Director, Strategic Initiatives & Innovation – ICFR CoE & Global Functions | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171509/Director-Strategic-Initiatives-Innovation-ICFR-CoE-Global-Functions
+- Sr. Quality Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000172211/Sr-Quality-Engineer
+- Project Manager / Scrum Master | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175305/Project-Manager-Scrum-Master
+- Associate Director, Senior Software Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170923/Associate-Director-Senior-Software-Engineer
+- Client Advisor Intern | LONDON, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178738/Client-Advisor-Intern
+- Director, Regulatory Investigations & Inquiries | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178693/Director-Regulatory-Investigations-Inquiries
+- Actuarial Support Lead Tester | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178969/Actuarial-Support-Lead-Tester
+- NFT Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175397/NFT-Engineer
+- Product Analyst Programmer | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178963/Product-Analyst-Programmer
+- Analytics Platform Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171258/Analytics-Platform-Engineer
+- Senior Data Engineer (Datastage experience) | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170621/Senior-Data-Engineer-Datastage-experience
+- Cloud Security Architect (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173122/Cloud-Security-Architect-Global-Security
+- BigData Quality Engineer | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000173262/BigData-Quality-Engineer
+- Senior Director, AI Research | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173774/Senior-Director-AI-Research
+- Senior Quality Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173614/Senior-Quality-Engineer
+- Staff Data Scientist, (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173773/Staff-Data-Scientist-Global-Security
+- Client Advisor Intern | GUELPH, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178668/Client-Advisor-Intern
+- Reconciliation Oficer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179292/Reconciliation-Oficer
+- Financial Advisor | BURNABY, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179026/Financial-Advisor
+- Administrative Assistant | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000167117/Administrative-Assistant
+- Senior ServiceNow Discovery & Service Mapping Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167419/Senior-ServiceNow-Discovery-Service-Mapping-Engineer
+- Client Advisor Intern | CAPE BRETON, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179371/Client-Advisor-Intern
+- Senior Data Engineer (Cloud/AWS) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000148012/Senior-Data-Engineer-Cloud-AWS
+- Lead Data Analyst | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179205/Lead-Data-Analyst
+- Banking Advisor | WEST LINCOLN, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179154/Banking-Advisor
+- Sr. Technical Lead, Employee Onboarding | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177914/Sr-Technical-Lead-Employee-Onboarding
+- Senior IAM Systems Engineer (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168166/Senior-IAM-Systems-Engineer-Global-Security
+- Staff Data/AI Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169632/Staff-Data-AI-Engineer
+- Data & Insights Analyst, Employee Onboarding | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178133/Data-Insights-Analyst-Employee-Onboarding
+- Client Advisor | NORFOLK COUNTY, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179170/Client-Advisor
+- Financial Advisor | HAMILTON, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179302/Financial-Advisor
+- Banking Advisor | NORFOLK COUNTY, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179200/Banking-Advisor
+- Banking Advisor - Mississauga (Bilingual: English and Arabic/Spanish/Mandarin/Cantonese/Russian) | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175486/Banking-Advisor-Mississauga-Bilingual-English-and-Arabic-Spanish-Mandarin-Cantonese-Russian
+- Operations Service Specialist - Estates and Trusts | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000179024/Operations-Service-Specialist-Estates-and-Trusts
+- Client Advisor Intern | HALDIMAND COUNTY, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179164/Client-Advisor-Intern
+- Associate Director, Credit Structures | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000169147/Associate-Director-Credit-Structures
+- Associate Director, Data Development Lead | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169802/Associate-Director-Data-Development-Lead
+- Senior Scrum Master | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175546/Senior-Scrum-Master
+- Private Banking Advisor | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179520/Private-Banking-Advisor
+- Branch Operations Manager | VICTORIA, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179527/Branch-Operations-Manager
+- Senior Manager – Pension Investments | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174469/Senior-Manager-Pension-Investments
+- DevOps Data Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165577/DevOps-Data-Engineer
+- Senior Manager- Product, Digital Components & Platforms | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166282/Senior-Manager-Product-Digital-Components-Platforms
+- Lead Data Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178542/Lead-Data-Engineer
+- Investment Associate | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178660/Investment-Associate
+- Manager, Enterprise Model Risk Management | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176515/Manager-Enterprise-Model-Risk-Management
+- Delivery Lead – Agentic AI | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179470/Delivery-Lead-Agentic-AI
+- Associate Advisor | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179444/Associate-Advisor
+- Business Development Associate | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179512/Business-Development-Associate
+- Lead Data Engineer, GFT | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168275/Lead-Data-Engineer-GFT
+- Senior QE Analyst | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000169207/Senior-QE-Analyst
+- Senior Data Engineer - Halifax | BEDFORD, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000152521/Senior-Data-Engineer-Halifax
+- Associate Director - Data & AI Solutions Architect | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176686/Associate-Director-Data-AI-Solutions-Architect
+- Investment Associate | COQUITLAM, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000179285/Investment-Associate
+- Senior Manager Application Support - GFT Vancouver | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000175685/Senior-Manager-Application-Support-GFT-Vancouver
+- Portfolio and Strategy Lead – Agentic AI | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175706/Portfolio-and-Strategy-Lead-Agentic-AI
+- Machine Learning Research Engineer | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000175798/Machine-Learning-Research-Engineer
+- Financial Advisor | SASKATOON, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000153147/Financial-Advisor
+- Associate | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168151/Associate
+- Mortgage Specialist | CALGARY, Alberta, Canada | https://jobs.rbc.com/ca/en/job/R-0000176702/Mortgage-Specialist
+- Banking Advisor | ESTEVAN, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000173651/Banking-Advisor
+- Senior Software Developer in Test | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000165542/Senior-Software-Developer-in-Test
+- Life Claims Analyst | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173883/Life-Claims-Analyst
+- Banking Advisor - Toronto Downtown (Bilingual: English and Cantonese/Mandarin/French/Vietnamese/Spanish) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000154681/Banking-Advisor-Toronto-Downtown-Bilingual-English-and-Cantonese-Mandarin-French-Vietnamese-Spanish
+- Client Advisor - Etobicoke North (Bilingual: English and Cantonese/Mandarin/Italian/Polish/Spanish) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000158468/Client-Advisor-Etobicoke-North-Bilingual-English-and-Cantonese-Mandarin-Italian-Polish-Spanish
+- Banking Advisor | NIAGARA FALLS, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178930/Banking-Advisor
+- Bilingual Digital Fraud Officer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178824/Bilingual-Digital-Fraud-Officer
+- Banking Advisor - Brampton | BRAMPTON, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175488/Banking-Advisor-Brampton
+- Principal, Data Engineering & Architecture | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176951/Principal-Data-Engineering-Architecture
+- Lead, Data Management and Governance | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175541/Lead-Data-Management-and-Governance
+- Bilingual National Operations Support Agent- CM&R | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000178853/Bilingual-National-Operations-Support-Agent-CM-R
+- Technology Program Manager | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176613/Technology-Program-Manager
+- Manager, Operational Risk Quality Assurance and Methodology | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164818/Manager-Operational-Risk-Quality-Assurance-and-Methodology
+- Senior Data Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164266/Senior-Data-Engineer
+- Sr. Administrator. | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177144/Sr-Administrator
+- Administrative Assistant | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179265/Administrative-Assistant
+- Sr. Manager, Analytics and AI Enablement, Direct Investing | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179178/Sr-Manager-Analytics-and-AI-Enablement-Direct-Investing
+- Banking Advisor - Etobicoke (Bilingual: English and Russian/Ukrainian/Spanish/Mandarin/Cantonese) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176130/Banking-Advisor-Etobicoke-Bilingual-English-and-Russian-Ukrainian-Spanish-Mandarin-Cantonese
+- Sr Software Developer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178151/Sr-Software-Developer
+- Client Advisor | THUNDER BAY, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178947/Client-Advisor
+- Sr Data Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159454/Sr-Data-Engineer
+- Associate Director, Product Control Flow Rates Europe | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179234/Associate-Director-Product-Control-Flow-Rates-Europe
+- Financial Planner Investment and Retirement Planner | RED DEER, Alberta, Canada | https://jobs.rbc.com/ca/en/job/R-0000179318/Financial-Planner-Investment-and-Retirement-Planner
+- Fullstack AI Engineer - GFT Halifax | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000177937/Fullstack-AI-Engineer-GFT-Halifax
+- Associate Advisor | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167752/Associate-Advisor
+- Administrator, Tax Operations | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000176786/Administrator-Tax-Operations
+- Senior Financial Reporting Analyst | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177912/Senior-Financial-Reporting-Analyst
+- Senior System Management Specialist | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166673/Senior-System-Management-Specialist
+- Investment Associate | GREATER SUDBURY / GRAND SUDBURY, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169399/Investment-Associate
+- Associate Advisor | WINDSOR, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173006/Associate-Advisor
+- Senior Manager, Data Security Automations & Engineering (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173580/Senior-Manager-Data-Security-Automations-Engineering-Global-Security
+- Bilingual Credit Adjudication Associate | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000173707/Bilingual-Credit-Adjudication-Associate
+- Client Advisor | BAIE-COMEAU, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000179184/Client-Advisor
+- Lead Full Stack Developer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178917/Lead-Full-Stack-Developer
+- Technology Program Manager | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176145/Technology-Program-Manager
+- Delivery Director - GFT | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177475/Delivery-Director-GFT
+- Senior Java Developer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178525/Senior-Java-Developer
+- Banking Advisor - Markham, North York, Scarborough- Bilingual (Mandarin/Cantonese/Filipino) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176073/Banking-Advisor-Markham-North-York-Scarborough-Bilingual-Mandarin-Cantonese-Filipino
+- Application Administrator | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164593/Application-Administrator
+- Banking Advisor | SQUAMISH, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000178836/Banking-Advisor
+- Relationship Manager Intern, Business Markets | BURNABY, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000178317/Relationship-Manager-Intern-Business-Markets
+- Project Manager, Business Optimization & Transformation Delivery | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170053/Project-Manager-Business-Optimization-Transformation-Delivery
+- Director, Runtime Governance & Decision Lead | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178078/Director-Runtime-Governance-Decision-Lead
+- Greater Toronto Region - Leadership Networking Event | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179098/Greater-Toronto-Region-Leadership-Networking-Event
+- Senior Manager, Reporting and Analytics | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179169/Senior-Manager-Reporting-and-Analytics
+- Financial Planner, Investment and Retirement Planning | YORKTON, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000172846/Financial-Planner-Investment-and-Retirement-Planning
+- Banking Advisor | BAIE-COMEAU, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000163431/Banking-Advisor
+- Lead Solution Architect | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175098/Lead-Solution-Architect
+- Lead Technical Product Manager, Enterprise Architecture | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175139/Lead-Technical-Product-Manager-Enterprise-Architecture
+- Senior Project Manager - GFT | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177545/Senior-Project-Manager-GFT
+- Financial Planner, Investment and Retirement Planning | TERRACE, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000178961/Financial-Planner-Investment-and-Retirement-Planning
+- Sr. Manager, Governance and Responsible AI | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178437/Sr-Manager-Governance-and-Responsible-AI
+- AML Investigator - Financial Intelligence Unit | BEDFORD, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000143524/AML-Investigator-Financial-Intelligence-Unit
+- Data Quality Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164339/Data-Quality-Engineer
+- Financial Planner, Investment and Retirement Planning | NORTH BATTLEFORD, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000172848/Financial-Planner-Investment-and-Retirement-Planning
+- Lead Data and AI Architect | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178444/Lead-Data-and-AI-Architect
+- Banking Advisor | PRINCE ALBERT, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000178512/Banking-Advisor
+- Financial Planner Relationship | LONGUEUIL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000178730/Financial-Planner-Relationship
+- Senior Full Stack Developer- Python and Vue.js (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178169/Senior-Full-Stack-Developer-Python-and-Vue-js-Global-Security
+- Senior Manager, ESG And AI Risk Governance, Internal Audit (18-month contract) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174115/Senior-Manager-ESG-And-AI-Risk-Governance-Internal-Audit-18-month-contract
+- Financial Planner, Investment and Retirement Planning | THOMPSON, Manitoba, Canada | https://jobs.rbc.com/ca/en/job/R-0000172849/Financial-Planner-Investment-and-Retirement-Planning
+- Senior Business Systems Analyst | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178733/Senior-Business-Systems-Analyst
+- Director, Control Design & Evidence | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178072/Director-Control-Design-Evidence
+- Functional & AI Analyst, GFT - Halifax | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000178121/Functional-AI-Analyst-GFT-Halifax
+- Relationship Financial Planner, Asian Market | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000179105/Relationship-Financial-Planner-Asian-Market
+- Banking Advisor | L'ANCIENNE-LORETTE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000174752/Banking-Advisor
+- Financial Planner, Relationship Manager | KINGSTON, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174816/Financial-Planner-Relationship-Manager
+- Group Financial Advisor, Group Advantage | REGINA, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000179142/Group-Financial-Advisor-Group-Advantage
+- Senior Manager, Data Strategy | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000154984/Senior-Manager-Data-Strategy
+- Financial Planner, Investment and Retirement Planning | WASAGA BEACH, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178981/Financial-Planner-Investment-and-Retirement-Planning
+- Staff AI Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166402/Staff-AI-Engineer
+- Senior Project Manager, Strategic Execution | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159902/Senior-Project-Manager-Strategic-Execution
+- Senior Associate | RICHMOND HILL, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178910/Senior-Associate
+- Banking Advisor | THUNDER BAY, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166882/Banking-Advisor
+- Financial Planner, Relationship Manager | PRINCE ALBERT, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000132889/Financial-Planner-Relationship-Manager
+- Financial Planner, Relationship Manager | SASKATOON, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000170478/Financial-Planner-Relationship-Manager
+- Bilingual Underwriting Consultant | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175925/Bilingual-Underwriting-Consultant
+- Client Advisor | IROQUOIS FALLS, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000163384/Client-Advisor
+- Principal ML Ops Engineer, Azure | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168932/Principal-ML-Ops-Engineer-Azure
+- Manager, Product Control | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178950/Manager-Product-Control
+- Director, Risk & Control Assesments | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179070/Director-Risk-Control-Assesments
+- IT Business & Data Analyst – Funding and Liquidity Technology | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169182/IT-Business-Data-Analyst-Funding-and-Liquidity-Technology
+- Data Scientist, Global AML Transaction Monitoring | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000162799/Data-Scientist-Global-AML-Transaction-Monitoring
+- Manager, Enterprise Model Risk Management | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178343/Manager-Enterprise-Model-Risk-Management
+- Lead Software Developer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178632/Lead-Software-Developer
+- Lead Software Developer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167179/Lead-Software-Developer
+- Senior Manager - Project Delivery, GFT | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169836/Senior-Manager-Project-Delivery-GFT
+- Application Support Analyst, GFT - Halifax | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000173020/Application-Support-Analyst-GFT-Halifax
+- Lead, Machine Learning Engineer, GFT | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169006/Lead-Machine-Learning-Engineer-GFT
+- Senior Android Developer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000163975/Senior-Android-Developer
+- Mortgage Specialist - Vancouver West Market | GREATER VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000168495/Mortgage-Specialist-Vancouver-West-Market
+- Senior Project Manager - GFT Halifax | BEDFORD, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000163548/Senior-Project-Manager-GFT-Halifax
+- Senior Data Engineer - GFT Halifax | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000173716/Senior-Data-Engineer-GFT-Halifax
+- Senior Technical Systems Analyst - GFT Halifax | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000165112/Senior-Technical-Systems-Analyst-GFT-Halifax
+- Director, Enterprise Control Testing Centre Operations | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177979/Director-Enterprise-Control-Testing-Centre-Operations
+- Sr. Software Developer (Wordpress) | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165301/Sr-Software-Developer-Wordpress
+- Senior Manager, Business Analysis | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000172553/Senior-Manager-Business-Analysis
+- Financial Planner Relationship | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000155090/Financial-Planner-Relationship
+- Operational Risk Manager - Finance IT, GFT - Halifax | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000163223/Operational-Risk-Manager-Finance-IT-GFT-Halifax
+- Investment Counsellor | LANGLEY, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000166789/Investment-Counsellor
+- Senior Data Analyst - GFT Halifax | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000174966/Senior-Data-Analyst-GFT-Halifax
+- Senior Manager, Cross-Border Payments and FX Products | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178573/Senior-Manager-Cross-Border-Payments-and-FX-Products
+- Financial Planner Relationship Intern | GATINEAU, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000177671/Financial-Planner-Relationship-Intern
+- Senior Manager, Privacy | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177891/Senior-Manager-Privacy
+- IT Audit Manager, Centralized Testing Group | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178885/IT-Audit-Manager-Centralized-Testing-Group
+- Mortgage Specialist | BURNABY, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000178773/Mortgage-Specialist
+- Wealth Concierge | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000167573/Wealth-Concierge
+- Senior Product Manager | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176022/Senior-Product-Manager
+- Manager Credit Structures Intern, Private Banking | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000178649/Manager-Credit-Structures-Intern-Private-Banking
+- Direct Investing Senior Relationship Manager | HAMILTON, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178663/Direct-Investing-Senior-Relationship-Manager
+- Manager, Cards Supplier Lead | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169880/Manager-Cards-Supplier-Lead
+- Senior Director, Early Talent & Innovation Programs | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178431/Senior-Director-Early-Talent-Innovation-Programs
+- Financial Planner, Investment & Retirement Planning | MARKHAM, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168355/Financial-Planner-Investment-Retirement-Planning
+- Actuarial Associate - Individual Pricing | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176853/Actuarial-Associate-Individual-Pricing
+- Lead AI/ML Software Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176402/Lead-AI-ML-Software-Engineer
+- Senior Software Developer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176049/Senior-Software-Developer
+- Sr. Director, T&O Strategy and Strategic Initatives | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178434/Sr-Director-T-O-Strategy-and-Strategic-Initatives
+- Assistant Case Manager | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174193/Assistant-Case-Manager
+- Sr. Technical Systems Analyst – Database Activity Monitoring (GCS) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177942/Sr-Technical-Systems-Analyst-Database-Activity-Monitoring-GCS
+- Master Data Management (MDM) Engineer – Informatica | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171259/Master-Data-Management-MDM-Engineer-Informatica
+- Analyst, Metadata Management | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000174601/Analyst-Metadata-Management
+- Lead Full Stack Developer - Python (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174962/Lead-Full-Stack-Developer-Python-Global-Security
+- Director of Product Management, DevOps | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159195/Director-of-Product-Management-DevOps
+- Lead Solution Architect | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000152065/Lead-Solution-Architect
+- Senior Full Stack Developer, GFT | VANCOUVER, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000161045/Senior-Full-Stack-Developer-GFT
+- Senior Manager, IT Risk Assessment (Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168840/Senior-Manager-IT-Risk-Assessment-Global-Security
+- Financial Planning Specialist | EDMONTON, Alberta, Canada | https://jobs.rbc.com/ca/en/job/R-0000162143/Financial-Planning-Specialist
+- Financial Planning Specialist | CALGARY, Alberta, Canada | https://jobs.rbc.com/ca/en/job/R-0000162145/Financial-Planning-Specialist
+- Senior Middleware Technical Support Administrator | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173104/Senior-Middleware-Technical-Support-Administrator
+- Director, Automation and Optimization (IAM, Global Security) | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177416/Director-Automation-and-Optimization-IAM-Global-Security
+- Lead, Data Engineering | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178077/Lead-Data-Engineering
+- Data Engineer | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177374/Data-Engineer
+
+## Scored Candidates
+- DevOps Engineer - Workday Integrations | score 57 | relevant=True | tier=core_target_fit | title matches target role: DevOps Engineer; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178089/DevOps-Engineer-Workday-Integrations
+- Analytics Platform Engineer | score 57 | relevant=True | tier=core_target_fit | title matches target role: Platform Engineer; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171258/Analytics-Platform-Engineer
+- Lead Solution Architect | score 36 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto, Ontario, Canada; adjacent customer-facing technical fit: Solution Architect | https://jobs.rbc.com/ca/en/job/R-0000175098/Lead-Solution-Architect
+- Lead Solution Architect | score 36 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Mississauga, Ontario, Canada; adjacent customer-facing technical fit: Solution Architect | https://jobs.rbc.com/ca/en/job/R-0000152065/Lead-Solution-Architect
+- Director, Lead Solutions Architect, IAM | score 25 | relevant=True | tier=adjacent_customer_facing_technical_fit | matched skills: IAM; location signals: Toronto, Ontario, Canada; adjacent customer-facing technical fit: Solutions Architect | https://jobs.rbc.com/ca/en/job/R-0000178793/Director-Lead-Solutions-Architect-IAM
+- Actuarial Support Lead Tester | score 24 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Mississauga, Ontario, Canada; support/ops signals: support | https://jobs.rbc.com/ca/en/job/R-0000178969/Actuarial-Support-Lead-Tester
+- Associate Director - Data & AI Solutions Architect | score 21 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto, Ontario, Canada; adjacent customer-facing technical fit: Solutions Architect | https://jobs.rbc.com/ca/en/job/R-0000176686/Associate-Director-Data-AI-Solutions-Architect
+- Application Administrator | score 20 | relevant=True | tier=core_target_fit | location signals: Toronto, Ontario, Canada; support/ops signals: administrator | https://jobs.rbc.com/ca/en/job/R-0000164593/Application-Administrator
+- Sr. Technical Systems Analyst – Database Activity Monitoring (GCS) | score 16 | relevant=True | tier=core_target_fit | matched skills: monitoring; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177942/Sr-Technical-Systems-Analyst-Database-Activity-Monitoring-GCS
+- Lead Full Stack Developer - Python (Global Security) | score 16 | relevant=True | tier=core_target_fit | matched skills: Python; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174962/Lead-Full-Stack-Developer-Python-Global-Security
+- Greater Toronto Region - Leadership Networking Event | score 16 | relevant=True | tier=core_target_fit | matched skills: networking; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179098/Greater-Toronto-Region-Leadership-Networking-Event
+- Data Scientist, Global AML Transaction Monitoring | score 16 | relevant=True | tier=core_target_fit | matched skills: monitoring; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000162799/Data-Scientist-Global-AML-Transaction-Monitoring
+- Application Support Analyst, GFT - Halifax | score 16 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Canada; support/ops signals: support | https://jobs.rbc.com/ca/en/job/R-0000173020/Application-Support-Analyst-GFT-Halifax
+- Senior Business Systems Analyst | score 15 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto, Ontario, Canada; adjacent customer-facing technical fit: Business Systems Analyst (technical context) | https://jobs.rbc.com/ca/en/job/R-0000178733/Senior-Business-Systems-Analyst
+- Sr. Technical Lead, Employee Onboarding | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177914/Sr-Technical-Lead-Employee-Onboarding
+- Sr. Software Developer (Wordpress) | score 12 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165301/Sr-Software-Developer-Wordpress
+- Sr. Quality Engineer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000172211/Sr-Quality-Engineer
+- Sr. Administrator. | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177144/Sr-Administrator
+- Sr Software Developer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178151/Sr-Software-Developer
+- Sr Data Engineer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159454/Sr-Data-Engineer
+- Reconciliation Oficer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179292/Reconciliation-Oficer
+- Product Analyst Programmer | score 12 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178963/Product-Analyst-Programmer
+- Portfolio and Strategy Lead – Agentic AI | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175706/Portfolio-and-Strategy-Lead-Agentic-AI
+- NFT Engineer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175397/NFT-Engineer
+- Master Data Management (MDM) Engineer – Informatica | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171259/Master-Data-Management-MDM-Engineer-Informatica
+- Life Claims Analyst | score 12 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173883/Life-Claims-Analyst
+- Lead, Machine Learning Engineer, GFT | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169006/Lead-Machine-Learning-Engineer-GFT
+- Lead, Data Management and Governance | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175541/Lead-Data-Management-and-Governance
+- Lead, Data Engineering | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178077/Lead-Data-Engineering
+- Lead System Engineer (Global Security) | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165735/Lead-System-Engineer-Global-Security
+- Lead Software Developer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178632/Lead-Software-Developer
+- Lead Software Developer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167179/Lead-Software-Developer
+- Lead Full Stack Developer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178917/Lead-Full-Stack-Developer
+- Lead Employee Relations Regulatory Compliance Specialist | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000172800/Lead-Employee-Relations-Regulatory-Compliance-Specialist
+- Lead Data and AI Architect | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178444/Lead-Data-and-AI-Architect
+- Lead Data Engineer, GFT | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168275/Lead-Data-Engineer-GFT
+- Lead Data Engineer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170663/Lead-Data-Engineer
+- Lead Data Engineer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178542/Lead-Data-Engineer
+- Lead Data Analyst | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179205/Lead-Data-Analyst
+- Lead AI/ML Software Engineer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176402/Lead-AI-ML-Software-Engineer
+- Investment Associate | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178660/Investment-Associate
+- IT Business & Data Analyst – Funding and Liquidity Technology | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169182/IT-Business-Data-Analyst-Funding-and-Liquidity-Technology
+- Financial Planner, Investment & Retirement Planning | score 12 | relevant=False | tier=not_relevant | location signals: Markham, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168355/Financial-Planner-Investment-Retirement-Planning
+- Equity Research Associate - Transportation/Aerospace/Industrials | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179630/Equity-Research-Associate-Transportation-Aerospace-Industrials
+- Equity Research Associate - North American Industrials | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179627/Equity-Research-Associate-North-American-Industrials
+- DevOps Data Engineer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165577/DevOps-Data-Engineer
+- Delivery Lead – Agentic AI | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179470/Delivery-Lead-Agentic-AI
+- Data Quality Engineer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164339/Data-Quality-Engineer
+- Data Engineer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177374/Data-Engineer
+- Data & Insights Analyst, Employee Onboarding | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178133/Data-Insights-Analyst-Employee-Onboarding
+- Cloud Security Architect (Global Security) | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173122/Cloud-Security-Architect-Global-Security
+- Client Advisor - Etobicoke North (Bilingual: English and Cantonese/Mandarin/Italian/Polish/Spanish) | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000158468/Client-Advisor-Etobicoke-North-Bilingual-English-and-Cantonese-Mandarin-Italian-Polish-Spanish
+- Client Advisor - Etobicoke (Bilingual: English and Russian/Ukrainian/Spanish/Vietnamese/Mandarin/Cantonese) | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000163827/Client-Advisor-Etobicoke-Bilingual-English-and-Russian-Ukrainian-Spanish-Vietnamese-Mandarin-Cantonese
+- Business Development Associate | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179512/Business-Development-Associate
+- Business Analyst SME | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000163130/Business-Analyst-SME
+- Bilingual Underwriting Consultant | score 12 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175925/Bilingual-Underwriting-Consultant
+- Bilingual Digital Fraud Officer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178824/Bilingual-Digital-Fraud-Officer
+- Associate Operations Representative - Deposit Processing | score 12 | relevant=True | tier=core_target_fit | location signals: Canada; support/ops signals: operations | https://jobs.rbc.com/ca/en/job/R-0000179507/Associate-Operations-Representative-Deposit-Processing
+- Associate Advisor | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167752/Associate-Advisor
+- Associate | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175185/Associate
+- Associate | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168151/Associate
+- Administrative Assistant | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179265/Administrative-Assistant
+- Actuarial Associate - Individual Pricing | score 12 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176853/Actuarial-Associate-Individual-Pricing
+- .NET Developer | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000155639/-NET-Developer
+- Senior Middleware Technical Support Administrator | score 9 | relevant=True | tier=core_target_fit | matched skills: support; location signals: Toronto, Ontario, Canada; support/ops signals: support, administrator | https://jobs.rbc.com/ca/en/job/R-0000173104/Senior-Middleware-Technical-Support-Administrator
+- Director, Automation and Optimization (IAM, Global Security) | score 9 | relevant=True | tier=core_target_fit | matched skills: IAM; location signals: Toronto, Ontario, Canada; support/ops signals: operations | https://jobs.rbc.com/ca/en/job/R-0000177416/Director-Automation-and-Optimization-IAM-Global-Security
+- Investment Associate | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169399/Investment-Associate
+- Financial Planner, Investment and Retirement Planning | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178981/Financial-Planner-Investment-and-Retirement-Planning
+- Financial Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179302/Financial-Advisor
+- Client Advisor Intern | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178738/Client-Advisor-Intern
+- Client Advisor Intern | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178668/Client-Advisor-Intern
+- Client Advisor Intern | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179164/Client-Advisor-Intern
+- Client Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179422/Client-Advisor
+- Client Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179170/Client-Advisor
+- Client Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178947/Client-Advisor
+- Client Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000163384/Client-Advisor
+- Associate Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179298/Associate-Advisor
+- Associate Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173006/Associate-Advisor
+- Director, Enterprise Control Testing Centre Operations | score 5 | relevant=True | tier=core_target_fit | location signals: Toronto, Ontario, Canada; support/ops signals: operations | https://jobs.rbc.com/ca/en/job/R-0000177979/Director-Enterprise-Control-Testing-Centre-Operations
+- Wealth Concierge | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000167573/Wealth-Concierge
+- Trust Officer | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000174964/Trust-Officer
+- Relationship Financial Planner, Asian Market | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179105/Relationship-Financial-Planner-Asian-Market
+- Payment Escalation Officer | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000178979/Payment-Escalation-Officer
+- Operations Service Specialist - Estates and Trusts | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179024/Operations-Service-Specialist-Estates-and-Trusts
+- Machine Learning Research Engineer | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000175798/Machine-Learning-Research-Engineer
+- Investment Counsellor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000166789/Investment-Counsellor
+- Investment Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179285/Investment-Associate
+- Group Financial Advisor, Group Advantage | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179142/Group-Financial-Advisor-Group-Advantage
+- Functional & AI Analyst, GFT - Halifax | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000178121/Functional-AI-Analyst-GFT-Halifax
+- Fullstack AI Engineer - GFT Halifax | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000177937/Fullstack-AI-Engineer-GFT-Halifax
+- Financial Planning Specialist | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000162143/Financial-Planning-Specialist
+- Financial Planning Specialist | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000162145/Financial-Planning-Specialist
+- Financial Planner, Investment and Retirement Planning | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000172846/Financial-Planner-Investment-and-Retirement-Planning
+- Financial Planner, Investment and Retirement Planning | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000178961/Financial-Planner-Investment-and-Retirement-Planning
+- Financial Planner, Investment and Retirement Planning | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000172848/Financial-Planner-Investment-and-Retirement-Planning
+- Financial Planner, Investment and Retirement Planning | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000172849/Financial-Planner-Investment-and-Retirement-Planning
+- Financial Planner Relationship Intern | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000177671/Financial-Planner-Relationship-Intern
+- Financial Planner Relationship | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000178730/Financial-Planner-Relationship
+- Financial Planner Relationship | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000155090/Financial-Planner-Relationship
+- Financial Planner Investment and Retirement Planner | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179318/Financial-Planner-Investment-and-Retirement-Planner
+- Financial Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179557/Financial-Advisor
+- Financial Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179026/Financial-Advisor
+- Financial Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000153147/Financial-Advisor
+- Client Advisor Intern | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179371/Client-Advisor-Intern
+- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179208/Client-Advisor
+- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000175886/Client-Advisor
+- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000178943/Client-Advisor
+- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179145/Client-Advisor
+- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179184/Client-Advisor
+- Capital Markets, Global Investment Banking Analyst | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179135/Capital-Markets-Global-Investment-Banking-Analyst
+- Bilingual National Operations Support Agent- CM&R | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000178853/Bilingual-National-Operations-Support-Agent-CM-R
+- Bilingual Credit Adjudication Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000173707/Bilingual-Credit-Adjudication-Associate
+- BigData Quality Engineer | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000173262/BigData-Quality-Engineer
+- Associate Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179444/Associate-Advisor
+- Analyst, US Securities Settlements | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179434/Analyst-US-Securities-Settlements
+- Analyst, Metadata Management | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000174601/Analyst-Metadata-Management
+- Administrator, Tax Operations | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000176786/Administrator-Tax-Operations
+- Administrative Assistant | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000177760/Administrative-Assistant
+- Administrative Assistant | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000167117/Administrative-Assistant
+- AML Investigator - Financial Intelligence Unit | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000143524/AML-Investigator-Financial-Intelligence-Unit
+- Senior IAM Systems Engineer (Global Security) | score 1 | relevant=True | tier=core_target_fit | matched skills: IAM; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168166/Senior-IAM-Systems-Engineer-Global-Security
+- Senior Full Stack Developer- Python and Vue.js (Global Security) | score 1 | relevant=True | tier=core_target_fit | matched skills: Python; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178169/Senior-Full-Stack-Developer-Python-and-Vue-js-Global-Security
+- Senior Data Engineer (Cloud/AWS) | score 1 | relevant=True | tier=core_target_fit | matched skills: AWS; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000148012/Senior-Data-Engineer-Cloud-AWS
+- Principal ML Ops Engineer, Azure | score 1 | relevant=True | tier=core_target_fit | matched skills: Azure; location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168932/Principal-ML-Ops-Engineer-Azure
+- Technology Program Manager | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176613/Technology-Program-Manager
+- Technology Program Manager | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176145/Technology-Program-Manager
+- Technical Product Manager | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179411/Technical-Product-Manager
+- Staff Data/AI Engineer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169632/Staff-Data-AI-Engineer
+- Staff Data Scientist, (Global Security) | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173773/Staff-Data-Scientist-Global-Security
+- Staff AI Engineer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166402/Staff-AI-Engineer
+- Sr. Manager, Governance and Responsible AI | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178437/Sr-Manager-Governance-and-Responsible-AI
+- Sr. Manager, Analytics and AI Enablement, Direct Investing | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179178/Sr-Manager-Analytics-and-AI-Enablement-Direct-Investing
+- Sr. Director, T&O Strategy and Strategic Initatives | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178434/Sr-Director-T-O-Strategy-and-Strategic-Initatives
+- Senior Technical Systems Analyst - GFT Halifax | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000165112/Senior-Technical-Systems-Analyst-GFT-Halifax
+- Senior System Management Specialist | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166673/Senior-System-Management-Specialist
+- Senior Staff Engineer | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000164171/Senior-Staff-Engineer
+- Senior Software Developer, Workday Integrations & Extend | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174299/Senior-Software-Developer-Workday-Integrations-Extend
+- Senior Software Developer – Trading application | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000172407/Senior-Software-Developer-Trading-application
+- Senior Software Developer in Test | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000165542/Senior-Software-Developer-in-Test
+- Senior Software Developer | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000159322/Senior-Software-Developer
+- Senior Software Developer | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000169611/Senior-Software-Developer
+- Senior Software Developer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176049/Senior-Software-Developer
+- Senior ServiceNow Discovery & Service Mapping Engineer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167419/Senior-ServiceNow-Discovery-Service-Mapping-Engineer
+- Senior Scrum Master | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175546/Senior-Scrum-Master
+- Senior Relationship Manager, Commercial Financial Services | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000178413/Senior-Relationship-Manager-Commercial-Financial-Services
+- Senior Quality Engineer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173614/Senior-Quality-Engineer
+- Senior QE Analyst | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165700/Senior-QE-Analyst
+- Senior QE Analyst | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000169207/Senior-QE-Analyst
+- Senior Project Manager, Strategic Execution | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159902/Senior-Project-Manager-Strategic-Execution
+- Senior Project Manager - GFT Halifax | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000163548/Senior-Project-Manager-GFT-Halifax
+- Senior Project Manager - GFT | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177545/Senior-Project-Manager-GFT
+- Senior Product Manager | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176022/Senior-Product-Manager
+- Senior Multimedia Learning Designer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177243/Senior-Multimedia-Learning-Designer
+- Senior Manager- Product, Digital Components & Platforms | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166282/Senior-Manager-Product-Digital-Components-Platforms
+- Senior Manager- Analytics & Insights | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179645/Senior-Manager-Analytics-Insights
+- Senior Manager, Reporting and Analytics | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179169/Senior-Manager-Reporting-and-Analytics
+- Senior Manager, Privacy | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177891/Senior-Manager-Privacy
+- Senior Manager, National Compliance | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177114/Senior-Manager-National-Compliance
+- Senior Manager, IT Risk Assessment (Global Security) | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168840/Senior-Manager-IT-Risk-Assessment-Global-Security
+- Senior Manager, Employee Relations Strategy and Programs | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178851/Senior-Manager-Employee-Relations-Strategy-and-Programs
+- Senior Manager, ESG And AI Risk Governance, Internal Audit (18-month contract) | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174115/Senior-Manager-ESG-And-AI-Risk-Governance-Internal-Audit-18-month-contract
+- Senior Manager, Data Strategy | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000154984/Senior-Manager-Data-Strategy
+- Senior Manager, Data Security Automations & Engineering (Global Security) | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173580/Senior-Manager-Data-Security-Automations-Engineering-Global-Security
+- Senior Manager, Cross-Border Payments and FX Products | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178573/Senior-Manager-Cross-Border-Payments-and-FX-Products
+- Senior Manager, Client Engagement | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178817/Senior-Manager-Client-Engagement
+- Senior Manager, Business Analysis | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000172553/Senior-Manager-Business-Analysis
+- Senior Manager, Analytics Engineer | score 0 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170453/Senior-Manager-Analytics-Engineer
+- Senior Manager – Pension Investments | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174469/Senior-Manager-Pension-Investments
+- Senior Manager Application Support - GFT Vancouver | score 0 | relevant=False | tier=not_relevant | matched skills: support; location signals: Canada; support/ops signals: support | https://jobs.rbc.com/ca/en/job/R-0000175685/Senior-Manager-Application-Support-GFT-Vancouver
+- Senior Manager - Project Delivery, GFT | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169836/Senior-Manager-Project-Delivery-GFT
+- Senior Java Developer - GFT TORONTO | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178996/Senior-Java-Developer-GFT-TORONTO
+- Senior Java Developer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178525/Senior-Java-Developer
+- Senior Full Stack Developer, GFT | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000161045/Senior-Full-Stack-Developer-GFT
+- Senior Financial Reporting Analyst | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177912/Senior-Financial-Reporting-Analyst
+- Senior Director, Early Talent & Innovation Programs | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178431/Senior-Director-Early-Talent-Innovation-Programs
+- Senior Director, AI Research | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173774/Senior-Director-AI-Research
+- Senior Data Engineer - Halifax | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000152521/Senior-Data-Engineer-Halifax
+- Senior Data Engineer - GFT Halifax | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000173716/Senior-Data-Engineer-GFT-Halifax
+- Senior Data Engineer (Datastage experience) | score 0 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170621/Senior-Data-Engineer-Datastage-experience
+- Senior Data Engineer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174420/Senior-Data-Engineer
+- Senior Data Engineer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164266/Senior-Data-Engineer
+- Senior Data Analyst - GFT Halifax | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000174966/Senior-Data-Analyst-GFT-Halifax
+- Senior Associate | score 0 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178910/Senior-Associate
+- Senior Android Developer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000163975/Senior-Android-Developer
+- Relationship Manager, Commercial Financial Services Intern | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179361/Relationship-Manager-Commercial-Financial-Services-Intern
+- Relationship Manager Intern, Business Markets | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000178317/Relationship-Manager-Intern-Business-Markets
+- Relationship Manager Intern, Business Market | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000165390/Relationship-Manager-Intern-Business-Market
+- Project Manager, Business Optimization & Transformation Delivery | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170053/Project-Manager-Business-Optimization-Transformation-Delivery
+- Project Manager / Scrum Master | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175305/Project-Manager-Scrum-Master
+- Private Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000179520/Private-Banking-Advisor
+- Principal, Data Engineering & Architecture | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176951/Principal-Data-Engineering-Architecture
+- Operational Risk Manager - Finance IT, GFT - Halifax | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000163223/Operational-Risk-Manager-Finance-IT-GFT-Halifax
+- Mortgage Specialist - Vancouver West Market | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000168495/Mortgage-Specialist-Vancouver-West-Market
+- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000176702/Mortgage-Specialist
+- Mortgage Specialist | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000178773/Mortgage-Specialist
+- Manager, Sales Practices | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178167/Manager-Sales-Practices
+- Manager, Product Control | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171880/Manager-Product-Control
+- Manager, Product Control | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178950/Manager-Product-Control
+- Manager, Operational Risk Quality Assurance and Methodology | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164818/Manager-Operational-Risk-Quality-Assurance-and-Methodology
+- Manager, Enterprise Model Risk Management | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176515/Manager-Enterprise-Model-Risk-Management
+- Manager, Enterprise Model Risk Management | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178343/Manager-Enterprise-Model-Risk-Management
+- Manager, Cards Supplier Lead | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169880/Manager-Cards-Supplier-Lead
+- Manager Credit Structures Intern, Private Banking | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000178649/Manager-Credit-Structures-Intern-Private-Banking
+- Lead Technical Product Manager, Enterprise Architecture | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175139/Lead-Technical-Product-Manager-Enterprise-Architecture
+- Lead Product Manager | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176954/Lead-Product-Manager
+- IT Audit Manager, Centralized Testing Group | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178885/IT-Audit-Manager-Centralized-Testing-Group
+- Financial Planner, Relationship Manager | score 0 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174816/Financial-Planner-Relationship-Manager
+- Financial Planner, Relationship Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000132889/Financial-Planner-Relationship-Manager
+- Financial Planner, Relationship Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000170478/Financial-Planner-Relationship-Manager
+- Director, Strategic Initiatives & Innovation – ICFR CoE & Global Functions | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171509/Director-Strategic-Initiatives-Innovation-ICFR-CoE-Global-Functions
+- Director, Strategic Execution | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178652/Director-Strategic-Execution
+- Director, Runtime Governance & Decision Lead | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178078/Director-Runtime-Governance-Decision-Lead
+- Director, Risk & Control Assesments | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179070/Director-Risk-Control-Assesments
+- Director, Regulatory Investigations & Inquiries | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178693/Director-Regulatory-Investigations-Inquiries
+- Director, Program Delivery | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178744/Director-Program-Delivery
+- Director, Identity Intelligence (Global Security) | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178450/Director-Identity-Intelligence-Global-Security
+- Director, Control Design & Evidence | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178072/Director-Control-Design-Evidence
+- Director, Compliance - Global Asset Management | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169933/Director-Compliance-Global-Asset-Management
+- Director, Business Management (Global Security) | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178007/Director-Business-Management-Global-Security
+- Director, AI Business Enablement | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177672/Director-AI-Business-Enablement
+- Director of Product Management, DevOps | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159195/Director-of-Product-Management-DevOps
+- Direct Investing Senior Relationship Manager | score 0 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178663/Direct-Investing-Senior-Relationship-Manager
+- Delivery Director - GFT | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177475/Delivery-Director-GFT
+- Commercial Banking Advisor Intern | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000179631/Commercial-Banking-Advisor-Intern
+- Commercial Banking Advisor Intern | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000179635/Commercial-Banking-Advisor-Intern
+- Commercial Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000179709/Commercial-Banking-Advisor
+- Branch Operations Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000179527/Branch-Operations-Manager
+- Branch Manager, 33 City Centre Dr Branch | score 0 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174907/Branch-Manager-33-City-Centre-Dr-Branch
+- Banking Advisor - Toronto Downtown (Bilingual: English and Cantonese/Mandarin/French/Vietnamese/Spanish) | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000154681/Banking-Advisor-Toronto-Downtown-Bilingual-English-and-Cantonese-Mandarin-French-Vietnamese-Spanish
+- Banking Advisor - Mississauga (Bilingual: English and Arabic/Spanish/Mandarin/Cantonese/Russian) | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000175486/Banking-Advisor-Mississauga-Bilingual-English-and-Arabic-Spanish-Mandarin-Cantonese-Russian
+- Banking Advisor - Markham, North York, Scarborough- Bilingual (Mandarin/Cantonese/Filipino) | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000176073/Banking-Advisor-Markham-North-York-Scarborough-Bilingual-Mandarin-Cantonese-Filipino
+- Banking Advisor - Etobicoke (Bilingual: English and Russian/Ukrainian/Spanish/Mandarin/Cantonese) | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000176130/Banking-Advisor-Etobicoke-Bilingual-English-and-Russian-Ukrainian-Spanish-Mandarin-Cantonese
+- Banking Advisor - Brampton | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000175488/Banking-Advisor-Brampton
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000179154/Banking-Advisor
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000179200/Banking-Advisor
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000173651/Banking-Advisor
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000178930/Banking-Advisor
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000178836/Banking-Advisor
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000163431/Banking-Advisor
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000178512/Banking-Advisor
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000174752/Banking-Advisor
+- Banking Advisor | score 0 | relevant=False | tier=not_relevant | no core matches | https://jobs.rbc.com/ca/en/job/R-0000166882/Banking-Advisor
+- Associate Director, Senior Software Engineer (.Net C#) | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000161475/Associate-Director-Senior-Software-Engineer-Net-C
+- Associate Director, Senior Software Engineer | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170923/Associate-Director-Senior-Software-Engineer
+- Associate Director, Product Control Flow Rates Europe | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179234/Associate-Director-Product-Control-Flow-Rates-Europe
+- Associate Director, Data Development Lead | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169802/Associate-Director-Data-Development-Lead
+- Associate Director, Credit Structures | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000169147/Associate-Director-Credit-Structures
+- Associate Director, Credit Modeling & Methodology | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179510/Associate-Director-Credit-Modeling-Methodology
+- Associate Director | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179601/Associate-Director
+- Assistant Case Manager | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174193/Assistant-Case-Manager
+
+## Relevant Jobs After Scoring
+- Director, Lead Solutions Architect, IAM | score 25 | tier=adjacent_customer_facing_technical_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178793/Director-Lead-Solutions-Architect-IAM
+- Associate Operations Representative - Deposit Processing | score 12 | tier=core_target_fit | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000179507/Associate-Operations-Representative-Deposit-Processing
+- DevOps Engineer - Workday Integrations | score 57 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178089/DevOps-Engineer-Workday-Integrations
+- Actuarial Support Lead Tester | score 24 | tier=core_target_fit | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178969/Actuarial-Support-Lead-Tester
+- Analytics Platform Engineer | score 57 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171258/Analytics-Platform-Engineer
+- Senior Data Engineer (Cloud/AWS) | score 1 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000148012/Senior-Data-Engineer-Cloud-AWS
+- Senior IAM Systems Engineer (Global Security) | score 1 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168166/Senior-IAM-Systems-Engineer-Global-Security
+- Associate Director - Data & AI Solutions Architect | score 21 | tier=adjacent_customer_facing_technical_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000176686/Associate-Director-Data-AI-Solutions-Architect
+- Application Administrator | score 20 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164593/Application-Administrator
+- Greater Toronto Region - Leadership Networking Event | score 16 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000179098/Greater-Toronto-Region-Leadership-Networking-Event
+- Lead Solution Architect | score 36 | tier=adjacent_customer_facing_technical_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000175098/Lead-Solution-Architect
+- Senior Full Stack Developer- Python and Vue.js (Global Security) | score 1 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178169/Senior-Full-Stack-Developer-Python-and-Vue-js-Global-Security
+- Senior Business Systems Analyst | score 15 | tier=adjacent_customer_facing_technical_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000178733/Senior-Business-Systems-Analyst
+- Principal ML Ops Engineer, Azure | score 1 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168932/Principal-ML-Ops-Engineer-Azure
+- Data Scientist, Global AML Transaction Monitoring | score 16 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000162799/Data-Scientist-Global-AML-Transaction-Monitoring
+- Application Support Analyst, GFT - Halifax | score 16 | tier=core_target_fit | HALIFAX, Nova Scotia, Canada | https://jobs.rbc.com/ca/en/job/R-0000173020/Application-Support-Analyst-GFT-Halifax
+- Director, Enterprise Control Testing Centre Operations | score 5 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177979/Director-Enterprise-Control-Testing-Centre-Operations
+- Sr. Technical Systems Analyst – Database Activity Monitoring (GCS) | score 16 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177942/Sr-Technical-Systems-Analyst-Database-Activity-Monitoring-GCS
+- Lead Full Stack Developer - Python (Global Security) | score 16 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000174962/Lead-Full-Stack-Developer-Python-Global-Security
+- Lead Solution Architect | score 36 | tier=adjacent_customer_facing_technical_fit | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000152065/Lead-Solution-Architect
+- Senior Middleware Technical Support Administrator | score 9 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000173104/Senior-Middleware-Technical-Support-Administrator
+- Director, Automation and Optimization (IAM, Global Security) | score 9 | tier=core_target_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000177416/Director-Automation-and-Optimization-IAM-Global-Security
+
+## Rejected But Interesting Jobs
+- Sr. Quality Engineer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000172211/Sr-Quality-Engineer
+- Sr. Administrator. | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000177144/Sr-Administrator
+- Sr Data Engineer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000159454/Sr-Data-Engineer
+- Product Analyst Programmer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000178963/Product-Analyst-Programmer
+- NFT Engineer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000175397/NFT-Engineer
+- Master Data Management (MDM) Engineer – Informatica | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000171259/Master-Data-Management-MDM-Engineer-Informatica
+- Life Claims Analyst | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000173883/Life-Claims-Analyst
+- Lead, Machine Learning Engineer, GFT | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000169006/Lead-Machine-Learning-Engineer-GFT
+- Lead, Data Engineering | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000178077/Lead-Data-Engineering
+- Lead System Engineer (Global Security) | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000165735/Lead-System-Engineer-Global-Security
+- Lead Data Engineer, GFT | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000168275/Lead-Data-Engineer-GFT
+- Lead Data Engineer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000170663/Lead-Data-Engineer
+- Lead Data Engineer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000178542/Lead-Data-Engineer
+- Lead Data Analyst | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000179205/Lead-Data-Analyst
+- Lead AI/ML Software Engineer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000176402/Lead-AI-ML-Software-Engineer
+- IT Business & Data Analyst – Funding and Liquidity Technology | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000169182/IT-Business-Data-Analyst-Funding-and-Liquidity-Technology
+- DevOps Data Engineer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000165577/DevOps-Data-Engineer
+- Data Quality Engineer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000164339/Data-Quality-Engineer
+- Data Engineer | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000177374/Data-Engineer
+- Data & Insights Analyst, Employee Onboarding | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000178133/Data-Insights-Analyst-Employee-Onboarding
+- Cloud Security Architect (Global Security) | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000173122/Cloud-Security-Architect-Global-Security
+- Business Analyst SME | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000163130/Business-Analyst-SME
+- Administrative Assistant | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000179265/Administrative-Assistant
+- Operations Service Specialist - Estates and Trusts | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000179024/Operations-Service-Specialist-Estates-and-Trusts
+- Machine Learning Research Engineer | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000175798/Machine-Learning-Research-Engineer
+- Functional & AI Analyst, GFT - Halifax | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000178121/Functional-AI-Analyst-GFT-Halifax
+- Fullstack AI Engineer - GFT Halifax | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000177937/Fullstack-AI-Engineer-GFT-Halifax
+- Capital Markets, Global Investment Banking Analyst | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000179135/Capital-Markets-Global-Investment-Banking-Analyst
+- Bilingual National Operations Support Agent- CM&R | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000178853/Bilingual-National-Operations-Support-Agent-CM-R
+- BigData Quality Engineer | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000173262/BigData-Quality-Engineer
+- Analyst, US Securities Settlements | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000179434/Analyst-US-Securities-Settlements
+- Analyst, Metadata Management | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000174601/Analyst-Metadata-Management
+- Administrator, Tax Operations | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000176786/Administrator-Tax-Operations
+- Administrative Assistant | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000177760/Administrative-Assistant
+- Administrative Assistant | score 4 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000167117/Administrative-Assistant
+- Staff Data/AI Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000169632/Staff-Data-AI-Engineer
+- Staff AI Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000166402/Staff-AI-Engineer
+- Senior Technical Systems Analyst - GFT Halifax | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000165112/Senior-Technical-Systems-Analyst-GFT-Halifax
+- Senior Staff Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000164171/Senior-Staff-Engineer
+- Senior ServiceNow Discovery & Service Mapping Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000167419/Senior-ServiceNow-Discovery-Service-Mapping-Engineer
+- Senior Quality Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000173614/Senior-Quality-Engineer
+- Senior QE Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000165700/Senior-QE-Analyst
+- Senior QE Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000169207/Senior-QE-Analyst
+- Senior Manager- Product, Digital Components & Platforms | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000166282/Senior-Manager-Product-Digital-Components-Platforms
+- Senior Manager, Data Security Automations & Engineering (Global Security) | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000173580/Senior-Manager-Data-Security-Automations-Engineering-Global-Security
+- Senior Manager, Analytics Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000170453/Senior-Manager-Analytics-Engineer
+- Senior Manager Application Support - GFT Vancouver | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000175685/Senior-Manager-Application-Support-GFT-Vancouver
+- Senior Financial Reporting Analyst | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000177912/Senior-Financial-Reporting-Analyst
+- Senior Data Engineer - Halifax | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000152521/Senior-Data-Engineer-Halifax
+- Senior Data Engineer - GFT Halifax | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000173716/Senior-Data-Engineer-GFT-Halifax
+- Senior Data Engineer (Datastage experience) | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000170621/Senior-Data-Engineer-Datastage-experience
+- Senior Data Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000174420/Senior-Data-Engineer
+- Senior Data Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000164266/Senior-Data-Engineer
+- Senior Data Analyst - GFT Halifax | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000174966/Senior-Data-Analyst-GFT-Halifax
+- Principal, Data Engineering & Architecture | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000176951/Principal-Data-Engineering-Architecture
+- Director of Product Management, DevOps | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000159195/Director-of-Product-Management-DevOps
+- Branch Operations Manager | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000179527/Branch-Operations-Manager
+- Associate Director, Senior Software Engineer (.Net C#) | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000161475/Associate-Director-Senior-Software-Engineer-Net-C
+- Associate Director, Senior Software Engineer | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000170923/Associate-Director-Senior-Software-Engineer

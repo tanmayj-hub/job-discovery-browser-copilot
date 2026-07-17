@@ -91,9 +91,12 @@ bank-slice audit shows `4 / 5` expected URLs as `extracted_and_relevant` and
 the final `1 / 5` as `extracted_but_rejected_by_scoring`, so the remaining
 gap is scoring-only rather than collection.
 
-RBC remains outside the verified-only slice while its audit-only deep scan is
-being validated. Its production run stays Canada-scoped and capped at 20 pages;
-the deeper audit does not change normal collection behavior.
+RBC remains outside the verified-only slice with status
+`manual_recall_incomplete`. Its audit-only Canada/newest-first scan covered
+pages 1-75 without gaps or duplicate pages, but two manual URLs were not in
+that fresh listing and still need a human active/expired check. Its production
+run stays Canada-scoped and capped at 20 pages; the deeper audit does not
+change normal collection behavior.
 
 Cognizant remains outside the verified-only slice with status
 `blocked_by_cloudflare`. The official Canada URL returned HTTP 403 and a

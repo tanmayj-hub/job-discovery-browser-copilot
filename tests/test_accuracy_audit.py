@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -18,6 +19,7 @@ from audit.accuracy_audit import (
     export_audit_sample,
     find_job_for_score_explanation,
     load_manual_expected_jobs,
+    merge_company_audit_chunks,
     validate_audit_files,
     write_company_collection_diagnostic,
     write_first_manual_url_audit_summary,
@@ -1833,3 +1835,55 @@ def test_write_first_manual_url_audit_summary_includes_per_company_status_counts
     assert "| missed_by_collection | 1 |" in content
     assert "- TD: saved_by_mvp=1, missed_by_collection=1" in content
     assert "- IBM Consulting: extracted_and_relevant=1" in content
+
+
+def test_merge_company_audit_chunks_validates_contiguous_ranges_and_dedupes(
+    tmp_path: Path,
+) -> None:
+    def write_chunk(name: str, start: int, end: int, url: str) -> Path:
+        csv_path = tmp_path / f"{name}.csv"
+        with csv_path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=["company", "title", "location", "url"])
+            writer.writeheader()
+            writer.writerow(
+                {
+                    "company": "RBC",
+                    "title": "Cloud Engineer",
+                    "location": "Toronto, Ontario, Canada",
+                    "url": url,
+                }
+            )
+        csv_path.with_suffix(".chunk.json").write_text(
+            json.dumps(
+                {
+                    "company": "RBC",
+                    "official_source": "https://jobs.rbc.com/ca/en/search-results",
+                    "source_scope_confirmed": True,
+                    "sort_requested": "most_recent",
+                    "sort_used": "Most recent",
+                    "requested_page_start": start,
+                    "requested_page_end": end,
+                    "page_numbers": list(range(start, end + 1)),
+                    "page_fingerprints": [f"page-{value}" for value in range(start, end + 1)],
+                }
+            ),
+            encoding="utf-8",
+        )
+        return csv_path
+
+    first = write_chunk("first", 1, 2, "https://jobs.rbc.com/ca/en/job/R-1/cloud")
+    second = write_chunk("second", 3, 4, "https://jobs.rbc.com/ca/en/job/R-1/cloud")
+    output_path = tmp_path / "merged.csv"
+    report_path = tmp_path / "merged.md"
+
+    result = merge_company_audit_chunks(
+        company_name="RBC",
+        inputs=[first, second],
+        output_path=output_path,
+        report_path=report_path,
+    )
+
+    assert result["complete"] is True
+    assert result["page_gaps"] == []
+    assert result["unique_discovered"] == 1
+    assert "Verification eligibility: True" in report_path.read_text(encoding="utf-8")

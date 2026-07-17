@@ -63,8 +63,10 @@ def get_audit_api():
         export_audit_sample,
         find_job_for_score_explanation,
         load_manual_expected_jobs,
+        merge_company_audit_chunks,
         parse_company_filter,
         validate_audit_files,
+        write_company_audit_chunk_metadata,
         write_company_collection_diagnostic,
         write_manual_url_recall_report,
         write_score_explanation_report,
@@ -79,11 +81,13 @@ def get_audit_api():
         "export_audit_sample": export_audit_sample,
         "find_job_for_score_explanation": find_job_for_score_explanation,
         "load_manual_expected_jobs": load_manual_expected_jobs,
+        "merge_company_audit_chunks": merge_company_audit_chunks,
         "parse_company_filter": parse_company_filter,
         "validate_audit_files": validate_audit_files,
         "write_manual_url_recall_report": write_manual_url_recall_report,
         "write_score_explanation_report": write_score_explanation_report,
         "write_company_collection_diagnostic": write_company_collection_diagnostic,
+        "write_company_audit_chunk_metadata": write_company_audit_chunk_metadata,
     }
 
 
@@ -543,6 +547,27 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Audit-only pagination cap override; does not change production configuration.",
     )
+    audit_diagnose.add_argument(
+        "--page-start",
+        type=int,
+        default=1,
+        help="Audit-only first RBC page to scan (1-based).",
+    )
+    audit_diagnose.add_argument(
+        "--page-end",
+        type=int,
+        default=None,
+        help="Audit-only final RBC page to scan (inclusive).",
+    )
+
+    audit_merge_chunks = audit_subparsers.add_parser(
+        "merge-company-chunks",
+        help="Validate and merge deterministic company audit chunk CSVs",
+    )
+    audit_merge_chunks.add_argument("--company", type=str, required=True)
+    audit_merge_chunks.add_argument("--inputs", type=Path, nargs="+", required=True)
+    audit_merge_chunks.add_argument("--output", type=Path, required=True)
+    audit_merge_chunks.add_argument("--report", type=Path, required=True)
 
     audit_manual_urls = audit_subparsers.add_parser(
         "compare-manual-urls",
@@ -899,6 +924,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "audit" and args.audit_command == "diagnose-company-collection":
+        if args.page_start < 1 or (
+            args.page_end is not None and args.page_end < args.page_start
+        ):
+            raise ValueError("--page-start must be positive and no greater than --page-end")
         company = _find_company_config(args.company)
         slug = _slugify_company_name(args.company)
         output_path = args.output or (
@@ -946,8 +975,10 @@ def main(argv: list[str] | None = None) -> int:
             max_pages_per_source_override=max_pages_per_source_override,
             use_audit_page_policy=args.use_audit_scope,
             force_location_scope_search=force_location_scope_search,
-            capture_page_html=True,
+            capture_page_html=str(company.get("name") or "") != "RBC",
             allow_broad_diagnostic_collection=True,
+            audit_page_start=args.page_start,
+            audit_page_end=args.page_end,
         )
         from storage.db import get_jobs
 
@@ -964,6 +995,11 @@ def main(argv: list[str] | None = None) -> int:
                 == str(company.get("name") or "").strip()
             ],
         )
+        chunk_metadata_path = audit_api["write_company_audit_chunk_metadata"](
+            csv_path=scored_candidates_output_path,
+            company=company,
+            collection_result=result,
+        )
         print(
             {
                 **diagnostic.to_dict(),
@@ -972,8 +1008,19 @@ def main(argv: list[str] | None = None) -> int:
                 "scored_candidates_output_path": str(scored_candidates_output_path),
                 "pages_visited": result.get("pages_visited", []),
                 "pagination_stop_reason": result.get("pagination_stop_reason"),
+                "chunk_metadata_path": str(chunk_metadata_path),
             }
         )
+        return 0
+
+    if args.command == "audit" and args.audit_command == "merge-company-chunks":
+        result = audit_api["merge_company_audit_chunks"](
+            company_name=args.company,
+            inputs=args.inputs,
+            output_path=args.output,
+            report_path=args.report,
+        )
+        print(result)
         return 0
 
     if args.command == "audit" and args.audit_command == "compare-manual-urls":

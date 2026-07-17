@@ -64,8 +64,8 @@ verified_companies:
     verified: false
     verified_at: "2026-06-14"
     scope: Canada
-    status: needs_manual_audit
-    notes: "Production remains Canada-scoped and capped at 20 pages. Task 12.14 did not promote RBC because the required fresh 75-page audit hit a reproducible public-board client-side navigation race after applying Country=Canada; no stale export was used as evidence."
+    status: manual_recall_incomplete
+    notes: "The fresh 2026-07-17 audit covered Canada-scoped, Most Recent pages 1-75 with 750 unique candidates and no duplicate page fingerprints. Two manually supplied URLs were not in that fresh listing and could not be independently confirmed as active, so RBC remains excluded from verified-only. Production remains capped at 20 pages."
   - company_name: Scotiabank
     verified: true
     verified_at: "2026-06-14"

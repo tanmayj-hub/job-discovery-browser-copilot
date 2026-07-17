@@ -6,6 +6,7 @@ import re
 import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 from urllib.parse import urlparse
 
@@ -15,6 +16,7 @@ from playwright.sync_api import Error as PlaywrightError
 
 from browser.extraction import (
     _wait_for_visible_bmo_job_links,
+    advance_to_page_start,
     apply_ibm_canada_filter,
     apply_ntt_canada_filter,
     apply_rbc_canada_filter,
@@ -294,6 +296,8 @@ def collect_single_company_with_browser(
     force_location_scope_search: bool = False,
     capture_page_html: bool = False,
     allow_broad_diagnostic_collection: bool = False,
+    audit_page_start: int = 1,
+    audit_page_end: int | None = None,
 ) -> dict[str, Any]:
     """Collect one company through a dedicated browser session."""
 
@@ -314,6 +318,8 @@ def collect_single_company_with_browser(
             force_location_scope_search=force_location_scope_search,
             capture_page_html=capture_page_html,
             allow_broad_diagnostic_collection=allow_broad_diagnostic_collection,
+            audit_page_start=audit_page_start,
+            audit_page_end=audit_page_end,
         )
 
 
@@ -330,6 +336,8 @@ def collect_company_jobs(
     force_location_scope_search: bool = False,
     capture_page_html: bool = False,
     allow_broad_diagnostic_collection: bool = False,
+    audit_page_start: int = 1,
+    audit_page_end: int | None = None,
 ) -> dict[str, Any]:
     """Collect jobs for a single browser-allowed company."""
 
@@ -338,6 +346,10 @@ def collect_company_jobs(
     careers_url = str(company.get("careers_url") or "").strip()
     location_scope = location_scope_override or load_source_scope_locations()
     page_policy = load_browser_page_policy(company_name)
+    if audit_page_start < 1:
+        raise ValueError("audit_page_start must be at least 1")
+    if audit_page_end is not None and audit_page_end < audit_page_start:
+        raise ValueError("audit_page_end must be greater than or equal to audit_page_start")
     max_pages_per_source = (
         max_pages_per_source_override
         or page_policy.max_pages(audit=use_audit_page_policy)
@@ -348,6 +360,9 @@ def collect_company_jobs(
         else page_policy.target_page_cap(audit=use_audit_page_policy)
     )
     max_cards_per_source = _compute_max_cards_per_source(max_pages_per_source)
+    if audit_page_end is not None:
+        max_pages_per_source = audit_page_end - audit_page_start + 1
+        max_cards_per_source = _compute_max_cards_per_source(max_pages_per_source)
 
     classification = classify_source(
         {
@@ -394,11 +409,14 @@ def collect_company_jobs(
     operation = "open official careers URL"
     try:
         starting_url = careers_url
+        navigation_started_at = perf_counter()
         page.goto(
             careers_url,
             wait_until="domcontentloaded",
             timeout=_source_navigation_timeout_ms(company_name, careers_url),
         )
+        navigation_ms = (perf_counter() - navigation_started_at) * 1_000
+        initial_settle_started_at = perf_counter()
         page.wait_for_timeout(1_000)
         dismissed_cookie_steps: list[str] = []
         dismissed_language_steps: list[str] = []
@@ -427,12 +445,19 @@ def collect_company_jobs(
         # the navigation helper returns. Let the visible results surface settle
         # before reading HTML or interacting with Canada/sort controls.
         page.wait_for_timeout(5_000 if is_rbc_careers_search_url(careers_url) else 1_000)
+        initial_settle_ms = (perf_counter() - initial_settle_started_at) * 1_000
         dismissed_cookie = " -> ".join(dismissed_cookie_steps) or None
         dismissed_language_prompt = " -> ".join(dismissed_language_steps) or None
         source_scope_status = _initial_source_scope_status(page.url or careers_url)
 
         operation = "read initial result surface"
-        initial_html = _page_content_with_retry(page)
+        # RBC's successful result-card path is live-DOM based. Avoid serializing
+        # its large SPA document solely to check for barriers.
+        initial_html = (
+            ""
+            if is_rbc_careers_search_url(page.url or careers_url)
+            else _page_content_with_retry(page)
+        )
         initial_text = page.locator("body").inner_text(timeout=3_000)
         has_search_input = find_search_input(page) is not None
         early_barriers = detect_browser_barriers(
@@ -450,7 +475,11 @@ def collect_company_jobs(
                 dismissed_cookie = " -> ".join(dismissed_cookie_steps)
                 page.wait_for_timeout(500)
                 operation = "read consent-retry result surface"
-                initial_html = _page_content_with_retry(page)
+                initial_html = (
+                    ""
+                    if is_rbc_careers_search_url(page.url or careers_url)
+                    else _page_content_with_retry(page)
+                )
                 initial_text = page.locator("body").inner_text(timeout=3_000)
                 early_barriers = detect_browser_barriers(
                     page_text=initial_text,
@@ -705,6 +734,20 @@ def collect_company_jobs(
             page.wait_for_timeout(3_000)
         sort_result = _apply_sort_policy(page, policy=page_policy)
 
+        if audit_page_start > 1:
+            if company_name != "RBC":
+                raise ValueError("audit page ranges currently support RBC only")
+            operation = f"navigate to RBC audit page {audit_page_start}"
+            if not advance_to_page_start(page, page_start=audit_page_start):
+                raise RuntimeError(
+                    f"RBC could not reach requested audit page {audit_page_start}"
+                )
+            rbc_evidence = detect_rbc_canada_page_evidence(page)
+            if not rbc_evidence or not bool(rbc_evidence.get("confirmed")):
+                raise RuntimeError(
+                    "RBC audit range navigation did not preserve the public Country=Canada filter"
+                )
+
         operation = "extract paginated job cards"
         extraction_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
             page,
@@ -716,6 +759,7 @@ def collect_company_jobs(
             page_policy=page_policy.page_policy,
             target_page_cap=target_page_cap,
             capture_page_html=capture_page_html,
+            page_start=audit_page_start,
         )
         extracted_jobs = extraction_jobs
         if not extracted_jobs and find_search_input(page) is not None:
@@ -764,7 +808,7 @@ def collect_company_jobs(
             dismissed_language_steps.append(post_search_language)
             dismissed_language_prompt = " -> ".join(dismissed_language_steps)
         operation = "read post-extraction result surface"
-        current_html = _page_content_with_retry(page)
+        current_html = "" if company_name == "RBC" else _page_content_with_retry(page)
         current_text = page.locator("body").inner_text(timeout=3_000)
         late_barriers = detect_browser_barriers(
             page_text=current_text,
@@ -812,7 +856,9 @@ def collect_company_jobs(
             return intervention_result
 
         jobs_new = 0
+        scoring_started_at = perf_counter()
         scored_jobs = [_score_collected_job(job) for job in extracted_jobs]
+        scoring_normalization_ms = (perf_counter() - scoring_started_at) * 1_000
         relevant_jobs = [
             job
             for job in scored_jobs
@@ -885,6 +931,19 @@ def collect_company_jobs(
             "pages_visited": extraction_diagnostics.pages_visited,
             "jobs_extracted_per_page": extraction_diagnostics.jobs_extracted_per_page,
             "page_html_snapshots": extraction_diagnostics.page_html_snapshots,
+            "page_numbers": getattr(extraction_diagnostics, "page_numbers", []),
+            "page_fingerprints": getattr(extraction_diagnostics, "page_fingerprints", []),
+            "page_timings_ms": getattr(extraction_diagnostics, "page_timings_ms", []),
+            "full_page_serializations": getattr(
+                extraction_diagnostics, "full_page_serializations", 0
+            ),
+            "operation_timings_ms": {
+                "navigation": round(navigation_ms, 2),
+                "post_navigation_settle": round(initial_settle_ms, 2),
+                "scoring_normalization": round(scoring_normalization_ms, 2),
+            },
+            "requested_page_start": audit_page_start,
+            "requested_page_end": audit_page_end or audit_page_start + max_pages_per_source - 1,
             "max_pages_per_source": max_pages_per_source,
             "page_policy": page_policy.page_policy,
             "target_page_cap": target_page_cap,
