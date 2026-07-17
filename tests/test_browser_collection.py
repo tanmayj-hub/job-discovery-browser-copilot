@@ -14,6 +14,8 @@ from browser.interventions import (
 )
 from collectors.browser_collector import (
     SOURCE_SCOPE_CONFIRMED,
+    BrowserPagePolicy,
+    _apply_sort_policy,
     _apply_source_scope_job_safety_gate,
     _build_source_scope_status,
     _compute_max_cards_per_source,
@@ -27,6 +29,7 @@ from collectors.browser_collector import (
     load_audit_scope_locations,
     load_browser_max_pages_for_company,
     load_browser_max_pages_per_source,
+    load_browser_page_policy,
     load_source_scope_locations,
 )
 from storage.db import get_interventions, initialize_database, upsert_companies
@@ -201,6 +204,77 @@ browser:
     )
 
     assert load_browser_max_pages_per_source(config_path) == 8
+
+
+def test_default_trusted_page_policy_uses_twenty_pages(tmp_path: Path) -> None:
+    config_path = tmp_path / "discovery.yaml"
+    config_path.write_text("browser:\n  max_pages_per_source: 20\n", encoding="utf-8")
+
+    policy = load_browser_page_policy("Example Browser Co", config_path)
+
+    assert policy.page_policy == "capped"
+    assert policy.max_pages(audit=False) == 20
+    assert policy.max_pages(audit=True) == 20
+
+
+def test_special_page_policies_cover_all_pages_and_rbc_audit_override(tmp_path: Path) -> None:
+    config_path = tmp_path / "discovery.yaml"
+    config_path.write_text(
+        """
+browser:
+  max_pages_per_source: 20
+  safety_ceiling_pages: 500
+  per_company_page_policies:
+    Scotiabank:
+      page_policy: all_available
+      sort_policy: source_default_all_pages
+    Cognizant:
+      page_policy: all_available
+      sort_policy: source_default_all_pages
+    RBC:
+      production_page_cap: 20
+      audit_page_cap: 75
+      sort_policy: most_recent
+""",
+        encoding="utf-8",
+    )
+
+    scotiabank = load_browser_page_policy("Scotiabank", config_path)
+    cognizant = load_browser_page_policy("Cognizant", config_path)
+    rbc = load_browser_page_policy("RBC", config_path)
+
+    assert scotiabank.page_policy == "all_available"
+    assert scotiabank.max_pages(audit=False) == 500
+    assert cognizant.sort_policy == "source_default_all_pages"
+    assert rbc.max_pages(audit=False) == 20
+    assert rbc.max_pages(audit=True) == 75
+
+
+def test_sort_unavailable_source_reports_source_default_policy() -> None:
+    result = _apply_sort_policy(
+        object(),
+        policy=BrowserPagePolicy(
+            page_policy="all_available",
+            sort_policy="source_default_all_pages",
+        ),
+    )
+
+    assert result["sort_status"] == "unavailable_by_source"
+    assert result["sort_method"] == "none"
+
+
+def test_newest_sort_is_confirmed_before_pagination_when_available() -> None:
+    class SortPage:
+        def evaluate(self, _: str) -> dict[str, object]:
+            return {"applied": True, "used": "Most Recent", "method": "ui_control"}
+
+        def wait_for_timeout(self, _: int) -> None:
+            return None
+
+    result = _apply_sort_policy(SortPage(), policy=BrowserPagePolicy())
+
+    assert result["sort_status"] == "confirmed"
+    assert result["sort_used"] == "Most Recent"
 
 
 def test_load_browser_max_pages_for_company_uses_company_override(tmp_path: Path) -> None:

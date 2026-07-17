@@ -504,6 +504,16 @@ def _source_summary_defaults(company: dict[str, Any]) -> dict[str, Any]:
         "unknown_location_relevant": 0,
         "pages_visited": 0,
         "pagination_stop_reason": None,
+        "page_policy": None,
+        "target_page_cap": None,
+        "pagination_complete": False,
+        "pagination_stop_normal": False,
+        "pagination_engineering_fix_required": False,
+        "sort_requested": None,
+        "sort_used": None,
+        "sort_status": None,
+        "sort_method": None,
+        "sort_reason": None,
         "intervention_reason": None,
         "error": None,
     }
@@ -547,6 +557,18 @@ def _enrich_source_summary(
             ),
             "pages_visited": int(result.get("pages_visited", 0) or 0),
             "pagination_stop_reason": result.get("pagination_stop_reason"),
+            "page_policy": result.get("page_policy"),
+            "target_page_cap": result.get("target_page_cap"),
+            "pagination_complete": bool(result.get("pagination_complete", False)),
+            "pagination_stop_normal": bool(result.get("pagination_stop_normal", False)),
+            "pagination_engineering_fix_required": bool(
+                result.get("pagination_engineering_fix_required", False)
+            ),
+            "sort_requested": result.get("sort_requested"),
+            "sort_used": result.get("sort_used"),
+            "sort_status": result.get("sort_status"),
+            "sort_method": result.get("sort_method"),
+            "sort_reason": result.get("sort_reason"),
             "intervention_reason": result.get("intervention_reason"),
             "error": result.get("error"),
         }
@@ -1051,6 +1073,20 @@ def run_daily_workflow(
                 unknown_location_relevant=int(
                     item.get("unknown_location_relevant", 0) or 0
                 ),
+                page_policy=item.get("page_policy"),
+                target_page_cap=item.get("target_page_cap"),
+                pages_visited=int(item.get("pages_visited", 0) or 0),
+                pagination_stop_reason=item.get("pagination_stop_reason"),
+                pagination_complete=bool(item.get("pagination_complete", False)),
+                pagination_stop_normal=bool(item.get("pagination_stop_normal", False)),
+                pagination_engineering_fix_required=bool(
+                    item.get("pagination_engineering_fix_required", False)
+                ),
+                sort_requested=item.get("sort_requested"),
+                sort_used=item.get("sort_used"),
+                sort_status=item.get("sort_status"),
+                sort_method=item.get("sort_method"),
+                sort_reason=item.get("sort_reason"),
             )
 
     reject_non_actionable_new_jobs(connection)

@@ -26,6 +26,7 @@ from browser.extraction import (
     find_search_input,
     is_ibm_careers_search_url,
     is_probable_job_listing,
+    is_rbc_careers_search_url,
     navigate_to_job_search_page,
     search_with_location_term,
 )
@@ -52,7 +53,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DISCOVERY_CONFIG_PATH = PROJECT_ROOT / "config" / "discovery.yaml"
 DEFAULT_LOCATION_SCOPE = ("Canada", "Toronto", "Ontario", "Remote Canada", "Remote")
 DEFAULT_AUDIT_LOCATION_SCOPE = ("Canada",)
-DEFAULT_MAX_PAGES_PER_SOURCE = 10
+DEFAULT_MAX_PAGES_PER_SOURCE = 20
+DEFAULT_SAFETY_CEILING_PAGES = 500
 CANADA_SCOPE_NAME = "Canada"
 SOURCE_SCOPE_CONFIRMED = "canada_scope_confirmed"
 SOURCE_SCOPE_UNCONFIRMED = "canada_scope_unconfirmed"
@@ -159,6 +161,25 @@ class BrowserCollectionConfig:
     slow_mo_ms: int = 0
     db_path: Path | None = None
     location_scope: tuple[str, ...] = DEFAULT_LOCATION_SCOPE
+
+
+@dataclass(frozen=True, slots=True)
+class BrowserPagePolicy:
+    """Resolved, source-specific pagination and ordering policy."""
+
+    page_policy: str = "capped"
+    production_page_cap: int = DEFAULT_MAX_PAGES_PER_SOURCE
+    audit_page_cap: int = DEFAULT_MAX_PAGES_PER_SOURCE
+    sort_policy: str = "most_recent"
+    safety_ceiling_pages: int = DEFAULT_SAFETY_CEILING_PAGES
+
+    def max_pages(self, *, audit: bool) -> int:
+        if self.page_policy == "all_available":
+            return self.safety_ceiling_pages
+        return self.audit_page_cap if audit else self.production_page_cap
+
+    def target_page_cap(self, *, audit: bool) -> int | None:
+        return None if self.page_policy == "all_available" else self.max_pages(audit=audit)
 
 
 @dataclass(slots=True)
@@ -269,6 +290,7 @@ def collect_single_company_with_browser(
     allowed_source_modes: set[str] | None = None,
     location_scope_override: tuple[str, ...] | None = None,
     max_pages_per_source_override: int | None = None,
+    use_audit_page_policy: bool = False,
     force_location_scope_search: bool = False,
     capture_page_html: bool = False,
     allow_broad_diagnostic_collection: bool = False,
@@ -288,6 +310,7 @@ def collect_single_company_with_browser(
             allowed_source_modes=allowed_source_modes,
             location_scope_override=location_scope_override,
             max_pages_per_source_override=max_pages_per_source_override,
+            use_audit_page_policy=use_audit_page_policy,
             force_location_scope_search=force_location_scope_search,
             capture_page_html=capture_page_html,
             allow_broad_diagnostic_collection=allow_broad_diagnostic_collection,
@@ -303,6 +326,7 @@ def collect_company_jobs(
     allowed_source_modes: set[str] | None = None,
     location_scope_override: tuple[str, ...] | None = None,
     max_pages_per_source_override: int | None = None,
+    use_audit_page_policy: bool = False,
     force_location_scope_search: bool = False,
     capture_page_html: bool = False,
     allow_broad_diagnostic_collection: bool = False,
@@ -313,9 +337,15 @@ def collect_company_jobs(
     source_name = str(company.get("website_category") or company_name)
     careers_url = str(company.get("careers_url") or "").strip()
     location_scope = location_scope_override or load_source_scope_locations()
+    page_policy = load_browser_page_policy(company_name)
     max_pages_per_source = (
         max_pages_per_source_override
-        or load_browser_max_pages_for_company(company_name)
+        or page_policy.max_pages(audit=use_audit_page_policy)
+    )
+    target_page_cap = (
+        max_pages_per_source_override
+        if max_pages_per_source_override is not None
+        else page_policy.target_page_cap(audit=use_audit_page_policy)
     )
     max_cards_per_source = _compute_max_cards_per_source(max_pages_per_source)
 
@@ -386,11 +416,15 @@ def collect_company_jobs(
             navigated_language = dismiss_ibm_language_prompt(page)
             if navigated_language:
                 dismissed_language_steps.append(navigated_language)
+        # Some public boards complete their client-side route transition after
+        # the navigation helper returns. Let the visible results surface settle
+        # before reading HTML or interacting with Canada/sort controls.
+        page.wait_for_timeout(5_000 if is_rbc_careers_search_url(careers_url) else 1_000)
         dismissed_cookie = " -> ".join(dismissed_cookie_steps) or None
         dismissed_language_prompt = " -> ".join(dismissed_language_steps) or None
         source_scope_status = _initial_source_scope_status(page.url or careers_url)
 
-        initial_html = page.content()
+        initial_html = _page_content_with_retry(page)
         initial_text = page.locator("body").inner_text(timeout=3_000)
         has_search_input = find_search_input(page) is not None
         early_barriers = detect_browser_barriers(
@@ -399,6 +433,22 @@ def collect_company_jobs(
             extracted_count=0,
             has_search_input=has_search_input,
         )
+        if "cookie_blocked" in early_barriers:
+            # Some consent managers render after initial navigation. Retry their public
+            # accept action once before treating the page as a human-only blocker.
+            retry_cookie = dismiss_cookie_banner(page)
+            if retry_cookie:
+                dismissed_cookie_steps.append(retry_cookie)
+                dismissed_cookie = " -> ".join(dismissed_cookie_steps)
+                page.wait_for_timeout(500)
+                initial_html = _page_content_with_retry(page)
+                initial_text = page.locator("body").inner_text(timeout=3_000)
+                early_barriers = detect_browser_barriers(
+                    page_text=initial_text,
+                    page_html=initial_html,
+                    extracted_count=0,
+                    has_search_input=find_search_input(page) is not None,
+                )
         if early_barriers:
             intervention_id = create_browser_intervention(
                 connection,
@@ -464,7 +514,14 @@ def collect_company_jobs(
                 )
                 location_scope_used = True
         if not source_scope_status.confirmed:
-            rbc_filter_query = apply_rbc_canada_filter(page, location_scope)
+            rbc_filter_query = None
+            # The RBC facet shell can render after the results surface. Retry the
+            # public Canada control briefly before declaring scope unconfirmed.
+            for _ in range(5):
+                rbc_filter_query = apply_rbc_canada_filter(page, location_scope)
+                if rbc_filter_query:
+                    break
+                page.wait_for_timeout(500)
             if rbc_filter_query:
                 location_queries.append(rbc_filter_query)
                 location_filter_method = "rbc_country_facet"
@@ -633,6 +690,12 @@ def collect_company_jobs(
                 ),
             )
 
+        if company_name == "RBC" and source_scope_status.confirmed:
+            # The public Country facet updates the result set asynchronously.
+            # Do not read/paginate the old list while the filtered list is routing.
+            page.wait_for_timeout(3_000)
+        sort_result = _apply_sort_policy(page, policy=page_policy)
+
         extraction_jobs, extraction_diagnostics = extract_visible_job_cards_with_diagnostics(
             page,
             company_name=company_name,
@@ -640,6 +703,8 @@ def collect_company_jobs(
             source_mode=classification.source_mode,
             max_cards=max_cards_per_source,
             max_pages=max_pages_per_source,
+            page_policy=page_policy.page_policy,
+            target_page_cap=target_page_cap,
             capture_page_html=capture_page_html,
         )
         extracted_jobs = extraction_jobs
@@ -671,8 +736,10 @@ def collect_company_jobs(
                     company_name=company_name,
                     source_name=source_name,
                     source_mode=classification.source_mode,
-                    max_cards=max_cards_per_source,
-                    max_pages=max_pages_per_source,
+                max_cards=max_cards_per_source,
+                max_pages=max_pages_per_source,
+                page_policy=page_policy.page_policy,
+                target_page_cap=target_page_cap,
                     capture_page_html=capture_page_html,
                 )
                 extracted_jobs.extend(search_jobs)
@@ -686,7 +753,7 @@ def collect_company_jobs(
         if post_search_language:
             dismissed_language_steps.append(post_search_language)
             dismissed_language_prompt = " -> ".join(dismissed_language_steps)
-        current_html = page.content()
+        current_html = _page_content_with_retry(page)
         current_text = page.locator("body").inner_text(timeout=3_000)
         late_barriers = detect_browser_barriers(
             page_text=current_text,
@@ -808,6 +875,24 @@ def collect_company_jobs(
             "jobs_extracted_per_page": extraction_diagnostics.jobs_extracted_per_page,
             "page_html_snapshots": extraction_diagnostics.page_html_snapshots,
             "max_pages_per_source": max_pages_per_source,
+            "page_policy": page_policy.page_policy,
+            "target_page_cap": target_page_cap,
+            "pagination_complete": bool(
+                getattr(extraction_diagnostics, "pagination_complete", False)
+            ),
+            "pagination_stop_normal": bool(
+                getattr(extraction_diagnostics, "pagination_stop_normal", False)
+            ),
+            "pagination_engineering_fix_required": (
+                bool(
+                    getattr(
+                        extraction_diagnostics,
+                        "pagination_engineering_fix_required",
+                        False,
+                    )
+                )
+            ),
+            **sort_result,
             "jobs": extracted_jobs,
             "candidate_jobs": extracted_jobs,
             "scored_jobs": scored_jobs,
@@ -953,6 +1038,55 @@ def load_browser_max_pages_for_company(
     return max(1, value)
 
 
+def load_browser_page_policy(
+    company_name: str,
+    path: Path = DEFAULT_DISCOVERY_CONFIG_PATH,
+) -> BrowserPagePolicy:
+    """Load the configured production/audit page policy for one source."""
+
+    default_cap = load_browser_max_pages_per_source(path)
+    if not path.exists():
+        return BrowserPagePolicy(
+            production_page_cap=default_cap,
+            audit_page_cap=default_cap,
+        )
+    payload = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    browser_config = payload.get("browser", {})
+    if not isinstance(browser_config, dict):
+        return BrowserPagePolicy(
+            production_page_cap=default_cap,
+            audit_page_cap=default_cap,
+        )
+    safety_ceiling = _positive_int(
+        browser_config.get("safety_ceiling_pages"), DEFAULT_SAFETY_CEILING_PAGES
+    )
+    policies = browser_config.get("per_company_page_policies", {})
+    raw_policy = policies.get(company_name, {}) if isinstance(policies, dict) else {}
+    raw_policy = raw_policy if isinstance(raw_policy, dict) else {}
+    page_policy = str(raw_policy.get("page_policy") or "capped").strip()
+    if page_policy not in {"capped", "all_available"}:
+        page_policy = "capped"
+    production_cap = _positive_int(raw_policy.get("production_page_cap"), default_cap)
+    audit_cap = _positive_int(raw_policy.get("audit_page_cap"), default_cap)
+    sort_policy = str(raw_policy.get("sort_policy") or "most_recent").strip()
+    if sort_policy not in {"most_recent", "source_default_all_pages"}:
+        sort_policy = "most_recent"
+    return BrowserPagePolicy(
+        page_policy=page_policy,
+        production_page_cap=production_cap,
+        audit_page_cap=audit_cap,
+        sort_policy=sort_policy,
+        safety_ceiling_pages=safety_ceiling,
+    )
+
+
+def _positive_int(value: object, default: int) -> int:
+    try:
+        return max(1, int(value))
+    except (TypeError, ValueError):
+        return default
+
+
 def load_audit_max_pages_per_source(
     path: Path = DEFAULT_DISCOVERY_CONFIG_PATH,
 ) -> int:
@@ -1001,12 +1135,109 @@ def _url_uses_location_scope(url: str) -> bool:
         or "field_keyword_05%5b0%5d=canada" in normalized
         or "country=ca" in normalized
         or "countryid=ca" in normalized
+        or "ccode=ca" in normalized
+        or "cname=canada" in normalized
     )
 
 
 def _url_looks_like_canada_locale_only(url: str) -> bool:
     parsed = urlparse(str(url or "").strip().lower())
     return "/ca/en/" in parsed.path or parsed.path.startswith("/ca/")
+
+
+def _page_content_with_retry(page: Any, *, retries: int = 10) -> str:
+    """Avoid failing a public collection on a transient client-side route change."""
+
+    last_error: Exception | None = None
+    for _ in range(retries):
+        try:
+            return page.content()
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            page.wait_for_timeout(500)
+    if last_error is not None:
+        raise last_error
+    return ""
+
+
+def _apply_sort_policy(page: Any, *, policy: BrowserPagePolicy) -> dict[str, str]:
+    """Apply newest-first ordering when the public source exposes it."""
+
+    if policy.sort_policy == "source_default_all_pages":
+        return {
+            "sort_requested": "source_default_all_pages",
+            "sort_used": "source_default",
+            "sort_status": "unavailable_by_source",
+            "sort_method": "none",
+            "sort_reason": (
+                "This public source has no usable newest-first control; all Canada-scoped "
+                "pages must be traversed in source order."
+            ),
+        }
+
+    try:
+        result = page.evaluate(
+            """
+            () => {
+              const visible = (element) => {
+                if (!element || typeof element.getBoundingClientRect !== 'function') return false;
+                const style = window.getComputedStyle(element);
+                const rect = element.getBoundingClientRect();
+                return style.display !== 'none' && style.visibility !== 'hidden'
+                  && rect.width > 0 && rect.height > 0;
+              };
+              const preferred = /^(most recent|date posted|newest|newest first)$/i;
+              const selects = Array.from(document.querySelectorAll('select')).filter(visible);
+              for (let index = 0; index < selects.length; index += 1) {
+                const select = selects[index];
+                const option = Array.from(select.options).find((item) =>
+                  preferred.test((item.textContent || '').trim())
+                );
+                if (!option) continue;
+                return {
+                  applied: false,
+                  selectIndex: index,
+                  used: (option.textContent || '').trim(),
+                  method: 'ui_control'
+                };
+              }
+              return { applied: false };
+            }
+            """
+        )
+        if isinstance(result, dict) and result.get("applied"):
+            return {
+                "sort_requested": "most_recent",
+                "sort_used": str(result.get("used") or "most_recent"),
+                "sort_status": "confirmed",
+                "sort_method": str(result.get("method") or "ui_control"),
+                "sort_reason": "Applied the public newest-first results control before pagination.",
+            }
+        if isinstance(result, dict) and result.get("selectIndex") is not None:
+            page.locator("select").nth(int(result["selectIndex"])).select_option(
+                label=str(result.get("used") or "Most Recent")
+            )
+            # Public ATS boards commonly rerender after changing sort order.
+            # Wait for the new result list before pagination/extraction reads HTML.
+            page.wait_for_timeout(3_000)
+            return {
+                "sort_requested": "most_recent",
+                "sort_used": str(result.get("used") or "most_recent"),
+                "sort_status": "confirmed",
+                "sort_method": str(result.get("method") or "ui_control"),
+                "sort_reason": "Applied the public newest-first results control before pagination.",
+            }
+    except Exception:  # noqa: BLE001
+        pass
+    return {
+        "sort_requested": "most_recent",
+        "sort_used": "source_default",
+        "sort_status": "unconfirmed",
+        "sort_method": "none",
+        "sort_reason": (
+            "No visible public newest-first control could be confirmed before pagination."
+        ),
+    }
 
 
 def _build_source_scope_status(

@@ -247,6 +247,11 @@ class ExtractionDiagnostics:
     total_candidates_before_dedupe: int
     total_candidates_after_dedupe: int
     page_html_snapshots: list[dict[str, str]]
+    page_policy: str = "capped"
+    target_page_cap: int | None = None
+    pagination_complete: bool = False
+    pagination_stop_normal: bool = False
+    pagination_engineering_fix_required: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -2110,28 +2115,34 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
     )
     for selector in priority_selectors:
         locator = page.locator(selector)
-        if locator.count() == 0 or not locator.first.is_visible():
-            continue
-        candidate = locator.first
-        try:
-            enabled = candidate.is_enabled()
-        except Exception:  # noqa: BLE001
-            enabled = True
-        if not enabled:
-            continue
-        href = _safe_locator_attribute(candidate, "href")
-        onclick = _safe_locator_attribute(candidate, "onclick")
-        if _is_safe_same_page_pagination_action(href, onclick):
+        for index in range(min(locator.count(), 20)):
+            candidate = locator.nth(index)
+            if not candidate.is_visible():
+                continue
+            try:
+                enabled = candidate.is_enabled()
+            except Exception:  # noqa: BLE001
+                enabled = True
+            if not enabled:
+                continue
+            text = _safe_locator_inner_text(candidate).strip().lower()
+            aria = _safe_locator_attribute(candidate, "aria-label").strip().lower()
+            title = _safe_locator_attribute(candidate, "title").strip().lower()
+            href = _safe_locator_attribute(candidate, "href")
+            onclick = _safe_locator_attribute(candidate, "onclick")
+            if _is_safe_same_page_pagination_action(href, onclick):
+                return candidate
+            if not _looks_like_pagination_control(text=text, aria=aria, title=title, href=href):
+                continue
+            if href:
+                resolved = _normalize_actionable_url(page.url, href)
+                if resolved:
+                    resolved_host = urlparse(resolved).netloc.lower()
+                    if resolved_host and resolved_host != current_host:
+                        continue
+                    if _is_restricted_url(resolved):
+                        continue
             return candidate
-        if href:
-            resolved = _normalize_actionable_url(page.url, href)
-            if resolved:
-                resolved_host = urlparse(resolved).netloc.lower()
-                if resolved_host and resolved_host != current_host:
-                    continue
-                if _is_restricted_url(resolved):
-                    continue
-        return candidate
 
     locator = page.locator("button, a, [role='button']")
     candidate_count = min(locator.count(), 150)
@@ -2164,6 +2175,8 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
         onclick = _safe_locator_attribute(candidate, "onclick")
         if _is_safe_same_page_pagination_action(href, onclick):
             return candidate
+        if not _looks_like_pagination_control(text=text, aria=aria, title=title, href=href):
+            continue
         if href:
             resolved = _normalize_actionable_url(page.url, href)
             if not resolved:
@@ -2175,6 +2188,22 @@ def _find_safe_pagination_target(page: Page) -> Locator | None:
                 continue
         return candidate
     return None
+
+
+def _looks_like_pagination_control(*, text: str, aria: str, title: str, href: str) -> bool:
+    """Reject job titles such as "Next.js" that resemble a next-page label."""
+
+    label = " ".join(part for part in (text, aria, title) if part)
+    normalized_href = str(href or "").lower()
+    if any(token in normalized_href for token in ("startrow=", "page=", "offset=")):
+        return True
+    if not any(re.search(rf"\b{re.escape(item)}\b", label) for item in PAGINATION_LABELS):
+        return False
+    if aria.startswith("next") or title.startswith("next"):
+        return True
+    if text in {"next", "next page", "next >", ">", "»"}:
+        return True
+    return False
 
 
 def _is_safe_same_page_pagination_action(href: str, onclick: str) -> bool:
@@ -2200,8 +2229,8 @@ def _wait_for_page_settle(
     *,
     before_url: str,
     before_html: str,
-    max_polls: int = 8,
-    poll_delay_ms: int = 500,
+    max_polls: int = 6,
+    poll_delay_ms: int = 250,
 ) -> tuple[str, str]:
     latest_url = page.url
     latest_html = page.content()
@@ -2213,7 +2242,7 @@ def _wait_for_page_settle(
         current_html = page.content()
         if current_url == latest_url and current_html == latest_html:
             stable_polls += 1
-            if stable_polls >= 2 and (
+            if stable_polls >= 1 and (
                 current_url != before_url or current_html != before_html
             ):
                 return current_url, current_html
@@ -2225,6 +2254,34 @@ def _wait_for_page_settle(
     return latest_url, latest_html
 
 
+def _read_page_content_when_stable(page: Page, *, retries: int = 10) -> str:
+    """Read DOM content after transient client-side route transitions settle."""
+
+    last_error: Exception | None = None
+    for _ in range(retries):
+        try:
+            return page.content()
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            page.wait_for_timeout(500)
+    if last_error is not None:
+        raise last_error
+    return ""
+
+
+def _page_reports_final_result_set(page: Page) -> bool:
+    """Respect a visible `Page N of N` indicator before attempting another click."""
+
+    try:
+        body_text = _safe_locator_inner_text(page.locator("body"), timeout=3_000)
+    except Exception:  # noqa: BLE001
+        return False
+    match = re.search(r"\bpage\s+(\d+)\s+of\s+(\d+)\b", body_text, flags=re.IGNORECASE)
+    if match is None:
+        return False
+    return int(match.group(1)) >= int(match.group(2))
+
+
 def extract_visible_job_cards_with_diagnostics(
     page: Page,
     *,
@@ -2233,6 +2290,8 @@ def extract_visible_job_cards_with_diagnostics(
     source_mode: str,
     max_cards: int = 20,
     max_pages: int = 2,
+    page_policy: str = "capped",
+    target_page_cap: int | None = None,
     capture_page_html: bool = False,
 ) -> tuple[list[dict[str, Any]], ExtractionDiagnostics]:
     """Extract plausible jobs and return pagination diagnostics for the pass."""
@@ -2244,6 +2303,11 @@ def extract_visible_job_cards_with_diagnostics(
             pagination_detected=False,
             pagination_stop_reason="restricted_url",
             max_pages=max_pages,
+            page_policy=page_policy,
+            target_page_cap=target_page_cap or max_pages,
+            pagination_complete=False,
+            pagination_stop_normal=False,
+            pagination_engineering_fix_required=True,
             total_candidates_before_dedupe=0,
             total_candidates_after_dedupe=0,
             page_html_snapshots=[],
@@ -2256,7 +2320,7 @@ def extract_visible_job_cards_with_diagnostics(
     page_html_snapshots: list[dict[str, str]] = []
     seen_job_identities: set[tuple[str, str]] = set()
     pagination_detected = False
-    pagination_stop_reason = "single_page_only"
+    pagination_stop_reason = "next_disabled_or_missing"
 
     _wait_for_visible_bmo_job_links(page)
     interactive_jobs = _extract_from_interactive_cards(
@@ -2278,7 +2342,7 @@ def extract_visible_job_cards_with_diagnostics(
     seen_job_identities.update(_job_identity_key(job) for job in visible_bmo_jobs)
 
     current_url = page.url
-    current_html = page.content()
+    current_html = _read_page_content_when_stable(page)
     current_jobs = (
         []
         if visible_bmo_jobs
@@ -2300,16 +2364,25 @@ def extract_visible_job_cards_with_diagnostics(
     seen_job_identities.update(_job_identity_key(job) for job in current_jobs)
 
     for _ in range(max(0, max_pages - 1)):
+        if _page_reports_final_result_set(page):
+            pagination_stop_reason = "no_more_pages"
+            pagination_detected = True
+            break
         target = _find_safe_pagination_target(page)
         if target is None:
             pagination_stop_reason = (
-                "next_disabled_or_missing" if pagination_detected else "pagination_not_detected"
+                "no_more_pages" if pagination_detected else "next_disabled_or_missing"
             )
             break
         pagination_detected = True
         before_url = page.url
-        before_html = page.content()
-        target.click()
+        before_html = _read_page_content_when_stable(page)
+        try:
+            target.click(no_wait_after=True)
+        except TypeError:
+            # Lightweight test doubles and older Playwright interfaces may not
+            # accept the navigation-wait override.
+            target.click()
         after_url, after_html = _wait_for_page_settle(
             page,
             before_url=before_url,
@@ -2317,9 +2390,9 @@ def extract_visible_job_cards_with_diagnostics(
         )
         _wait_for_visible_bmo_job_links(page)
         after_url = page.url
-        after_html = page.content()
+        after_html = _read_page_content_when_stable(page)
         if after_url == before_url and after_html == before_html:
-            pagination_stop_reason = "no_page_change"
+            pagination_stop_reason = "pagination_control_failed"
             break
 
         page_visible_bmo_jobs = _extract_visible_bmo_job_cards(
@@ -2351,11 +2424,13 @@ def extract_visible_job_cards_with_diagnostics(
         ]
         candidates.extend(page_candidates)
         if not new_jobs:
-            pagination_stop_reason = "no_new_job_urls"
+            pagination_stop_reason = "duplicate_page_detected"
             break
         seen_job_identities.update(_job_identity_key(job) for job in new_jobs)
     else:
-        pagination_stop_reason = "max_pages_reached"
+        pagination_stop_reason = (
+            "safety_ceiling_reached" if page_policy == "all_available" else "max_pages_reached"
+        )
 
     deduped = _dedupe_jobs(candidates, max_cards=max_cards)
     diagnostics = ExtractionDiagnostics(
@@ -2364,6 +2439,14 @@ def extract_visible_job_cards_with_diagnostics(
         pagination_detected=pagination_detected,
         pagination_stop_reason=pagination_stop_reason,
         max_pages=max_pages,
+        page_policy=page_policy,
+        target_page_cap=target_page_cap or max_pages,
+        pagination_complete=pagination_stop_reason
+        in {"no_more_pages", "next_disabled_or_missing"},
+        pagination_stop_normal=pagination_stop_reason
+        in {"no_more_pages", "next_disabled_or_missing"},
+        pagination_engineering_fix_required=pagination_stop_reason
+        not in {"no_more_pages", "next_disabled_or_missing", "max_pages_reached"},
         total_candidates_before_dedupe=len(candidates),
         total_candidates_after_dedupe=len(deduped),
         page_html_snapshots=page_html_snapshots,

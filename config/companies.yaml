@@ -21,7 +21,7 @@ companies:
   monitoring_hint: Often Workday/Custom ATS
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://jobs.rbc.com/ca/en/search-results?from=140&s=1
+  careers_url: https://jobs.rbc.com/ca/en/search-results
 - name: TD
   sector: Banking & Capital Markets
   category: Bank/Market
@@ -521,7 +521,7 @@ companies:
   monitoring_hint: Often Workday/SuccessFactors
   status: Watching
   source_mode: browser_allowed
-  careers_url: https://careers.cognizant.com/ca-en/
+  careers_url: https://careers.cognizant.com/ca-en/jobs/?keyword=&location=Canada&radius=100&lat=&lng=&cname=Canada&ccode=CA&pagesize=10#results
 - name: HCLTech
   sector: IT Consulting & Systems Integrators
   category: Consulting/SI

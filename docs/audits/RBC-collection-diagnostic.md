@@ -2,39 +2,51 @@
 
 ## Source
 - Company: RBC
-- Starting URL: https://jobs.rbc.com/ca/en/search-results?from=140&s=1
-- Final URL reached: https://jobs.rbc.com/ca/en/search-results?from=90&s=1
+- Starting URL: https://jobs.rbc.com/ca/en/search-results
+- Final URL reached: -
 - Source mode: browser_allowed
 - ATS type: -
-- Cookie banner action: #onetrust-accept-btn-handler
+- Cookie banner action: none
 - Language prompt action: none
 
 ## Source Scope Validation
-- Source URL used: https://jobs.rbc.com/ca/en/search-results?from=140&s=1
-- Source scope status: canada_scope_confirmed
-- Canada scope confirmed before pagination: True
-- Source scope method: ui_filter
-- Source scope reason: RBC's public Country=Canada facet was applied before pagination.
+- Source URL used: https://jobs.rbc.com/ca/en/search-results
+- Source scope status: canada_scope_unconfirmed
+- Canada scope confirmed before pagination: False
+- Source scope method: manual_audit_url
+- Source scope reason: The source URL uses a Canada locale path, but that alone does not prove the job listing itself is location-scoped to Canada.
 - Broad diagnostic collection: False
 
 ## Location Scope
-- Location scope used: True
-- Configured locations: Canada
-- Location filter/search attempted: Canada (RBC country facet)
-- Exact filter method: rbc_country_facet
+- Location scope used: False
+- Configured locations: -
+- Location filter/search attempted: none
+- Exact filter method: none
 
 ## Pagination
-- Pagination detected: True
-- Next/load-more detection result: detected
-- Max pages per source: 10
-- Pages visited: 10
-- Jobs extracted per page: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]
-- Pagination stop reason: max_pages_reached
+- Page policy: capped
+- Target page cap: all available
+- Pagination detected: False
+- Next/load-more detection result: not detected
+- Max pages per source: -
+- Pages visited: 0
+- Jobs extracted per page: -
+- Pagination stop reason: -
+- Pagination complete: False
+- Normal stop: False
+- Engineering fix required: False
+
+## Sort Policy
+- Sort requested: -
+- Sort used: -
+- Sort status: -
+- Sort method: -
+- Sort reason: -
 
 ## Counts
-- Candidate jobs before scoring: 100
-- Jobs after scoring: 100
-- Relevant jobs after scoring: 4
+- Candidate jobs before scoring: 0
+- Jobs after scoring: 0
+- Relevant jobs after scoring: 0
 - Explicit non-Canada jobs rejected by safety gate: 0
 - Relevant jobs with unknown/blank location text: 0
 - Unique IBM jobIds extracted: 0
@@ -42,231 +54,59 @@
 - Scored candidates CSV: data\exports\audits\RBC-scored-candidates.csv
 
 ## Visited Pages
-- https://jobs.rbc.com/ca/en/search-results?from=140&s=1
-- https://jobs.rbc.com/ca/en/search-results?from=10&s=1
-- https://jobs.rbc.com/ca/en/search-results?from=20&s=1
-- https://jobs.rbc.com/ca/en/search-results?from=30&s=1
-- https://jobs.rbc.com/ca/en/search-results?from=40&s=1
-- https://jobs.rbc.com/ca/en/search-results?from=50&s=1
-- https://jobs.rbc.com/ca/en/search-results?from=60&s=1
-- https://jobs.rbc.com/ca/en/search-results?from=70&s=1
-- https://jobs.rbc.com/ca/en/search-results?from=80&s=1
-- https://jobs.rbc.com/ca/en/search-results?from=90&s=1
+- None
 
 ## Verification Decision
-- Decision: ready_for_verified_review
-- Reason: Canada source scope was confirmed before pagination and no diagnostic-only fallback was required.
+- Decision: needs_review
+- Reason: Canada source scope was not confirmed before pagination.
+
+## Manual Expected Coverage
+- Manual expected URLs provided: 31
+- Matching manual expected URLs found: 0 / 31
+- Manual expected URLs still missing: 31
+
+| Manual URL | Manual Title | Raw HTML | Anchor href | Script/JSON | Extracted | Scored | Saved by MVP | Status | Reason |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| https://jobs.rbc.com/ca/en/job/R-0000174753/Senior-Cloud-Engineer | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000160071/Digital-Platform-Engineering-Technical-Product-Owner | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000160538/Senior-DevOps-Engineer | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179431/Senior-Manager-DevOps-Engineering | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179572/Senior-Site-Reliability-Engineer | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000177388/Application-Support-Engineer | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000176722/Senior-Site-Reliability-Engineer | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000176580/Sr-IAM-Engineer-Vault-Specialist-CyberArk-Hashicorp-Global-Security | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179335/Senior-IAM-Systems-Support-Analyst-Global-security | - | no | no | no | no | no | yes | saved_by_mvp | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179867/Staff-Data-platform-Engineer-GFT | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000180099/IAM-Director-Customer-Identity-Access-Management-Controls-Global-Security | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000178766/Senior-DevOps-Engineer | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000178411/Solution-Architect | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000171090/Lead-System-Administrator | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000178414/GFT-Lead-Solutions-Architect | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000179708/AI-Analyst | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000165735/Lead-System-Engineer-Global-Security | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000178089/DevOps-Engineer-Workday-Integrations | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000165577/DevOps-Data-Engineer | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000173122/Cloud-Security-Architect-Global-Security | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000168166/Senior-IAM-Systems-Engineer-Global-Security | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000178346/AI-Quality-Engineer | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000177144/Sr-Administrator | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000164593/Application-Administrator | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000175098/Lead-Solution-Architect | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000178580/Director-SRE-and-AI-Ops-GFT | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000168932/Principal-ML-Ops-Engineer-Azure | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000173020/Application-Support-Analyst-GFT-Halifax | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000177942/Sr-Technical-Systems-Analyst-Database-Activity-Monitoring-GCS | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000152065/Lead-Solution-Architect | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
+| https://jobs.rbc.com/ca/en/job/R-0000173104/Senior-Middleware-Technical-Support-Administrator | - | no | no | no | no | no | no | missed_by_collection | job not present in captured page HTML |
 
 ## Candidate Jobs Before Scoring
-- Investment Advisor | SASKATOON, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000170630/Investment-Advisor
-- Senior Project Manager/ Scrum Master | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167635/Senior-Project-Manager-Scrum-Master
-- Mortgage Specialist - Uptown Toronto | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168827/Mortgage-Specialist-Uptown-Toronto
-- Financial Advisor | OTTAWA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159212/Financial-Advisor
-- Investment Advisor | BRAMPTON, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165985/Investment-Advisor
-- Mortgage Specialist - Vaughan East | VAUGHAN, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167947/Mortgage-Specialist-Vaughan-East
-- Senior Business Systems Analyst | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167721/Senior-Business-Systems-Analyst
-- Mortgage Specialist - Brampton | BRAMPTON, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168820/Mortgage-Specialist-Brampton
-- Relationship Manager Intern, Commercial Financial Services | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000148674/Relationship-Manager-Intern-Commercial-Financial-Services
-- Investment Advisor | BURNABY, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000166016/Investment-Advisor
-- Banking Advisor | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145279/Banking-Advisor
-- Banking Advisor | TROIS-RIVIÈRES, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000166202/Banking-Advisor
-- Expert Banking Advisor | GATINEAU, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145262/Expert-Banking-Advisor
-- Client Advisor | BEACONSFIELD, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145318/Client-Advisor
-- Client Advisor | PRESCOTT, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000141761/Client-Advisor
-- Banking Advisor | QUÉBEC, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145248/Banking-Advisor
-- Client Advisor | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145257/Client-Advisor
-- Client Advisor | VAUDREUIL-DORION, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145302/Client-Advisor
-- Expert Banking Advisor | VAUDREUIL-DORION, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145313/Expert-Banking-Advisor
-- Client Advisor | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145363/Client-Advisor
-- Expert Banking Advisor | VAL-D'OR, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145380/Expert-Banking-Advisor
-- Expert Banking Advisor | BROSSARD, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145401/Expert-Banking-Advisor
-- Banking Advisor | SHERBROOKE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145411/Banking-Advisor
-- Client Advisor | MASCOUCHE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145447/Client-Advisor
-- Client Advisor | SHAWVILLE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145322/Client-Advisor
-- Investment Advisor | KELOWNA, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000166013/Investment-Advisor
-- Financial Advisor Group Advantage (Kitchener, ON) | KITCHENER, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165721/Financial-Advisor-Group-Advantage-Kitchener-ON
-- Banking Advisor | MASCOUCHE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145449/Banking-Advisor
-- Client Advisor | BERTHIERVILLE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145459/Client-Advisor
-- Banking Advisor | CHAMBLY, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145472/Banking-Advisor
-- Banking Advisor | GRANBY, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145476/Banking-Advisor
-- Assistant Branch Manager, Trainee | BROSSARD, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000163381/Assistant-Branch-Manager-Trainee
-- Expert Banking Advisor | QUÉBEC, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000147745/Expert-Banking-Advisor
-- Banking Advisor | QUÉBEC, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000147751/Banking-Advisor
-- Client Advisor - Bilingual (Mandarin) | OTTAWA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159798/Client-Advisor-Bilingual-Mandarin
-- Banking Advisor | OTTAWA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000122857/Banking-Advisor
-- Investment Advisor | CALGARY, Alberta, Canada | https://jobs.rbc.com/ca/en/job/R-0000170728/Investment-Advisor
-- Assistant Branch Manager | LAVAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000153017/Assistant-Branch-Manager
-- Assistant Branch Manager | LAVAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000168227/Assistant-Branch-Manager
-- Banking Advisor | RIMOUSKI, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000143240/Banking-Advisor
-- Banking Advisor | CHANDLER, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000139309/Banking-Advisor
-- Client Advisor | CHANDLER, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000140368/Client-Advisor
-- Banking Advisor | MONTMAGNY, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000149195/Banking-Advisor
-- Expert Banking Advisor | ROUYN-NORANDA, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145353/Expert-Banking-Advisor
-- Client Advisor | ROUYN-NORANDA, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145343/Client-Advisor
-- Banking Advisor | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145378/Banking-Advisor
-- Expert Banking Advisor | SAINT-JÉRÔME, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145388/Expert-Banking-Advisor
-- Banking Advisor | LA SARRE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145364/Banking-Advisor
-- Expert Banking Advisor | DRUMMONDVILLE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145481/Expert-Banking-Advisor
-- Investment Advisor | KAMLOOPS, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000166038/Investment-Advisor
-- Senior Financial Planner - GTR East | RICHMOND HILL, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165849/Senior-Financial-Planner-GTR-East
-- Investment Advisor | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164647/Investment-Advisor
-- Banking Advisor | LÉVIS, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000149181/Banking-Advisor
-- Expert Banking Advisor | VICTORIAVILLE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145484/Expert-Banking-Advisor
-- Banking Advisor | BERTHIERVILLE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145453/Banking-Advisor
-- Branch Manager | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000146113/Branch-Manager
-- Client Advisor | OTTAWA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000103527/Client-Advisor
-- Branch Manager | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000146166/Branch-Manager
-- Investment Advisor | OTTAWA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166011/Investment-Advisor
-- Client Advisor | CHAMBLY, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145471/Client-Advisor
-- Financial Planner - GTR East | RICHMOND HILL, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165834/Financial-Planner-GTR-East
-- Expert Banking Advisor | SHERBROOKE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145413/Expert-Banking-Advisor
-- Associate | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000141223/Associate
-- Investment Advisor | NANAIMO, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000166012/Investment-Advisor
-- Client Advisor | SHERBROOKE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145410/Client-Advisor
-- Expert Banking Advisor | BERTHIERVILLE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145456/Expert-Banking-Advisor
-- Branch Manager | BEACONSFIELD, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000146123/Branch-Manager
-- Expert Banking Advisor | MONTMAGNY, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000149189/Expert-Banking-Advisor
-- Banking Advisor | SAGUENAY, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000148442/Banking-Advisor
-- Expert Banking Advisor | LÉVIS, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000149188/Expert-Banking-Advisor
-- Mortgage Specialist - Markham | MARKHAM, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166493/Mortgage-Specialist-Markham
-- Manager Supplier Management | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166527/Manager-Supplier-Management
-- Investment Advisor | PRINCE GEORGE, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000165992/Investment-Advisor
-- Investment Advisor | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000169310/Investment-Advisor
-- Investment Advisor | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000169309/Investment-Advisor
-- Client Advisor | VICTORIAVILLE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145482/Client-Advisor
-- Investment Advisor | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171117/Investment-Advisor
-- Research Engineer II | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000150239/Research-Engineer-II
-- Senior Human Resources Business Partner, Functions | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170884/Senior-Human-Resources-Business-Partner-Functions
-- Financial Planning Specialist | REGINA, Saskatchewan, Canada | https://jobs.rbc.com/ca/en/job/R-0000162141/Financial-Planning-Specialist
-- Investment Advisor | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171103/Investment-Advisor
-- Senior Manager - Project Delivery, GFT | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169836/Senior-Manager-Project-Delivery-GFT
-- Workday Domain Lead, Talent Acquisition | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170819/Workday-Domain-Lead-Talent-Acquisition
-- Senior Data & Reporting/Business Analyst - GFT | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170843/Senior-Data-Reporting-Business-Analyst-GFT
-- Investment Advisor | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171615/Investment-Advisor
-- Lead Business Systems Analyst | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169486/Lead-Business-Systems-Analyst
-- Investment Advisor | SARNIA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171869/Investment-Advisor
-- Senior Solution Architect-AI/ML | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167744/Senior-Solution-Architect-AI-ML
-- Assistant Branch Manager | KIRKLAND, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000152984/Assistant-Branch-Manager
-- Investment Advisor | EDMONTON, Alberta, Canada | https://jobs.rbc.com/ca/en/job/R-0000167263/Investment-Advisor
-- Investment Advisor | SURREY, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000165989/Investment-Advisor
-- Branch Manager | LAVAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000165329/Branch-Manager
-- Senior IT Project Manager | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167555/Senior-IT-Project-Manager
-- Banking Advisor | COQUITLAM, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000168293/Banking-Advisor
-- Client advisor | LA SARRE, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145358/Client-advisor
-- Investment Advisor | VERNON, British Columbia, Canada | https://jobs.rbc.com/ca/en/job/R-0000166017/Investment-Advisor
-- Client Advisor | THETFORD MINES, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000137360/Client-Advisor
-- Financial Planner - GTR West | MISSISSAUGA, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168860/Financial-Planner-GTR-West
-- Client Advisor | VAL-D'OR, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145370/Client-Advisor
-- Banking Advisor | MONTRÉAL, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145315/Banking-Advisor
+- None
 
 ## Scored Candidates
-- Lead Business Systems Analyst | score 30 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto, Ontario, Canada; adjacent customer-facing technical fit: Business Systems Analyst (technical context) | https://jobs.rbc.com/ca/en/job/R-0000169486/Lead-Business-Systems-Analyst
-- Senior Solution Architect-AI/ML | score 21 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto, Ontario, Canada; adjacent customer-facing technical fit: Solution Architect | https://jobs.rbc.com/ca/en/job/R-0000167744/Senior-Solution-Architect-AI-ML
-- Senior Business Systems Analyst | score 15 | relevant=True | tier=adjacent_customer_facing_technical_fit | location signals: Toronto, Ontario, Canada; adjacent customer-facing technical fit: Business Systems Analyst (technical context) | https://jobs.rbc.com/ca/en/job/R-0000167721/Senior-Business-Systems-Analyst
-- Workday Domain Lead, Talent Acquisition | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170819/Workday-Domain-Lead-Talent-Acquisition
-- Research Engineer II | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000150239/Research-Engineer-II
-- Mortgage Specialist - Uptown Toronto | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168827/Mortgage-Specialist-Uptown-Toronto
-- Mortgage Specialist - Markham | score 12 | relevant=False | tier=not_relevant | location signals: Markham, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166493/Mortgage-Specialist-Markham
-- Investment Advisor | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000164647/Investment-Advisor
-- Investment Advisor | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171117/Investment-Advisor
-- Investment Advisor | score 12 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171103/Investment-Advisor
-- Investment Advisor | score 12 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171615/Investment-Advisor
-- Financial Planner - GTR West | score 12 | relevant=False | tier=not_relevant | location signals: Mississauga, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168860/Financial-Planner-GTR-West
-- Mortgage Specialist - Vaughan East | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167947/Mortgage-Specialist-Vaughan-East
-- Mortgage Specialist - Brampton | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000168820/Mortgage-Specialist-Brampton
-- Investment Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165985/Investment-Advisor
-- Investment Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166011/Investment-Advisor
-- Investment Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000171869/Investment-Advisor
-- Financial Planner - GTR East | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165834/Financial-Planner-GTR-East
-- Financial Advisor Group Advantage (Kitchener, ON) | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165721/Financial-Advisor-Group-Advantage-Kitchener-ON
-- Financial Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159212/Financial-Advisor
-- Expert Banking Advisor | score 8 | relevant=True | tier=core_target_fit | matched skills: Terraform; location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145401/Expert-Banking-Advisor
-- Client Advisor - Bilingual (Mandarin) | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000159798/Client-Advisor-Bilingual-Mandarin
-- Client Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000141761/Client-Advisor
-- Client Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000103527/Client-Advisor
-- Banking Advisor | score 8 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000122857/Banking-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000170630/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000166016/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000166013/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000170728/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000166038/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000166012/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000165992/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000169310/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000169309/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000167263/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000165989/Investment-Advisor
-- Investment Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000166017/Investment-Advisor
-- Financial Planning Specialist | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000162141/Financial-Planning-Specialist
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145262/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145313/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145380/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000147745/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145353/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145388/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145481/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145484/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145413/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145456/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000149189/Expert-Banking-Advisor
-- Expert Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000149188/Expert-Banking-Advisor
-- Client advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145358/Client-advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145318/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145257/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145302/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145363/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145447/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145322/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145459/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000140368/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145343/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145471/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145410/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145482/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000137360/Client-Advisor
-- Client Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145370/Client-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145279/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000166202/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145248/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145411/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145449/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145472/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145476/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000147751/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000143240/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000139309/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000149195/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145378/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145364/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000149181/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145453/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000148442/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000168293/Banking-Advisor
-- Banking Advisor | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000145315/Banking-Advisor
-- Associate | score 4 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000141223/Associate
-- Senior Project Manager/ Scrum Master | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167635/Senior-Project-Manager-Scrum-Master
-- Senior Manager - Project Delivery, GFT | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169836/Senior-Manager-Project-Delivery-GFT
-- Senior IT Project Manager | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167555/Senior-IT-Project-Manager
-- Senior Human Resources Business Partner, Functions | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170884/Senior-Human-Resources-Business-Partner-Functions
-- Senior Financial Planner - GTR East | score 0 | relevant=False | tier=not_relevant | location signals: Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000165849/Senior-Financial-Planner-GTR-East
-- Senior Data & Reporting/Business Analyst - GFT | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000170843/Senior-Data-Reporting-Business-Analyst-GFT
-- Relationship Manager Intern, Commercial Financial Services | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000148674/Relationship-Manager-Intern-Commercial-Financial-Services
-- Manager Supplier Management | score 0 | relevant=False | tier=not_relevant | location signals: Toronto, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000166527/Manager-Supplier-Management
-- Branch Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000146113/Branch-Manager
-- Branch Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000146166/Branch-Manager
-- Branch Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000146123/Branch-Manager
-- Branch Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000165329/Branch-Manager
-- Assistant Branch Manager, Trainee | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000163381/Assistant-Branch-Manager-Trainee
-- Assistant Branch Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000153017/Assistant-Branch-Manager
-- Assistant Branch Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000168227/Assistant-Branch-Manager
-- Assistant Branch Manager | score 0 | relevant=False | tier=not_relevant | location signals: Canada | https://jobs.rbc.com/ca/en/job/R-0000152984/Assistant-Branch-Manager
+- None
 
 ## Relevant Jobs After Scoring
-- Senior Business Systems Analyst | score 15 | tier=adjacent_customer_facing_technical_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167721/Senior-Business-Systems-Analyst
-- Expert Banking Advisor | score 8 | tier=core_target_fit | BROSSARD, Quebec, Canada | https://jobs.rbc.com/ca/en/job/R-0000145401/Expert-Banking-Advisor
-- Lead Business Systems Analyst | score 30 | tier=adjacent_customer_facing_technical_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000169486/Lead-Business-Systems-Analyst
-- Senior Solution Architect-AI/ML | score 21 | tier=adjacent_customer_facing_technical_fit | TORONTO, Ontario, Canada | https://jobs.rbc.com/ca/en/job/R-0000167744/Senior-Solution-Architect-AI-ML
+- None
 
 ## Rejected But Interesting Jobs
-- Research Engineer II | score 12 | Rejected because the score came from weak or location-only signals and did not include a core role, skill, or support/ops reason. | https://jobs.rbc.com/ca/en/job/R-0000150239/Research-Engineer-II
-- Senior Data & Reporting/Business Analyst - GFT | score 0 | Rejected because no positive scoring signals survived after penalties. | https://jobs.rbc.com/ca/en/job/R-0000170843/Senior-Data-Reporting-Business-Analyst-GFT
+- None

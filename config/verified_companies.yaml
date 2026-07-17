@@ -65,10 +65,16 @@ verified_companies:
     verified_at: "2026-06-14"
     scope: Canada
     status: needs_manual_audit
-    notes: "Trusted Canada-only RBC collection now works from the official public search-results board after applying the Country=Canada facet before pagination: 100 discovered, 4 relevant saves, 0 explicit non-Canada saved rows, and 0 suspicious saved rows. RBC stays outside the verified-only slice until a clean manual audit is completed using the same broad Canada-only policy without extra subcategory, team, or role filters."
+    notes: "Production remains Canada-scoped and capped at 20 pages. Task 12.14 did not promote RBC because the required fresh 75-page audit hit a reproducible public-board client-side navigation race after applying Country=Canada; no stale export was used as evidence."
   - company_name: Scotiabank
     verified: true
     verified_at: "2026-06-14"
     scope: Canada
     status: usable
-    notes: "Promoted after extending the trusted Canada-scoped pagination cap to 15 pages on the official locationsearch=canada board. The fresh run discovered 383 candidates, saved 6 relevant jobs, and the current bank-slice manual audit no longer has active collection misses: 4/5 expected URLs are extracted_and_relevant and 1/5 is extracted_but_rejected_by_scoring."
+    notes: "Revalidated on 2026-07-17 under the all-pages Canada policy: 53 pages, 1,316 candidates, and a genuine no_more_pages ending. The public board has no usable newest-first control, so source order is documented and all pages are traversed."
+  - company_name: Cognizant
+    verified: false
+    verified_at: "2026-07-17"
+    scope: Canada
+    status: needs_review
+    notes: "Task 12.14 configured the official Canada-scoped all-pages policy, but the live board did not expose a stable extractable listing in this environment. It remains unverified pending a fresh all-pages candidate snapshot and manual URL recall."

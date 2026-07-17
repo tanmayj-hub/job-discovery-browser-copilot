@@ -5,15 +5,26 @@ source_scope:
 audit_scope:
   locations:
     - Canada
-  max_pages_per_source: 10
+  max_pages_per_source: 20
 
 keyword_fallback:
   enabled: false
 
 browser:
-  max_pages_per_source: 10
-  per_company_max_pages:
-    Scotiabank: 15
+  max_pages_per_source: 20
+  safety_ceiling_pages: 500
+  per_company_page_policies:
+    Scotiabank:
+      page_policy: all_available
+      sort_policy: source_default_all_pages
+    Cognizant:
+      page_policy: all_available
+      sort_policy: source_default_all_pages
+    RBC:
+      page_policy: capped
+      production_page_cap: 20
+      audit_page_cap: 75
+      sort_policy: most_recent
 
 routing:
   api_fallback_to_browser: false

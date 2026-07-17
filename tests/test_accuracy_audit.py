@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+from datetime import UTC, datetime
 from pathlib import Path
 
 import main as cli_main
@@ -60,7 +61,7 @@ def _seed_company_and_job(tmp_path: Path) -> tuple[Path, object]:
             "source_name": "workday",
             "source_mode": "human_in_loop",
             "description": "Cloud role.",
-            "date_posted": "2026-06-06",
+            "date_posted": datetime.now(UTC).date().isoformat(),
             "external_job_id": "td-123",
             "ats_type": "workday",
             "board_slug": "td",
@@ -68,7 +69,7 @@ def _seed_company_and_job(tmp_path: Path) -> tuple[Path, object]:
             "match_reasons": ["title matches: cloud engineer"],
             "risk_flags": [],
             "status": "new",
-            "last_seen_at": "2026-06-06T18:00:00Z",
+            "last_seen_at": datetime.now(UTC).isoformat(),
         },
     )
     return db_path, connection

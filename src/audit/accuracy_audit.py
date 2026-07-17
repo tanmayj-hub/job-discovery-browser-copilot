@@ -666,6 +666,8 @@ def write_company_collection_diagnostic(
         ),
         "",
         "## Pagination",
+        f"- Page policy: {collection_result.get('page_policy') or 'capped'}",
+        f"- Target page cap: {collection_result.get('target_page_cap') or 'all available'}",
         f"- Pagination detected: {bool(collection_result.get('pagination_detected', False))}",
         (
             "- Next/load-more detection result: "
@@ -679,6 +681,19 @@ def write_company_collection_diagnostic(
         f"- Pages visited: {len(pages_visited)}",
         f"- Jobs extracted per page: {jobs_per_page or '-'}",
         f"- Pagination stop reason: {collection_result.get('pagination_stop_reason') or '-'}",
+        f"- Pagination complete: {bool(collection_result.get('pagination_complete', False))}",
+        f"- Normal stop: {bool(collection_result.get('pagination_stop_normal', False))}",
+        (
+            "- Engineering fix required: "
+            f"{bool(collection_result.get('pagination_engineering_fix_required', False))}"
+        ),
+        "",
+        "## Sort Policy",
+        f"- Sort requested: {collection_result.get('sort_requested') or '-'}",
+        f"- Sort used: {collection_result.get('sort_used') or '-'}",
+        f"- Sort status: {collection_result.get('sort_status') or '-'}",
+        f"- Sort method: {collection_result.get('sort_method') or '-'}",
+        f"- Sort reason: {collection_result.get('sort_reason') or '-'}",
         "",
         "## Counts",
         f"- Candidate jobs before scoring: {collection_result.get('jobs_discovered', 0)}",

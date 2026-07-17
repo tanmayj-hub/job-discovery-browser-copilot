@@ -121,6 +121,22 @@ def _as_collector_result(
         pagination_stop_reason=(
             str(result.get("pagination_stop_reason") or "").strip() or None
         ),
+        page_policy=str(result.get("page_policy") or "").strip() or None,
+        target_page_cap=(
+            int(result["target_page_cap"])
+            if result.get("target_page_cap") is not None
+            else None
+        ),
+        pagination_complete=bool(result.get("pagination_complete", False)),
+        pagination_stop_normal=bool(result.get("pagination_stop_normal", False)),
+        pagination_engineering_fix_required=bool(
+            result.get("pagination_engineering_fix_required", False)
+        ),
+        sort_requested=str(result.get("sort_requested") or "").strip() or None,
+        sort_used=str(result.get("sort_used") or "").strip() or None,
+        sort_status=str(result.get("sort_status") or "").strip() or None,
+        sort_method=str(result.get("sort_method") or "").strip() or None,
+        sort_reason=str(result.get("sort_reason") or "").strip() or None,
         intervention_reason=str(intervention_reason or "").strip() or None,
         source_scope_name=str(result.get("source_scope_name") or "").strip() or None,
         source_scope_status=str(result.get("source_scope_status") or "").strip() or None,

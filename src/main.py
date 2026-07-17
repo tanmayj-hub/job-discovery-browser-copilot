@@ -537,6 +537,12 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Use the Canada-only audit scope from config/discovery.yaml.",
     )
+    audit_diagnose.add_argument(
+        "--page-cap",
+        type=int,
+        default=None,
+        help="Audit-only pagination cap override; does not change production configuration.",
+    )
 
     audit_manual_urls = audit_subparsers.add_parser(
         "compare-manual-urls",
@@ -902,20 +908,23 @@ def main(argv: list[str] | None = None) -> int:
             PROJECT_ROOT / "data" / "exports" / "audits" / f"{slug}-scored-candidates.csv"
         )
         location_scope_override = None
-        max_pages_per_source_override = None
+        max_pages_per_source_override = args.page_cap
         force_location_scope_search = False
         if args.use_audit_scope:
             location_scope_override = collection_api["load_audit_scope_locations"]()
-            max_pages_per_source_override = collection_api["load_audit_max_pages_per_source"]()
             force_location_scope_search = True
         manual_expected_jobs: list[dict[str, object]] = []
         manual_expected_fixture_path = (
-            PROJECT_ROOT
-            / "tests"
-            / "fixtures"
-            / "audit"
-            / "manual_expected_jobs_td_ibm_sunlife.yaml"
+            PROJECT_ROOT / "data" / "exports" / "audits" / "manual-expected-jobs-next-slice.yaml"
         )
+        if not manual_expected_fixture_path.exists():
+            manual_expected_fixture_path = (
+                PROJECT_ROOT
+                / "tests"
+                / "fixtures"
+                / "audit"
+                / "manual_expected_jobs_td_ibm_sunlife.yaml"
+            )
         if manual_expected_fixture_path.exists():
             for fixture_company in audit_api["load_manual_expected_jobs"](
                 manual_expected_fixture_path
@@ -935,6 +944,7 @@ def main(argv: list[str] | None = None) -> int:
             allowed_source_modes={"browser_allowed", "human_in_loop"},
             location_scope_override=location_scope_override,
             max_pages_per_source_override=max_pages_per_source_override,
+            use_audit_page_policy=args.use_audit_scope,
             force_location_scope_search=force_location_scope_search,
             capture_page_html=True,
             allow_broad_diagnostic_collection=True,

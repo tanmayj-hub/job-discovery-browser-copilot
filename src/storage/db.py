@@ -308,6 +308,24 @@ def migrate_database(connection: sqlite3.Connection) -> None:
         connection.execute("ALTER TABLE sources ADD COLUMN source_scope_method TEXT")
     if source_columns and "source_scope_reason" not in source_columns:
         connection.execute("ALTER TABLE sources ADD COLUMN source_scope_reason TEXT")
+    source_columns = _table_columns(connection, "sources")
+    source_collection_columns = {
+        "page_policy": "TEXT",
+        "target_page_cap": "INTEGER",
+        "pages_visited": "INTEGER NOT NULL DEFAULT 0",
+        "pagination_stop_reason": "TEXT",
+        "pagination_complete": "INTEGER NOT NULL DEFAULT 0",
+        "pagination_stop_normal": "INTEGER NOT NULL DEFAULT 0",
+        "pagination_engineering_fix_required": "INTEGER NOT NULL DEFAULT 0",
+        "sort_requested": "TEXT",
+        "sort_used": "TEXT",
+        "sort_status": "TEXT",
+        "sort_method": "TEXT",
+        "sort_reason": "TEXT",
+    }
+    for column, sql_type in source_collection_columns.items():
+        if source_columns and column not in source_columns:
+            connection.execute(f"ALTER TABLE sources ADD COLUMN {column} {sql_type}")
     if source_columns and "source_url_used" not in source_columns:
         connection.execute("ALTER TABLE sources ADD COLUMN source_url_used TEXT")
     if source_columns and "broad_diagnostic_collection" not in source_columns:
@@ -1674,6 +1692,18 @@ def record_source_observation(
     broad_diagnostic_collection: bool = False,
     non_canada_rejected: int = 0,
     unknown_location_relevant: int = 0,
+    page_policy: str | None = None,
+    target_page_cap: int | None = None,
+    pages_visited: int = 0,
+    pagination_stop_reason: str | None = None,
+    pagination_complete: bool = False,
+    pagination_stop_normal: bool = False,
+    pagination_engineering_fix_required: bool = False,
+    sort_requested: str | None = None,
+    sort_used: str | None = None,
+    sort_status: str | None = None,
+    sort_method: str | None = None,
+    sort_reason: str | None = None,
 ) -> None:
     """Persist the latest source-level routing and collection outcome."""
 
@@ -1749,6 +1779,18 @@ def record_source_observation(
             broad_diagnostic_collection,
             non_canada_rejected,
             unknown_location_relevant,
+            page_policy,
+            target_page_cap,
+            pages_visited,
+            pagination_stop_reason,
+            pagination_complete,
+            pagination_stop_normal,
+            pagination_engineering_fix_required,
+            sort_requested,
+            sort_used,
+            sort_status,
+            sort_method,
+            sort_reason,
             last_success_at,
             consecutive_failures,
             readiness_label,
@@ -1758,6 +1800,7 @@ def record_source_observation(
         VALUES (
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
             CURRENT_TIMESTAMP,
             CURRENT_TIMESTAMP
         )
@@ -1789,6 +1832,18 @@ def record_source_observation(
             broad_diagnostic_collection = excluded.broad_diagnostic_collection,
             non_canada_rejected = excluded.non_canada_rejected,
             unknown_location_relevant = excluded.unknown_location_relevant,
+            page_policy = excluded.page_policy,
+            target_page_cap = excluded.target_page_cap,
+            pages_visited = excluded.pages_visited,
+            pagination_stop_reason = excluded.pagination_stop_reason,
+            pagination_complete = excluded.pagination_complete,
+            pagination_stop_normal = excluded.pagination_stop_normal,
+            pagination_engineering_fix_required = excluded.pagination_engineering_fix_required,
+            sort_requested = excluded.sort_requested,
+            sort_used = excluded.sort_used,
+            sort_status = excluded.sort_status,
+            sort_method = excluded.sort_method,
+            sort_reason = excluded.sort_reason,
             last_success_at = excluded.last_success_at,
             consecutive_failures = excluded.consecutive_failures,
             readiness_label = excluded.readiness_label,
@@ -1825,6 +1880,18 @@ def record_source_observation(
             _to_db_bool(broad_diagnostic_collection),
             int(non_canada_rejected),
             int(unknown_location_relevant),
+            page_policy,
+            target_page_cap,
+            int(pages_visited),
+            pagination_stop_reason,
+            _to_db_bool(pagination_complete),
+            _to_db_bool(pagination_stop_normal),
+            _to_db_bool(pagination_engineering_fix_required),
+            sort_requested,
+            sort_used,
+            sort_status,
+            sort_method,
+            sort_reason,
             last_success_at,
             consecutive_failures,
             readiness_label,

@@ -50,6 +50,16 @@ class CollectorResult:
     keyword_scope_used: bool = False
     pages_visited: int = 0
     pagination_stop_reason: str | None = None
+    page_policy: str | None = None
+    target_page_cap: int | None = None
+    pagination_complete: bool = False
+    pagination_stop_normal: bool = False
+    pagination_engineering_fix_required: bool = False
+    sort_requested: str | None = None
+    sort_used: str | None = None
+    sort_status: str | None = None
+    sort_method: str | None = None
+    sort_reason: str | None = None
     intervention_reason: str | None = None
     source_scope_name: str | None = None
     source_scope_status: str | None = None

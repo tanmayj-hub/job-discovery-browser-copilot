@@ -187,3 +187,6 @@ slice:
 3. Check the latest source row for discovered jobs, saved relevant jobs, and no blocking interventions.
 4. Run a manual URL audit when needed.
 5. Update [verified_companies.yaml](C:/projects/job-discovery-browser-copilot/config/verified_companies.yaml) only after the fresh evidence is clean.
+# Collection Standards
+
+Trusted runs confirm Canada scope before they paginate. They request newest-first sorting where the official board provides it, then report the actual sort outcome, pages scanned, and stop reason. The normal page cap is 20; Scotiabank and Cognizant are documented all-pages exceptions, while RBC uses 75 pages only for verification audits.

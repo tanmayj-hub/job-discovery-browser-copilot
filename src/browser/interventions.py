@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import sqlite3
 from typing import Any
 
@@ -80,10 +81,13 @@ def detect_browser_barriers(
     if _has_login_gate(text, html):
         signals.append(BARRIER_SIGNAL_LOGIN)
 
-    if "cookie" in text and (
-        "accept" in text
-        or "reject" in text
-        or "consent" in text
+    # A footer "Cookie Settings" link is not a blocking banner. Require nearby
+    # consent-action language before pausing an otherwise usable job board.
+    if re.search(
+        r"(?:cookie|consent).{0,500}(?:accept|reject|manage preferences)"
+        r"|(?:accept|reject|manage preferences).{0,500}(?:cookie|consent)",
+        text,
+        flags=re.DOTALL,
     ):
         signals.append(BARRIER_SIGNAL_COOKIE)
 

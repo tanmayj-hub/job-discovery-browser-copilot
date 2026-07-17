@@ -79,3 +79,6 @@ Expected final response format:
 7. Any scoring changes made and why
 
 Do not stop after analysis. Keep going until the companies are resolved or genuinely blocked.
+# Collection Standards Addendum
+
+For every audit, confirm Canada scope before pagination, apply and record newest-first sorting when available, use the 20-page default unless the source has a documented `all_available` or audit-only override, record actual pages scanned and the exact stop reason, and continue the safe fix loop until the source passes, is correctly unverified, or needs user input.

@@ -831,11 +831,37 @@ def test_extract_visible_job_cards_stops_when_no_new_job_urls_appear() -> None:
 
     assert len(jobs) == 1
     assert diagnostics.pagination_detected is True
-    assert diagnostics.pagination_stop_reason == "no_new_job_urls"
+    assert diagnostics.pagination_stop_reason == "duplicate_page_detected"
     assert diagnostics.pages_visited == [
         "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?locationCountry=ca",
         "https://td.wd3.myworkdayjobs.com/en-US/TD_Bank_Careers/jobs?page=2&locationCountry=ca",
     ]
+
+
+def test_all_available_policy_marks_safety_ceiling_as_incomplete() -> None:
+    page = FakeMultiPageWorkday(
+        urls=[
+            "https://example.com/jobs?page=1",
+            "https://example.com/jobs?page=2",
+        ],
+        html_pages=[
+            "<main><a href='/jobs/1'>Cloud Engineer</a><p>Toronto, Ontario</p></main>",
+            "<main><a href='/jobs/2'>DevOps Engineer</a><p>Toronto, Ontario</p></main>",
+        ],
+    )
+
+    _, diagnostics = extract_visible_job_cards_with_diagnostics(
+        page,
+        company_name="Example",
+        source_name="careers",
+        source_mode="browser_allowed",
+        max_pages=2,
+        page_policy="all_available",
+    )
+
+    assert diagnostics.pagination_stop_reason == "safety_ceiling_reached"
+    assert diagnostics.pagination_complete is False
+    assert diagnostics.pagination_engineering_fix_required is True
 
 
 def test_extract_visible_job_cards_does_not_loop_forever_on_static_next_page() -> None:
@@ -864,7 +890,7 @@ def test_extract_visible_job_cards_does_not_loop_forever_on_static_next_page() -
         max_pages=10,
     )
 
-    assert diagnostics.pagination_stop_reason == "no_new_job_urls"
+    assert diagnostics.pagination_stop_reason == "duplicate_page_detected"
     assert len(diagnostics.pages_visited) == 2
 
 
@@ -917,7 +943,7 @@ def test_extract_visible_job_cards_handles_ibm_dense_pagination_no_new_job_ids()
 
     assert len(jobs) == 1
     assert diagnostics.pagination_detected is True
-    assert diagnostics.pagination_stop_reason == "no_new_job_urls"
+    assert diagnostics.pagination_stop_reason == "duplicate_page_detected"
 
 
 class FakeCanadaLifePaginationPage:
