@@ -449,6 +449,28 @@ def test_apply_source_scope_job_safety_gate_rejects_explicit_us_locations() -> N
     assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]
 
 
+def test_apply_source_scope_job_safety_gate_keeps_successfactors_canadian_country_code() -> None:
+    source_scope = _build_source_scope_status(
+        status=SOURCE_SCOPE_CONFIRMED,
+        confirmed=True,
+        method="url_filter",
+        reason="Canada URL confirmed.",
+        source_url_used="https://jobs.example.com/search?country=Canada",
+    )
+
+    allowed_jobs, rejected_count, unknown_count = _apply_source_scope_job_safety_gate(
+        [
+            {"title": "Cloud Engineer", "location": "Toronto, ON, CA, M5H 1H1"},
+            {"title": "US Engineer", "location": "San Ramon, CA"},
+        ],
+        source_scope_status=source_scope,
+    )
+
+    assert [job["title"] for job in allowed_jobs] == ["Cloud Engineer"]
+    assert rejected_count == 1
+    assert unknown_count == 0
+
+
 def test_apply_source_scope_job_safety_gate_rejects_bmo_enus_urls_without_location() -> None:
     source_scope = _build_source_scope_status(
         status=SOURCE_SCOPE_CONFIRMED,

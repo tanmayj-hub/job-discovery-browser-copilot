@@ -749,6 +749,33 @@ def test_canada_location_safety_gate_rejects_explicit_us_rows() -> None:
     assert rejected_job["risk_flags"] == ["outside_location_scope", "non_canada_location"]
 
 
+def test_canada_location_safety_gate_keeps_successfactors_canadian_country_code() -> None:
+    source_key = ("Scotiabank", "jobs.")
+    filtered_jobs, rejected_by_source, unknown_by_source = _apply_canada_location_safety_gate(
+        [
+            {
+                "company_name": "Scotiabank",
+                "source_name": "jobs.",
+                "title": "Cloud Platform Engineer",
+                "location": "Toronto, ON, CA, M5H 1H1",
+                "_source_key": source_key,
+            },
+            {
+                "company_name": "Scotiabank",
+                "source_name": "jobs.",
+                "title": "Cloud Engineer",
+                "location": "San Ramon, CA",
+                "_source_key": source_key,
+            },
+        ],
+        {source_key: {"source_scope_status": "canada_scope_confirmed"}},
+    )
+
+    assert [job["title"] for job in filtered_jobs] == ["Cloud Platform Engineer"]
+    assert rejected_by_source[source_key] == 1
+    assert unknown_by_source[source_key] == 0
+
+
 def test_canada_location_safety_gate_rejects_bmo_enus_urls_even_without_location() -> None:
     source_key = ("BMO", "company-careers")
     rejected_job = {

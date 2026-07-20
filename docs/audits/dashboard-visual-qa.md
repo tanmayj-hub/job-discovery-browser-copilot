@@ -64,45 +64,22 @@ historical verified-company jobs behind the `All Verified Jobs` tab.
 - The review queue intentionally explains deterministic scoring signals; it does not
   attempt to rewrite or expand the scoring policy.
 
-## Calibration Follow-up QA
+## Scotiabank Reconciliation QA
 
-### Original Interaction Problem
+- The focused workspace now uses the fresh 88-row Scotiabank review slice, with 85 roles
+  requiring a user decision and three carried-forward decisions.
+- The compact desktop shell keeps the main page fixed. The opportunity list is the only
+  vertically scrollable region; selecting a card keeps the selected-job panel stationary.
+- The review action opens a native Streamlit modal so decision and note controls remain
+  usable without turning the right detail panel into a second long scroll area.
+- The visible labels now say `source-verified`, which describes collection reliability
+  without implying that deterministic scoring has made a final personal-fit decision.
+- A live 1280 by 720 browser check confirmed the Scotiabank queue, selected-detail update,
+  official-posting action, review dialog controls, no runtime error, and a zero main-scroll
+  position after selecting a different job card.
 
-Selecting a lower job card triggered an explicit rerun of the whole Streamlit page.
-The user remained at the lower page position while the selected detail content could
-be above the viewport.
+### Remaining Limitation
 
-### Fixes Verified
-
-- The left opportunity list is now a height-constrained, independently scrollable
-  Streamlit container.
-- The selected-job detail and review form use a matching constrained container in the
-  adjacent column, so they remain visible while the user scrolls the list.
-- `View details` uses a callback to set the canonical URL key before the normal rerun.
-  The selected card is highlighted and the right panel updates in place.
-- The review filter now defaults to `Review needed`; the calibrated queue shows the
-  score-changed DevOps Engineer, Solution Engineer, and Application Support Analyst
-  without cluttering the first view with unchanged reviewed jobs.
-- A `StreamlitDuplicateElementId` error was reproduced after save and refresh, traced
-  to rendering All Verified Jobs twice, and removed by eliminating the duplicate
-  Workspace render path.
-
-### Final Evidence
-
-- `data/exports/dashboard-qa/calibrated-dashboard-top.png`
-- `data/exports/dashboard-qa/calibrated-review-flow.png`
-- `data/exports/dashboard-qa/calibrated-dashboard-post-error-fix.png`
-
-The calibrated review-flow capture shows the left job cards, highlighted Solution
-Engineer, right-side detail panel, preserved user note, readable score of 60, and
-official posting action in one desktop view.
-
-The final live check reloaded the restored 13-row slice, selected `Review needed`, and
-confirmed that exactly the three score-changed rows were shown. Selecting Solution
-Engineer updated the adjacent detail panel immediately. No Streamlit error appeared.
-
-### Viewport Note
-
-Desktop behavior was checked at the in-app browser's 1440 by 900 capture. The capture
-backend did not reliably apply a 1366 by 768 viewport override, so a physical-browser
-responsive pass remains the only non-blocking visual limitation.
+Streamlit uses a fixed desktop shell for the focused review queue. The compact filter control
+is collapsed by default to preserve the selected detail and review action on shorter desktop
+viewports; open it when changing company, score, fit, location, or sort filters.

@@ -1,13 +1,14 @@
 # Job Review Workflow
 
-## Run The Verified MVP
+## Run The Source-Verified MVP
 
 ```bash
 python -m src.main daily-run --verified-only
 ```
 
-This refreshes the current trusted Canada-scoped job set from the verified usable companies
-and writes a stable verified review snapshot.
+This refreshes the current trusted Canada-scoped job set from usable source-verified
+companies and writes a stable review snapshot. Source verification confirms collection
+scope and operational reliability; role relevance remains a scoring and human-review decision.
 
 Run counts describe different stages and should not be compared as if they are
 the same queue:
@@ -15,7 +16,7 @@ the same queue:
 - `jobs_scored`: deduplicated current-run candidates evaluated locally.
 - `jobs_relevant_current_run`: current-run candidates that passed scoring and Canada safety checks.
 - `jobs_new`, `jobs_updated`, `jobs_unchanged`: persistence outcomes for those relevant current-run candidates.
-- `active_saved_jobs`: all non-rejected saved jobs for currently usable verified companies.
+- `active_saved_jobs`: all non-rejected saved jobs for currently usable source-verified companies.
 - `review_export_rows`: active saved jobs written to the dashboard review CSV.
 
 ## Open The Dashboard
@@ -35,7 +36,7 @@ Default review export path:
 data/exports/review/saved-jobs-review.csv
 ```
 
-Verified snapshot path used by the review export:
+Source-verified snapshot path used by the review export:
 
 ```text
 data/exports/review/latest-verified-saved-jobs.csv
@@ -62,7 +63,7 @@ Allowed `user_decision` values:
 - role outside Cloud / DevOps / Solutions / Technical Customer Success scope
 
 The review export now intentionally:
-- includes all active non-rejected saved jobs for usable verified companies, including unchanged rows from earlier runs
+- includes all active non-rejected saved jobs for usable source-verified companies, including unchanged rows from earlier runs
 - excludes non-verified companies such as `RBC`
 - excludes rejected jobs
 - includes provisional verified companies such as `BMO` when they have saved jobs

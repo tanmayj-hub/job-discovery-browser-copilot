@@ -281,13 +281,17 @@ def write_current_review_slice(
     generated_at: datetime | None = None,
     calibrated: bool = False,
     previous_working_path: Path | None = None,
+    review_prefix: str | None = None,
+    review_label: str | None = None,
 ) -> dict[str, Any]:
     """Build a dated review export and an editable copy without erasing decisions."""
 
     timestamp_value = generated_at or datetime.now(UTC)
     timestamp = timestamp_value.strftime("%Y-%m-%d-%H%M%SZ")
     output_dir.mkdir(parents=True, exist_ok=True)
-    prefix = "rbc-scotiabank-calibrated-live-review" if calibrated else "rbc-scotiabank-live-review"
+    prefix = review_prefix or (
+        "rbc-scotiabank-calibrated-live-review" if calibrated else "rbc-scotiabank-live-review"
+    )
     review_path = output_dir / f"{prefix}-{timestamp}.csv"
     working_path = output_dir / f"{prefix}-working-{timestamp}.csv"
     if review_path.exists() or working_path.exists():
@@ -344,7 +348,8 @@ def write_current_review_slice(
     _write_csv(working_path, rows)
 
     manifest = {
-        "label": (
+        "label": review_label
+        or (
             "Calibrated live review: RBC + Scotiabank"
             if calibrated
             else "Fresh live review: RBC + Scotiabank"

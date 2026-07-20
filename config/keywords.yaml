@@ -10,6 +10,12 @@ target_roles:
   - Technical Support Engineer
   - Site Reliability Engineer
   - Cloud Operations Analyst
+  - Cloud Engineering
+  - Platform Engineering
+  - System Reliability Engineer
+  - Cloud Security Engineer
+  - Data Platform Operations Engineer
+  - Database Administrator
 
 adjacent_roles:
   - Solutions Engineer
@@ -29,6 +35,9 @@ adjacent_roles:
   - Sales Engineer
   - Pre-Sales Engineer
   - Customer Success Architect
+  - Cloud Security Architect
+  - Integration Engineer
+  - Technical Solution Advisor
 
 conditional_adjacent_roles:
   - Business Systems Analyst

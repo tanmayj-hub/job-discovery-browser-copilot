@@ -108,6 +108,10 @@ US_CITY_STATE_PATTERN = re.compile(
     + "|".join(state.lower() for state in US_STATE_ABBREVIATIONS)
     + r")\b"
 )
+CANADIAN_CITY_PROVINCE_PATTERN = re.compile(
+    r"\b[a-z0-9 .'/&()-]+,\s*(?:ab|bc|mb|nb|nl|ns|nt|nu|on|pe|qc|sk|yt)"
+    r"(?:\s*,\s*(?:ca|canada))?\b"
+)
 
 
 @dataclass(slots=True)
@@ -267,6 +271,10 @@ def is_actionable_job(job: dict[str, Any]) -> bool:
 def _is_explicit_non_canada_location(location: object) -> bool:
     normalized = str(location or "").strip().lower()
     if not normalized:
+        return False
+    # SuccessFactors exposes Canadian rows as "Toronto, ON, CA". The trailing
+    # country code must not be mistaken for the U.S. California state abbreviation.
+    if CANADIAN_CITY_PROVINCE_PATTERN.search(normalized):
         return False
     if any(
         marker in normalized

@@ -68,10 +68,11 @@ verified_companies:
     notes: "Promoted after the fresh Canada-scoped, Most Recent audit covered pages 1-75 with 750 unique candidates and no page gaps, duplicate pages, or duplicate fingerprints. Manual recall closed at 29/31 extracted: two active URLs were outside the audited current listing, with one adjacent AI Quality role and one Director-level SRE role outside target seniority. Production remains capped at 20 pages; 75 pages were audit-only."
   - company_name: Scotiabank
     verified: true
-    verified_at: "2026-06-14"
+    verified_at: "2026-07-20"
     scope: Canada
     status: usable
-    notes: "Revalidated on 2026-07-17 under the all-pages Canada policy: 53 pages, 1,316 candidates, and a genuine no_more_pages ending. The public board has no usable newest-first control, so source order is documented and all pages are traversed."
+    selection_validation_status: calibrated_review_required
+    notes: "Revalidated on 2026-07-20 under the all-pages Canada policy: 52 pages, 1,299 candidates, 88 relevant roles, and a genuine no_more_pages ending. The official board has no usable newest-first control, so all Canada-scoped pages are traversed in source order. Manual recall found no pagination/extraction miss for roles present in the current listing; active direct-page-only roles remain documented separately. Selection quality remains calibrated-review-required."
   - company_name: Cognizant
     verified: false
     verified_at: "2026-07-17"

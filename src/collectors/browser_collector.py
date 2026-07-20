@@ -151,6 +151,10 @@ US_CITY_STATE_PATTERN = re.compile(
     + "|".join(state.lower() for state in US_STATE_ABBREVIATIONS)
     + r")\b"
 )
+CANADIAN_CITY_PROVINCE_PATTERN = re.compile(
+    r"\b[a-z0-9 .'/&()-]+,\s*(?:ab|bc|mb|nb|nl|ns|nt|nu|on|pe|qc|sk|yt)"
+    r"(?:\s*,\s*(?:ca|canada))?\b"
+)
 
 
 @dataclass(slots=True)
@@ -1384,6 +1388,10 @@ def _diagnostic_scope_status(scope_status: SourceScopeStatus, *, reason: str) ->
 def _is_explicit_non_canada_location(location: str | None) -> bool:
     normalized = str(location or "").strip().lower()
     if not normalized:
+        return False
+    # SuccessFactors uses "Toronto, ON, CA" for Canadian postings. The country
+    # code must not be mistaken for the U.S. California state abbreviation.
+    if CANADIAN_CITY_PROVINCE_PATTERN.search(normalized):
         return False
     if "any cgi location" in normalized and "canada" not in normalized:
         return True

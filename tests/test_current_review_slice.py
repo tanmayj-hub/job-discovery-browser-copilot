@@ -67,15 +67,20 @@ def _write_job_export(
         )
 
 
-def _write_slice(tmp_path: Path, *, generated_at: datetime) -> tuple[dict[str, object], Path]:
-    job_export = tmp_path / f"rbc-{generated_at.minute}.csv"
-    _write_job_export(job_export, company_name="RBC", title="Cloud Engineer")
+def _write_slice(
+    tmp_path: Path,
+    *,
+    generated_at: datetime,
+    company_name: str = "RBC",
+) -> tuple[dict[str, object], Path]:
+    job_export = tmp_path / f"{company_name.lower()}-{generated_at.minute}.csv"
+    _write_job_export(job_export, company_name=company_name, title="Cloud Engineer")
     manifest_path = tmp_path / "current-review-slice.json"
     manifest = write_current_review_slice(
         job_export_paths=[job_export],
         run_records=[
             {
-                "company_name": "RBC",
+                "company_name": company_name,
                 "last_success_at": "2026-07-20T20:00:00Z",
             }
         ],
@@ -266,6 +271,7 @@ def test_empty_working_file_is_not_overwritten_during_dashboard_save(tmp_path: P
     _, manifest_path = _write_slice(
         tmp_path,
         generated_at=datetime(2026, 7, 20, 20, 6, tzinfo=UTC),
+        company_name="Scotiabank",
     )
     manifest, rows = load_current_review_slice(manifest_path)
     working_path = Path(str(manifest["working_path"]))
@@ -285,6 +291,49 @@ def test_empty_working_file_is_not_overwritten_during_dashboard_save(tmp_path: P
         )
 
     assert working_path.read_bytes() == before
+
+
+def test_company_calibrated_slice_uses_requested_prefix_and_preserves_review_state(
+    tmp_path: Path,
+) -> None:
+    _, manifest_path = _write_slice(
+        tmp_path,
+        generated_at=datetime(2026, 7, 20, 20, 6, tzinfo=UTC),
+        company_name="Scotiabank",
+    )
+    _, rows = load_current_review_slice(manifest_path)
+    assert update_current_review_decision(
+        manifest_path=manifest_path,
+        job_key=rows[0]["job_key"],
+        decision="useful",
+        notes="Keep this decision.",
+    )
+    manifest, _ = load_current_review_slice(manifest_path)
+    scotiabank_export = tmp_path / "scotiabank-6.csv"
+    _write_job_export(
+        scotiabank_export,
+        company_name="Scotiabank",
+        title="Cloud Engineer",
+    )
+
+    refreshed = write_current_review_slice(
+        job_export_paths=[scotiabank_export],
+        run_records=[{"company_name": "Scotiabank"}],
+        output_dir=tmp_path / "review",
+        manifest_path=manifest_path,
+        generated_at=datetime(2026, 7, 20, 20, 7, tzinfo=UTC),
+        calibrated=True,
+        previous_working_path=Path(str(manifest["working_path"])),
+        review_prefix="scotiabank-calibrated-review",
+        review_label="Calibrated live review: Scotiabank",
+    )
+    _, refreshed_rows = load_current_review_slice(manifest_path)
+
+    assert Path(str(refreshed["working_path"])).name.startswith(
+        "scotiabank-calibrated-review-working-"
+    )
+    assert refreshed["label"] == "Calibrated live review: Scotiabank"
+    assert refreshed_rows[0]["review_state"] == "Previously reviewed"
 
 
 def test_decision_values_are_validated(tmp_path: Path) -> None:

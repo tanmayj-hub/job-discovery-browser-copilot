@@ -19,7 +19,7 @@ Run Aviva Canada only:
 python -m src.main daily-run --company "Aviva Canada"
 ```
 
-## Run Verified Companies Only
+## Run Source-Verified Companies Only
 
 ```bash
 python -m src.main daily-run --verified-only
@@ -30,13 +30,13 @@ This reads [verified_companies.yaml](C:/projects/job-discovery-browser-copilot/c
 - `verified: true`
 - `status: usable`
 
-## List Verified Companies
+## List Source-Verified Companies
 
 ```bash
 python -m src.main daily-run --list-verified
 ```
 
-This prints the current verified-company records without running collection.
+This prints the current source-verified company records without running collection.
 
 ## Open The Dashboard
 
@@ -85,12 +85,14 @@ TD is now part of the verified-only slice because the direct Canada-filtered
 Workday URL completed a fresh trusted run on 2026-06-14 and the current bank
 manual URL audit matched all `3 / 3` expected URLs as `saved_by_mvp`.
 
-Scotiabank is now part of the verified-only slice because the official
-Canada-filtered board cleared its current collection recall gap after the
-trusted pagination cap was safely extended to 15 pages. The latest manual
-bank-slice audit shows `4 / 5` expected URLs as `extracted_and_relevant` and
-the final `1 / 5` as `extracted_but_rejected_by_scoring`, so the remaining
-gap is scoring-only rather than collection.
+Scotiabank is part of the source-verified slice because the official
+Canada-filtered board completed a fresh all-pages run on 2026-07-20: 52 pages,
+1,299 candidates, 88 relevant roles, and a genuine `no_more_pages` ending.
+The current 65-row manual fixture found no pagination or extraction miss among
+roles in the current listing. One active direct-page role was absent from that
+listing; 12 collected roles remain rejected by the deliberate local scoring
+rules. Its selection status is `calibrated_review_required`, so the review
+workspace remains the final human quality check.
 
 RBC is part of the verified-only slice after its Canada/newest-first audit
 covered pages 1-75 without gaps or duplicate pages. Manual recall closed at
@@ -120,7 +122,7 @@ If Canada scope cannot be confirmed before pagination:
 - the source remains `needs_review` or `needs_user_canada_url`
 - any broader collection is treated as diagnostic-only evidence, not verification evidence
 
-## What "Verified Company" Means
+## What "Source-Verified Company" Means
 A company is usable enough for the current MVP workflow when the latest evidence shows:
 
 - a fresh `daily-run --company` completed without error
@@ -131,8 +133,10 @@ A company is usable enough for the current MVP workflow when the latest evidence
 - no unresolved blocking intervention exists for that source
 - the latest manual URL audit does not show active collection misses when such an audit exists
 
-Verified does not mean perfect.
-It means safe enough to include in the user's daily MVP workflow.
+Source-verified does not mean every role is a perfect personal fit.
+It means the public source is safe enough to include in the user's daily MVP
+workflow. Relevance selection remains subject to the local scoring rules and
+human review.
 
 Some verified companies may also carry a provisional confidence note in
 [verified_companies.yaml](C:/projects/job-discovery-browser-copilot/config/verified_companies.yaml)
@@ -145,7 +149,7 @@ quality review.
 - outside scope / rejected: collected but not saved because the current scoring rules do not treat the role as relevant
 
 ## Dashboard Notes
-- The Jobs Found view defaults to verified companies only.
+- The Jobs Found view defaults to source-verified companies only.
 - The Daily Summary view includes verified-company counts, latest new/updated counts, and a verified source-health table.
 - Use Source Readiness for a fuller source-health view when you want more than the compact verified summary.
 - Use Saved Job Review to export the current trusted saved-job queue for manual triage.

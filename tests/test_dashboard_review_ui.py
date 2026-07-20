@@ -14,9 +14,9 @@ from dashboard.app import (
 )
 
 
-def test_dashboard_defaults_to_jobs_with_all_verified_view_available() -> None:
+def test_dashboard_defaults_to_jobs_with_source_verified_view_available() -> None:
     assert DASHBOARD_PRIMARY_TABS[0] == "Jobs"
-    assert "All Verified Jobs" in DASHBOARD_PRIMARY_TABS
+    assert "All Source-Verified Jobs" in DASHBOARD_PRIMARY_TABS
 
 
 def test_dashboard_uses_human_readable_review_labels() -> None:
@@ -89,3 +89,17 @@ def test_review_needed_is_the_first_load_filter() -> None:
     )[0]
 
     assert review_options.index('"Review needed"') < review_options.index('"All"')
+
+
+def test_review_workspace_keeps_scrolling_within_the_opportunity_list() -> None:
+    dashboard_source = Path("src/dashboard/app.py").read_text(encoding="utf-8")
+    workspace_source = dashboard_source.split(
+        "def render_current_slice_review", maxsplit=1
+    )[1].split("def render_current_slice_run_details", maxsplit=1)[0]
+
+    assert 'with st.expander("Filters", expanded=False):' in workspace_source
+    assert "with st.container(height=330, border=False):" in workspace_source
+    detail_source = workspace_source.split("with detail_column:", maxsplit=1)[1]
+    assert "with st.container(height=" not in detail_source
+    assert 'st.button("Review this job", use_container_width=True)' in detail_source
+    assert "def render_current_job_review_dialog" in dashboard_source

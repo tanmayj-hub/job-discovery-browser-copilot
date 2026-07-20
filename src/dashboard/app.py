@@ -31,7 +31,13 @@ JOB_STATUS_OPTIONS = [
     "reviewed",
     "needs_manual_review",
 ]
-DASHBOARD_PRIMARY_TABS = ("Jobs", "Run Summary", "Source Health", "All Verified Jobs", "More")
+DASHBOARD_PRIMARY_TABS = (
+    "Jobs",
+    "Run Summary",
+    "Source Health",
+    "All Source-Verified Jobs",
+    "More",
+)
 
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
@@ -445,6 +451,26 @@ def render_styles() -> None:
             padding: 0.85rem 0.95rem 0.4rem;
         }
         .header-status { color: #477052; font-size: 0.87rem; margin-top: 0.55rem; }
+        @media (min-width: 1000px) {
+            [data-testid="stMain"] {
+                height: 100vh;
+                overflow-y: hidden;
+            }
+            .block-container {
+                padding-bottom: 0.55rem;
+                padding-top: 0.4rem;
+            }
+            .hero {
+                margin-bottom: 0.55rem;
+                padding: 0.55rem 1.2rem;
+            }
+            .hero-title { font-size: 1.7rem; }
+            .hero .eyebrow { display: none; }
+            .hero-copy { display: none; }
+            .header-status { margin-top: 0.25rem; }
+            .filter-shell { margin: 0.45rem 0 0.65rem; }
+            .detail-panel { padding: 0.85rem 1rem; }
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -838,7 +864,7 @@ def render_jobs_tab(connection: Any) -> None:
     render_section_heading("Jobs Found")
     st.caption(
         "Filter discovered jobs, review fit signals, and update status. "
-        "The default view stays anchored to the latest verified run so stale history "
+        "The default view stays anchored to the latest source-verified run so stale history "
         "does not mix with the current Canada-scoped queue."
     )
 
@@ -850,10 +876,10 @@ def render_jobs_tab(connection: Any) -> None:
         return
 
     verified_only = st.checkbox(
-        "Verified companies only",
+        "Source-verified companies only",
         value=True,
         key="all_verified_companies_only",
-        help="Default to usable verified companies for the daily MVP workflow.",
+        help="Default to usable source-verified companies for the daily MVP workflow.",
     )
     latest_verified_run_only = st.checkbox(
         "Latest verified run only",
@@ -1907,19 +1933,20 @@ def render_current_slice_overview() -> None:
 
     run_records = list(manifest.get("run_records") or [])
     companies = list(manifest.get("companies") or [])
+    company_label = ", ".join(companies) or "Current source"
     discovered = sum(int(record.get("jobs_discovered", 0) or 0) for record in run_records)
     saved = sum(int(record.get("jobs_saved", 0) or 0) for record in run_records)
     run_day, run_time = split_live_run_timestamp(manifest.get("generated_at"))
     st.markdown(
         "<div class='slice-note'><strong>Fresh live review:</strong> this workspace is "
-        "intentionally scoped to the current RBC + Scotiabank runs. Historical active jobs "
-        "remain available from All Verified Jobs.</div>",
+        f"intentionally scoped to the current {escape(company_label)} run. Historical active jobs "
+        "remain available from All Source-Verified Jobs.</div>",
         unsafe_allow_html=True,
     )
     metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
     with metric_col1:
-        st.metric("Run scope", "2 banks")
-        st.caption("RBC + Scotiabank")
+        st.metric("Run scope", f"{len(companies)} source")
+        st.caption(company_label)
     with metric_col2:
         st.metric("Companies", len(companies))
     with metric_col3:
@@ -2089,17 +2116,67 @@ def _select_current_job(job_key: str) -> None:
     st.session_state["current_slice_selected_job_key"] = job_key
 
 
+@st.dialog("Review selected job")
+def render_current_job_review_dialog(job: dict[str, str]) -> None:
+    """Collect a review decision without expanding the fixed detail panel."""
+
+    current_slice_api = get_current_slice_api()
+    selected_key = str(job.get("job_key") or "")
+    decision_options = [
+        "",
+        "useful",
+        "maybe",
+        "not_useful",
+        "false_positive",
+        "already_applied",
+        "saved_for_later",
+    ]
+    current_decision = str(job.get("user_decision") or "")
+    st.caption(f"{job.get('company') or '-'} | {job.get('title') or 'Untitled role'}")
+    with st.form(stable_review_widget_key("decision_form", selected_key)):
+        decision = st.selectbox(
+            "Your review decision",
+            decision_options,
+            index=decision_options.index(current_decision)
+            if current_decision in decision_options
+            else 0,
+            format_func=(
+                lambda option: display_decision(option) if option else "Choose a decision"
+            ),
+            key=stable_review_widget_key("decision", selected_key),
+        )
+        notes = st.text_area(
+            "Notes",
+            value=str(job.get("user_notes") or ""),
+            placeholder="Why this role is useful, not useful, or what to do next.",
+            key=stable_review_widget_key("notes", selected_key),
+            height=118,
+        )
+        submitted = st.form_submit_button("Save review", use_container_width=True)
+    if submitted:
+        updated = current_slice_api["update_current_review_decision"](
+            manifest_path=CURRENT_REVIEW_SLICE_MANIFEST_PATH,
+            job_key=selected_key,
+            decision=decision,
+            notes=notes,
+        )
+        if updated:
+            st.session_state["current_slice_feedback"] = "Review decision saved."
+            st.session_state.pop("current_slice_review_job_key", None)
+            st.rerun()
+        else:
+            st.error("The selected role was not found in the working review file.")
+
+
 def render_current_slice_review(connection: Any) -> None:
     """Render the primary card-and-detail experience for the fresh live slice."""
 
     del connection  # Decisions intentionally live in the separate user working CSV.
-    current_slice_api = get_current_slice_api()
     manifest, rows = load_live_review_slice()
     feedback = st.session_state.pop("current_slice_feedback", None)
-    render_section_heading("Fresh jobs for your review")
     st.caption(
-        "Review the latest technical opportunities from trusted Canadian employer sources. "
-        "Your decision and notes stay in a dedicated working copy."
+        "Source-verified Canada collection. Filter the review queue, then record a decision "
+        "in the working copy."
     )
     if feedback:
         st.success(feedback)
@@ -2107,7 +2184,7 @@ def render_current_slice_review(connection: Any) -> None:
         st.info("No fresh live review rows are available yet.")
         return
 
-    companies = ["All", *sorted({str(row.get("company") or "-") for row in rows})]
+    companies = [*sorted({str(row.get("company") or "-") for row in rows}), "All"]
     tiers = ["All", *sorted({display_relevance_tier(row.get("relevance_tier")) for row in rows})]
     locations = [
         "All",
@@ -2128,35 +2205,36 @@ def render_current_slice_review(connection: Any) -> None:
         "already_applied",
         "saved_for_later",
     ]
-    st.markdown("<div class='filter-shell'>", unsafe_allow_html=True)
-    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
-    filter_col5, filter_col6, filter_col7 = st.columns([1.1, 1.4, 1.3])
-    with filter_col1:
-        selected_company = st.selectbox("Company", companies, key="slice_company_filter")
-    with filter_col2:
-        selected_tier_label = st.selectbox("Fit", tiers, key="slice_tier_filter")
-    with filter_col3:
-        minimum_score = st.slider("Minimum score", 0, 100, 0, 5, key="slice_score_filter")
-    with filter_col4:
-        selected_decision = st.selectbox(
-            "Review status",
-            decisions,
-            format_func=display_review_filter,
-            key="slice_review_status_filter_v2",
-        )
-    with filter_col5:
-        selected_location = st.selectbox("Location", locations, key="slice_location_filter")
-    with filter_col6:
-        keyword = st.text_input(
-            "Search roles", placeholder="DevOps, cloud, support", key="slice_keyword_filter"
-        )
-    with filter_col7:
-        selected_sort = st.selectbox(
-            "Sort by",
-            ["Freshness and fit", "Highest score", "Newest posting", "Company"],
-            key="slice_sort_filter",
-        )
-    st.markdown("</div>", unsafe_allow_html=True)
+    with st.expander("Filters", expanded=False):
+        st.markdown("<div class='filter-shell'>", unsafe_allow_html=True)
+        filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+        filter_col5, filter_col6, filter_col7 = st.columns([1.1, 1.4, 1.3])
+        with filter_col1:
+            selected_company = st.selectbox("Company", companies, key="slice_company_filter")
+        with filter_col2:
+            selected_tier_label = st.selectbox("Fit", tiers, key="slice_tier_filter")
+        with filter_col3:
+            minimum_score = st.slider("Minimum score", 0, 100, 0, 5, key="slice_score_filter")
+        with filter_col4:
+            selected_decision = st.selectbox(
+                "Review status",
+                decisions,
+                format_func=display_review_filter,
+                key="slice_review_status_filter_v2",
+            )
+        with filter_col5:
+            selected_location = st.selectbox("Location", locations, key="slice_location_filter")
+        with filter_col6:
+            keyword = st.text_input(
+                "Search roles", placeholder="DevOps, cloud, support", key="slice_keyword_filter"
+            )
+        with filter_col7:
+            selected_sort = st.selectbox(
+                "Sort by",
+                ["Freshness and fit", "Highest score", "Newest posting", "Company"],
+                key="slice_sort_filter",
+            )
+        st.markdown("</div>", unsafe_allow_html=True)
     selected_tier = {
         "Core technical fit": "core_target_fit",
         "Adjacent technical fit": "adjacent_customer_facing_technical_fit",
@@ -2203,7 +2281,7 @@ def render_current_slice_review(connection: Any) -> None:
     list_column, detail_column = st.columns([1.08, 0.92], gap="large")
     with list_column:
         st.markdown("#### Opportunities")
-        with st.container(height=680, border=False):
+        with st.container(height=330, border=False):
             for job in filtered_rows:
                 job_key = str(job.get("job_key") or "")
                 st.markdown(
@@ -2223,92 +2301,49 @@ def render_current_slice_review(connection: Any) -> None:
                     if job.get("job_url"):
                         st.link_button("Open posting", job["job_url"], use_container_width=True)
     with detail_column:
-        with st.container(height=680, border=False):
-            selected_title = escape(str(selected_job.get("title") or "Untitled role"))
-            selected_company = str(selected_job.get("company") or "-")
-            selected_location = str(selected_job.get("location") or "Location not listed")
-            selected_tier = display_relevance_tier(selected_job.get("relevance_tier"))
-            selected_tier_class = badge_class_for_tier(selected_job.get("relevance_tier"))
-            selected_change = display_change_type(selected_job.get("change_type"))
-            selected_review_state = display_review_state(
-                selected_job.get("review_state"), selected_job.get("user_decision")
+        selected_title = escape(str(selected_job.get("title") or "Untitled role"))
+        selected_company = str(selected_job.get("company") or "-")
+        selected_location = str(selected_job.get("location") or "Location not listed")
+        selected_tier = display_relevance_tier(selected_job.get("relevance_tier"))
+        selected_tier_class = badge_class_for_tier(selected_job.get("relevance_tier"))
+        selected_change = display_change_type(selected_job.get("change_type"))
+        selected_review_state = display_review_state(
+            selected_job.get("review_state"), selected_job.get("user_decision")
+        )
+        st.markdown("<div class='detail-panel'>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='detail-eyebrow'>Selected opportunity</div>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(f"<div class='detail-title'>{selected_title}</div>", unsafe_allow_html=True)
+        st.caption(f"{selected_company} | {selected_location}")
+        st.markdown(
+            f"<span class='badge {selected_tier_class}'>{selected_tier}</span>"
+            f"<span class='badge badge-score'>Score {selected_job.get('score') or '0'}</span>"
+            f"<span class='badge badge-new'>{selected_change}</span>"
+            f"<span class='badge badge-existing'>{selected_review_state}</span>",
+            unsafe_allow_html=True,
+        )
+        if selected_job.get("job_url"):
+            st.link_button(
+                "Open official job posting",
+                selected_job["job_url"],
+                use_container_width=True,
             )
-            st.markdown("<div class='detail-panel'>", unsafe_allow_html=True)
-            st.markdown(
-                "<div class='detail-eyebrow'>Selected opportunity</div>", unsafe_allow_html=True
-            )
-            st.markdown(
-                f"<div class='detail-title'>{selected_title}</div>",
-                unsafe_allow_html=True,
-            )
-            st.caption(f"{selected_company} | {selected_location}")
-            st.markdown(
-                f"<span class='badge {selected_tier_class}'>{selected_tier}</span>"
-                f"<span class='badge badge-score'>Score {selected_job.get('score') or '0'}</span>"
-                f"<span class='badge badge-new'>{selected_change}</span>"
-                f"<span class='badge badge-existing'>{selected_review_state}</span>",
-                unsafe_allow_html=True,
-            )
-            if selected_job.get("job_url"):
-                st.link_button(
-                    "Open official job posting",
-                    selected_job["job_url"],
-                    use_container_width=True,
-                )
-            st.write("**Why it matched**")
+        with st.expander("Why it matched", expanded=False):
             st.write(selected_job.get("match_reasons") or "No matching explanation recorded.")
             risk_flags = str(selected_job.get("risk_flags") or "").strip()
             if risk_flags:
                 st.warning(f"Review note: {risk_flags.replace('negative signal: ', '')}")
-            info_col1, info_col2 = st.columns(2)
-            with info_col1:
-                st.caption(f"Posted: {selected_job.get('posting_date') or 'Not listed'}")
-                st.caption(f"First seen: {format_timestamp(selected_job.get('first_seen'))}")
-            with info_col2:
-                st.caption(f"Last seen: {format_timestamp(selected_job.get('last_seen'))}")
-                st.caption(f"Current review: {display_decision(selected_job.get('user_decision'))}")
-            decision_options = [
-                "",
-                "useful",
-                "maybe",
-                "not_useful",
-                "false_positive",
-                "already_applied",
-                "saved_for_later",
-            ]
-            current_decision = str(selected_job.get("user_decision") or "")
-            with st.form(stable_review_widget_key("decision_form", selected_key)):
-                decision = st.selectbox(
-                    "Your review decision",
-                    decision_options,
-                    index=decision_options.index(current_decision)
-                    if current_decision in decision_options
-                    else 0,
-                    format_func=lambda option: (
-                        display_decision(option) if option else "Choose a decision"
-                    ),
-                    key=stable_review_widget_key("decision", selected_key),
-                )
-                notes = st.text_area(
-                    "Notes",
-                    value=str(selected_job.get("user_notes") or ""),
-                    placeholder="Why this role is useful, not useful, or what to do next.",
-                    key=stable_review_widget_key("notes", selected_key),
-                )
-                submitted = st.form_submit_button("Save review", use_container_width=True)
-            if submitted:
-                updated = current_slice_api["update_current_review_decision"](
-                    manifest_path=CURRENT_REVIEW_SLICE_MANIFEST_PATH,
-                    job_key=str(selected_job.get("job_key") or ""),
-                    decision=decision,
-                    notes=notes,
-                )
-                if updated:
-                    st.session_state["current_slice_feedback"] = "Review decision saved."
-                    st.rerun()
-                else:
-                    st.error("The selected role was not found in the working review file.")
-            st.markdown("</div>", unsafe_allow_html=True)
+        st.caption(
+            f"Posted: {selected_job.get('posting_date') or 'Not listed'} | "
+            f"Current review: {display_decision(selected_job.get('user_decision'))}"
+        )
+        if st.button("Review this job", use_container_width=True):
+            st.session_state["current_slice_review_job_key"] = selected_key
+        if st.session_state.get("current_slice_review_job_key") == selected_key:
+            render_current_job_review_dialog(selected_job)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 def render_current_slice_run_details() -> None:
@@ -2359,14 +2394,17 @@ def main() -> None:
     )
     health_label = "Collection healthy" if healthy else "Check run details"
     refreshed_label = f"{escape(run_day)} {escape(run_time)}"
+    source_scope_label = escape(
+        ", ".join(manifest.get("companies") or ["Current source"])
+    )
     st.markdown(
         f"""
         <div class="hero">
-            <div class="eyebrow">Verified Canadian employer sources</div>
+            <div class="eyebrow">Source-verified Canadian employer sources</div>
             <div class="hero-title">Job Discovery</div>
             <p class="hero-copy">Fresh technical opportunities, ready for a quick human review.</p>
             <div class="header-status">Last live refresh: <strong>{refreshed_label}</strong>
-            &nbsp; | &nbsp; <span class="status-pill">RBC + Scotiabank</span>
+            &nbsp; | &nbsp; <span class="status-pill">{source_scope_label}</span>
             <span class="status-pill">{escape(health_label)}</span></div>
         </div>
         """,

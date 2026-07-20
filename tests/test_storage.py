@@ -276,6 +276,27 @@ def test_duplicate_job_update_reuses_existing_row(tmp_path: Path) -> None:
     assert stored_job["last_updated_at"] == "2026-06-03T09:30:00"
 
 
+def test_distinct_job_urls_with_the_same_title_and_location_are_not_merged(
+    tmp_path: Path,
+) -> None:
+    connection = initialize_database(tmp_path / "job_discovery.db")
+    upsert_companies(connection, [_sample_company()])
+
+    first_id = upsert_job(
+        connection,
+        _sample_job(job_url="https://careers.example.com/jobs/first"),
+    )
+    second_id = upsert_job(
+        connection,
+        _sample_job(job_url="https://careers.example.com/jobs/second"),
+    )
+
+    count = connection.execute("SELECT COUNT(*) AS count FROM jobs").fetchone()["count"]
+
+    assert first_id != second_id
+    assert count == 2
+
+
 def test_same_unchanged_job_only_updates_last_seen(tmp_path: Path) -> None:
     connection = initialize_database(tmp_path / "job_discovery.db")
     upsert_companies(connection, [_sample_company()])

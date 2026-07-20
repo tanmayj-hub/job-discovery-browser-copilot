@@ -401,6 +401,46 @@ def test_senior_devops_role_remains_relevant_with_a_controlled_penalty() -> None
     assert "negative signal: Senior" in result.risk_flags
 
 
+def test_scotiabank_title_families_are_selected_without_url_rules() -> None:
+    titles = [
+        "Developer, Platform Engineering",
+        "Developer, Cloud Engineering",
+        "System Reliability Engineer",
+        "Senior Database Administrator",
+        "Cloud Security Engineer",
+        "Data Platform Operations Engineer",
+        "Integration Engineer",
+    ]
+
+    for title in titles:
+        result = score_job(
+            {
+                "title": title,
+                "location": "Toronto, ON, CA",
+                "description": "Technical cloud platform operations role.",
+            },
+            keywords_path=KEYWORDS_PATH,
+            scoring_path=SCORING_PATH,
+        )
+
+        assert result.relevance_tier != "not_relevant", title
+
+
+def test_cloud_cicd_software_engineer_is_relevant_but_staff_risk_remains() -> None:
+    result = score_job(
+        {
+            "title": "Staff Software Engineer (Cloud CICD Platforms)",
+            "location": "Toronto, ON, CA",
+            "description": "Cloud CI/CD platform engineering.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert result.relevance_tier == "core_target_fit"
+    assert "negative signal: Staff" in result.risk_flags
+
+
 def test_client_delivery_associate_without_technical_context_is_rejected() -> None:
     explanation = explain_job_score(
         {

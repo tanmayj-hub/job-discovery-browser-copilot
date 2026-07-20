@@ -17,6 +17,7 @@ weights:
 title_family_bonuses:
   contains:
     DevOps Engineer: 18
+    Cloud CICD Platforms: 18
   exact_core:
     Application Support Analyst: 28
     Application Support Engineer: 28
