@@ -336,9 +336,69 @@ def test_executive_assistant_is_hard_rejected() -> None:
 
     assert explanation["is_relevant"] is False
     assert any(
-        "hard reject title: executive assistant" == flag
-        for flag in explanation["risk_flags"]
+        "hard reject title: executive assistant" == flag for flag in explanation["risk_flags"]
     )
+
+
+def test_exact_solution_engineer_title_receives_high_signal_bonus() -> None:
+    result = score_job(
+        {
+            "title": "Solution Engineer",
+            "location": "Scarborough, Ontario, Canada",
+            "description": "Support customer technical discovery and solution delivery.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert result.match_score >= 60
+    assert any("high-signal title" in reason for reason in result.match_reasons)
+
+
+def test_application_support_analyst_exact_title_is_a_core_technical_fit() -> None:
+    result = score_job(
+        {
+            "title": "Application Support Analyst",
+            "location": "Toronto, Ontario, Canada",
+            "description": "Provide production application support and troubleshooting.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert result.match_score >= 45
+    assert result.relevance_tier == "core_target_fit"
+
+
+def test_networking_event_is_not_promoted_by_it_networking_signal() -> None:
+    result = score_job(
+        {
+            "title": "Financial Planning Networking Event",
+            "location": "Toronto, Ontario, Canada",
+            "description": "Meet financial planning professionals at this networking event.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert result.match_score == 0
+    assert any("hard reject title: networking event" == flag for flag in result.risk_flags)
+
+
+def test_senior_devops_role_remains_relevant_with_a_controlled_penalty() -> None:
+    result = score_job(
+        {
+            "title": "Senior DevOps Engineer",
+            "location": "Toronto, Ontario, Canada",
+            "description": "AWS Kubernetes Terraform and CI/CD platform engineering.",
+        },
+        keywords_path=KEYWORDS_PATH,
+        scoring_path=SCORING_PATH,
+    )
+
+    assert result.match_score >= 50
+    assert result.relevance_tier == "core_target_fit"
+    assert "negative signal: Senior" in result.risk_flags
 
 
 def test_client_delivery_associate_without_technical_context_is_rejected() -> None:

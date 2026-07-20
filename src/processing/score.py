@@ -86,6 +86,11 @@ TECHNICAL_SUPPORT_CONTEXT_TERMS = (
 )
 ALWAYS_REJECT_TITLE_PATTERNS = (
     "executive assistant",
+    "networking event",
+)
+EXECUTIVE_TITLE_PATTERNS = (
+    "global head",
+    "head of",
 )
 CONDITIONAL_REJECT_TITLE_PATTERNS = (
     "mortgage specialist",
@@ -342,6 +347,46 @@ def _match_rejected_title_pattern(title_text: str) -> str | None:
     return None
 
 
+def _title_matches_exactly(title_text: str, phrase: str) -> bool:
+    """Match an exact title family without promoting a senior specialization."""
+
+    normalized_title = re.sub(r"[^a-z0-9]+", " ", title_text).strip()
+    normalized_phrase = re.sub(r"[^a-z0-9]+", " ", phrase.lower()).strip()
+    return normalized_title == normalized_phrase
+
+
+def _apply_title_family_bonuses(
+    *,
+    title_text: str,
+    title_matches: list[str],
+    positive_keyword_matches: list[str],
+    match_reasons: list[str],
+    title_family_bonuses: dict[str, Any],
+) -> int:
+    """Add evidence-backed boosts for concise, high-signal technical titles."""
+
+    bonuses = 0
+    for phrase, points in dict(title_family_bonuses.get("contains") or {}).items():
+        if _contains_phrase(title_text, str(phrase)):
+            bonuses += int(points)
+            title_matches.append(str(phrase))
+            positive_keyword_matches.append(str(phrase))
+            match_reasons.append(f"title family match: {phrase}")
+    for phrase, points in dict(title_family_bonuses.get("exact_core") or {}).items():
+        if _title_matches_exactly(title_text, str(phrase)):
+            bonuses += int(points)
+            title_matches.append(str(phrase))
+            positive_keyword_matches.append(str(phrase))
+            match_reasons.append(f"high-signal title match: {phrase}")
+    for phrase, points in dict(title_family_bonuses.get("exact_adjacent") or {}).items():
+        if _title_matches_exactly(title_text, str(phrase)):
+            bonuses += int(points)
+            title_matches.append(str(phrase))
+            positive_keyword_matches.append(str(phrase))
+            match_reasons.append(f"{ADJACENT_REASON_PREFIX}: {phrase} (high-signal title)")
+    return bonuses
+
+
 def _analyze_job_score(
     job: dict[str, Any],
     *,
@@ -412,6 +457,14 @@ def _analyze_job_score(
             positive_keyword_matches.append(text_role)
             match_reasons.append(f"description mentions target role: {text_role}")
 
+    match_score += _apply_title_family_bonuses(
+        title_text=title_text,
+        title_matches=title_matches,
+        positive_keyword_matches=positive_keyword_matches,
+        match_reasons=match_reasons,
+        title_family_bonuses=dict(scoring.get("title_family_bonuses") or {}),
+    )
+
     matched_skills = _filter_contextual_skill_matches(
         title_text,
         full_text,
@@ -462,14 +515,10 @@ def _analyze_job_score(
     adjacent_roles = keywords.get("adjacent_roles", [])
     conditional_adjacent_roles = keywords.get("conditional_adjacent_roles", [])
     adjacent_context_terms = keywords.get("adjacent_technical_context", [])
-    adjacent_context_lookup = {
-        signal: [signal]
-        for signal in adjacent_context_terms
-    }
+    adjacent_context_lookup = {signal: [signal] for signal in adjacent_context_terms}
     adjacent_context_matches = _match_many(full_text, adjacent_context_lookup)
     adjacent_technical_context_lookup = {
-        signal: [signal]
-        for signal in ADJACENT_TECHNICAL_CONTEXT_TERMS
+        signal: [signal] for signal in ADJACENT_TECHNICAL_CONTEXT_TERMS
     }
     adjacent_technical_context_matches = _match_many(
         full_text,
@@ -521,10 +570,7 @@ def _analyze_job_score(
                 f"{ADJACENT_REASON_PREFIX}: {conditional_text_role} (technical context)"
             )
 
-    negative_lookup = {
-        signal: [signal]
-        for signal in keywords.get("negative_signals", [])
-    }
+    negative_lookup = {signal: [signal] for signal in keywords.get("negative_signals", [])}
     matched_negatives = _match_many(full_text, negative_lookup)
     if matched_negatives:
         penalty = min(
@@ -534,6 +580,12 @@ def _analyze_job_score(
         match_score -= penalty
         negative_keyword_matches.extend(matched_negatives)
         risk_flags.extend(f"negative signal: {signal}" for signal in matched_negatives)
+
+    executive_title = _match_first(title_text, list(EXECUTIVE_TITLE_PATTERNS))
+    if executive_title:
+        match_score -= int(weights["executive_title_penalty"])
+        negative_keyword_matches.append(executive_title)
+        risk_flags.append(f"executive title: {executive_title}")
 
     final_score = _clamp_score(match_score)
     relevance_tier = _determine_relevance_tier(final_score, match_reasons)

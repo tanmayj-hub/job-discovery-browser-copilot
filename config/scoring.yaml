@@ -12,6 +12,17 @@ weights:
   support_signal_cap: 8
   negative_penalty: 15
   negative_cap: 45
+  executive_title_penalty: 25
+
+title_family_bonuses:
+  contains:
+    DevOps Engineer: 18
+  exact_core:
+    Application Support Analyst: 28
+    Application Support Engineer: 28
+  exact_adjacent:
+    Solution Engineer: 36
+    Solutions Engineer: 36
 
 support_signals:
   - support

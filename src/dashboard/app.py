@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import sys
 from datetime import datetime
+from hashlib import sha256
+from html import escape
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +21,7 @@ STARTER_CAREER_URLS_PATH = BASE_DIR / "config" / "starter_career_urls.yaml"
 DATABASE_PATH = BASE_DIR / "data" / "job_discovery.db"
 EXPORTS_DIR = BASE_DIR / "data" / "exports"
 REVIEW_EXPORT_PATH = EXPORTS_DIR / "review" / "saved-jobs-review.csv"
+CURRENT_REVIEW_SLICE_MANIFEST_PATH = EXPORTS_DIR / "review" / "current-review-slice.json"
 PENDING_APPLICATION_STATUSES = ("new", "saved", "reviewed", "needs_manual_review")
 JOB_STATUS_OPTIONS = [
     "new",
@@ -28,6 +31,7 @@ JOB_STATUS_OPTIONS = [
     "reviewed",
     "needs_manual_review",
 ]
+DASHBOARD_PRIMARY_TABS = ("Jobs", "Run Summary", "Source Health", "All Verified Jobs", "More")
 
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
@@ -124,6 +128,20 @@ def get_review_api() -> dict[str, Any]:
     }
 
 
+def get_current_slice_api() -> dict[str, Any]:
+    """Load helpers for the dashboard's dated, current-run review slice."""
+
+    from review.current_review_slice import (
+        load_current_review_slice,
+        update_current_review_decision,
+    )
+
+    return {
+        "load_current_review_slice": load_current_review_slice,
+        "update_current_review_decision": update_current_review_decision,
+    }
+
+
 def get_verified_api() -> dict[str, Any]:
     """Load verified-company helpers after the src path is available."""
 
@@ -185,19 +203,22 @@ def render_styles() -> None:
     st.markdown(
         """
         <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap');
         [data-testid="stAppViewContainer"] {
             background:
                 radial-gradient(
-                    circle at top left,
-                    #eef4eb 0,
-                    rgba(238, 244, 235, 0.7) 24%,
+                    circle at 8% -4%,
+                    #e4f0ea 0,
+                    rgba(228, 240, 234, 0.72) 26%,
                     transparent 48%
                 ),
-                linear-gradient(180deg, #f6f4ee 0%, #fcfbf8 100%);
+                radial-gradient(circle at 94% 2%, rgba(238, 225, 207, 0.58), transparent 28%),
+                linear-gradient(180deg, #f7f8f5 0%, #fbfaf7 100%);
+            font-family: "Manrope", "Segoe UI", sans-serif;
         }
         .block-container {
-            max-width: 1420px;
-            padding-top: 2rem;
+            max-width: 1480px;
+            padding-top: 1.45rem;
             padding-bottom: 3rem;
         }
         h1, h2, h3 {
@@ -208,23 +229,35 @@ def render_styles() -> None:
             color: #324538;
         }
         div[data-testid="metric-container"] {
-            background: rgba(255, 255, 255, 0.92);
-            border: 1px solid #d7e0d3;
-            padding: 1rem;
-            border-radius: 18px;
-            box-shadow: 0 12px 26px rgba(36, 53, 40, 0.05);
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(202, 216, 204, 0.88);
+            padding: 1.08rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 24px rgba(36, 53, 40, 0.045);
         }
         .hero {
-            background: rgba(255, 255, 255, 0.88);
-            border: 1px solid #d7e0d3;
-            border-radius: 22px;
-            padding: 1.35rem 1.5rem;
+            background: linear-gradient(
+                118deg,
+                rgba(255, 255, 255, 0.96),
+                rgba(244, 249, 245, 0.9)
+            );
+            border: 1px solid rgba(198, 215, 202, 0.9);
+            border-radius: 24px;
+            padding: 1.45rem 1.65rem;
             margin-bottom: 1rem;
-            box-shadow: 0 18px 34px rgba(36, 53, 40, 0.06);
+            box-shadow: 0 20px 44px rgba(36, 53, 40, 0.07);
+        }
+        .eyebrow {
+            color: #4c7860;
+            font-family: "DM Mono", monospace;
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
         .hero-title {
-            font-size: 2rem;
-            font-weight: 700;
+            font-size: clamp(1.85rem, 3vw, 2.55rem);
+            font-weight: 800;
             color: #223528;
             margin-bottom: 0.2rem;
         }
@@ -251,9 +284,23 @@ def render_styles() -> None:
             min-height: 2.75rem;
             font-weight: 600;
         }
+        div[data-testid="stButton"] button {
+            background: rgba(255, 255, 255, 0.96);
+            color: #294735 !important;
+        }
+        div[data-testid="stButton"] button * {
+            color: inherit !important;
+        }
+        div[data-testid="stLinkButton"] a {
+            background: #315942;
+            color: #ffffff !important;
+        }
+        div[data-testid="stLinkButton"] a * {
+            color: #ffffff !important;
+        }
         button[kind="primary"] {
             background: linear-gradient(135deg, #315942 0%, #44785a 100%);
-            color: white;
+            color: white !important;
         }
         div[data-baseweb="tab-list"] {
             gap: 0.35rem;
@@ -275,6 +322,129 @@ def render_styles() -> None:
             color: #5a6d5e;
             font-size: 0.92rem;
         }
+        .slice-note {
+            background: #eef6f0;
+            border: 1px solid #cfe2d3;
+            border-radius: 14px;
+            color: #2e5a3e;
+            font-size: 0.9rem;
+            padding: 0.85rem 1rem;
+        }
+        .status-pill {
+            display: inline-block;
+            background: #e7f3e9;
+            border: 1px solid #c6dfcb;
+            border-radius: 999px;
+            color: #28613a;
+            font-family: "DM Mono", monospace;
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            margin-right: 0.35rem;
+            padding: 0.24rem 0.55rem;
+        }
+        .soft-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #dce7dd;
+            border-radius: 18px;
+            padding: 1rem 1.1rem;
+        }
+        .review-table {
+            border: 1px solid #dce7dd;
+            border-collapse: separate;
+            border-radius: 16px;
+            border-spacing: 0;
+            font-size: 0.87rem;
+            overflow: hidden;
+            width: 100%;
+        }
+        .review-table th {
+            background: #edf5ee;
+            color: #365640;
+            font-family: "DM Mono", monospace;
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            text-align: left;
+            text-transform: uppercase;
+        }
+        .review-table th, .review-table td {
+            border-bottom: 1px solid #e5ede5;
+            padding: 0.7rem 0.75rem;
+            vertical-align: top;
+        }
+        .review-table td { background: rgba(255, 255, 255, 0.9); color: #314437; }
+        .review-table tr:last-child td { border-bottom: 0; }
+        .review-table a { color: #28613a; font-weight: 700; text-decoration: none; }
+        .review-table .score { font-family: "DM Mono", monospace; font-weight: 500; }
+        .review-table .decision { color: #56705d; font-size: 0.78rem; }
+        [data-testid="stTabs"] button[role="tab"] { color: #526355; font-weight: 700; }
+        [data-testid="stTabs"] button[aria-selected="true"] { color: #28563b; }
+        .job-card {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #dde8df;
+            border-radius: 18px;
+            box-shadow: 0 7px 18px rgba(39, 65, 45, 0.04);
+            margin-bottom: 0.65rem;
+            padding: 1rem 1.05rem 0.85rem;
+        }
+        .job-card-selected {
+            border-color: #5c9870;
+            box-shadow: 0 10px 26px rgba(52, 105, 70, 0.12);
+        }
+        .job-card-title {
+            color: #20362a;
+            font-size: 1.03rem;
+            font-weight: 800;
+            line-height: 1.35;
+            margin-bottom: 0.35rem;
+        }
+        .job-card-meta { color: #627167; font-size: 0.84rem; margin-bottom: 0.65rem; }
+        .job-card-reason { color: #496253; font-size: 0.84rem; line-height: 1.4; }
+        .badge {
+            border-radius: 999px;
+            display: inline-block;
+            font-size: 0.69rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            margin-right: 0.3rem;
+            padding: 0.24rem 0.52rem;
+        }
+        .badge-core { background: #e6f3e9; color: #27633b; }
+        .badge-adjacent { background: #e9f0fa; color: #315f92; }
+        .badge-new { background: #fff1d8; color: #92611a; }
+        .badge-updated { background: #edf0f5; color: #536377; }
+        .badge-existing { background: #f1f3f1; color: #637066; }
+        .badge-score { background: #f1f6f1; color: #365d40; }
+        .detail-panel {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid #d8e5db;
+            border-radius: 20px;
+            box-shadow: 0 14px 32px rgba(38, 65, 45, 0.07);
+            padding: 1.2rem 1.25rem;
+        }
+        .detail-eyebrow {
+            color: #5b7863;
+            font-family: "DM Mono", monospace;
+            font-size: 0.71rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        .detail-title {
+            color: #20362a;
+            font-size: 1.45rem;
+            font-weight: 800;
+            line-height: 1.3;
+            margin: 0.2rem 0 0.5rem;
+        }
+        .filter-shell {
+            background: rgba(255,255,255,0.68);
+            border: 1px solid #e0e9e1;
+            border-radius: 18px;
+            margin: 0.75rem 0 1rem;
+            padding: 0.85rem 0.95rem 0.4rem;
+        }
+        .header-status { color: #477052; font-size: 0.87rem; margin-top: 0.55rem; }
         </style>
         """,
         unsafe_allow_html=True,
@@ -304,6 +474,107 @@ def format_list_value(value: object) -> str:
     if isinstance(value, (list, tuple, set)):
         return ", ".join(str(item) for item in value) or "-"
     return str(value)
+
+
+def truncate_text(value: object, *, limit: int = 72) -> str:
+    """Keep dense review tables readable while preserving full details below."""
+
+    text = format_list_value(value)
+    return text if len(text) <= limit else f"{text[: limit - 3].rstrip()}..."
+
+
+def split_live_run_timestamp(value: object) -> tuple[str, str]:
+    """Split the timestamp into two compact, card-friendly display values."""
+
+    try:
+        timestamp = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return format_timestamp(value), ""
+    return timestamp.strftime("%d %b"), timestamp.strftime("%H:%M UTC")
+
+
+def display_relevance_tier(value: object) -> str:
+    """Translate internal scoring tiers into concise review-facing labels."""
+
+    tiers = {
+        "core_target_fit": "Core technical fit",
+        "adjacent_customer_facing_technical_fit": "Adjacent technical fit",
+        "not_relevant": "Not relevant",
+    }
+    return tiers.get(str(value or "").strip(), "Technical opportunity")
+
+
+def display_decision(value: object) -> str:
+    """Render user decisions as readable labels instead of export values."""
+
+    decisions = {
+        "useful": "Useful",
+        "maybe": "Maybe",
+        "not_useful": "Not useful",
+        "false_positive": "False positive",
+        "already_applied": "Already applied",
+        "saved_for_later": "Saved for later",
+    }
+    return decisions.get(str(value or "").strip(), "Unreviewed")
+
+
+def display_change_type(value: object) -> str:
+    """Normalize slice freshness labels for visible job cards."""
+
+    labels = {"New": "New", "Updated": "Updated", "Existing": "Still active"}
+    return labels.get(str(value or "").strip(), "Current run")
+
+
+def display_review_state(value: object, decision: object = "") -> str:
+    """Render queue state without exposing the CSV's internal representation."""
+
+    state = str(value or "").strip()
+    if state:
+        return state
+    return "Previously reviewed" if str(decision or "").strip() else "Review needed"
+
+
+def display_review_filter(value: object) -> str:
+    """Keep review-state and review-decision filters equally readable."""
+
+    value_text = str(value or "").strip()
+    if value_text in {
+        "Review needed",
+        "Previously reviewed",
+        "New",
+        "Score changed",
+        "Tier changed",
+        "Newly selected after calibration",
+        "All",
+    }:
+        return value_text
+    return display_decision(value_text)
+
+
+def stable_review_widget_key(prefix: str, job_key: str) -> str:
+    """Keep Streamlit widget keys short, stable, and independent of title cleanup."""
+
+    digest = sha256(job_key.encode("utf-8")).hexdigest()[:16]
+    return f"{prefix}_{digest}"
+
+
+def review_posting_timestamp(row: dict[str, str]) -> float:
+    """Return a safe sortable posting timestamp for a review-slice row."""
+
+    try:
+        return datetime.strptime(str(row.get("posting_date") or ""), "%d %b %Y").timestamp()
+    except ValueError:
+        return 0.0
+
+
+def badge_class_for_tier(value: object) -> str:
+    """Choose the restrained visual accent for a displayed relevance tier."""
+
+    return (
+        "badge-adjacent"
+        if str(value or "").strip() == "adjacent_customer_facing_technical_fit"
+        else "badge-core"
+    )
 
 
 def render_section_heading(title: str) -> None:
@@ -438,8 +709,7 @@ def job_option_label(job: dict[str, Any]) -> str:
 
     location = job.get("location") or "Location TBD"
     return (
-        f"{job['company_name']} | {job['title']} | {location} | "
-        f"Score {job.get('match_score', 0)}"
+        f"{job['company_name']} | {job['title']} | {location} | Score {job.get('match_score', 0)}"
     )
 
 
@@ -582,15 +852,16 @@ def render_jobs_tab(connection: Any) -> None:
     verified_only = st.checkbox(
         "Verified companies only",
         value=True,
+        key="all_verified_companies_only",
         help="Default to usable verified companies for the daily MVP workflow.",
     )
     latest_verified_run_only = st.checkbox(
         "Latest verified run only",
         value=True,
+        key="all_verified_latest_run_only",
         disabled=not verified_only,
         help=(
-            "Hide stale historical rows so this view stays aligned to the most recent "
-            "verified run."
+            "Hide stale historical rows so this view stays aligned to the most recent verified run."
         ),
     )
     scoped_jobs = filter_jobs_to_latest_verified_scope(
@@ -614,7 +885,14 @@ def render_jobs_tab(connection: Any) -> None:
     with filter_col3:
         selected_tier = st.selectbox("Relevance tier", tiers, key="jobs_tier_filter")
     with filter_col4:
-        min_score = st.slider("Minimum score", min_value=0, max_value=100, value=0, step=5)
+        min_score = st.slider(
+            "Minimum score",
+            min_value=0,
+            max_value=100,
+            value=0,
+            step=5,
+            key="all_verified_minimum_score",
+        )
     with filter_col5:
         selected_status = st.selectbox("Status", statuses, key="jobs_status_filter")
 
@@ -791,9 +1069,7 @@ def render_saved_job_review_tab(connection: Any) -> None:
     )
 
     if feedback:
-        st.success(
-            f"Exported `{feedback['exported_rows']}` rows to `{feedback['output_path']}`."
-        )
+        st.success(f"Exported `{feedback['exported_rows']}` rows to `{feedback['output_path']}`.")
 
     action_col1, action_col2 = st.columns([1.2, 2])
     with action_col1:
@@ -809,10 +1085,7 @@ def render_saved_job_review_tab(connection: Any) -> None:
             }
             st.rerun()
     with action_col2:
-        st.caption(
-            "Review file: "
-            f"`{REVIEW_EXPORT_PATH}`"
-        )
+        st.caption(f"Review file: `{REVIEW_EXPORT_PATH}`")
 
     if REVIEW_EXPORT_PATH.exists():
         st.download_button(
@@ -894,12 +1167,22 @@ def render_company_watchlist_tab(connection: Any) -> None:
     st.dataframe(rows, hide_index=True, use_container_width=True)
 
 
-def render_source_readiness_tab(connection: Any) -> None:
+def render_source_readiness_tab(
+    connection: Any,
+    *,
+    company_filter: set[str] | None = None,
+) -> None:
     """Render source-level collector status, fallback, and readiness details."""
 
     storage_api = get_storage_api()
     dashboard_api = get_dashboard_api()
     source_rows = storage_api["get_source_status_rows"](connection)
+    if company_filter:
+        source_rows = [
+            row
+            for row in source_rows
+            if str(row.get("company_name") or "").strip() in company_filter
+        ]
 
     render_section_heading("Source Readiness")
     st.caption(
@@ -916,20 +1199,12 @@ def render_source_readiness_tab(connection: Any) -> None:
     collectors = [
         "All",
         *sorted(
-            {
-                str(row.get("collector") or row.get("last_collector") or "-")
-                for row in source_rows
-            }
+            {str(row.get("collector") or row.get("last_collector") or "-") for row in source_rows}
         ),
     ]
     statuses = [
         "All",
-        *sorted(
-            {
-                str(row.get("status") or row.get("last_status") or "-")
-                for row in source_rows
-            }
-        ),
+        *sorted({str(row.get("status") or row.get("last_status") or "-") for row in source_rows}),
     ]
 
     filter_col1, filter_col2, filter_col3 = st.columns(3)
@@ -1011,8 +1286,7 @@ def render_missing_urls_tab(connection: Any) -> None:
             st.info(f"Classification reason: {' | '.join(feedback['reasons'])}")
     if starter_apply_feedback:
         st.success(
-            "Applied starter career URLs. "
-            f"Updated `{starter_apply_feedback['updated']}` companies."
+            f"Applied starter career URLs. Updated `{starter_apply_feedback['updated']}` companies."
         )
         st.info(
             " | ".join(
@@ -1081,9 +1355,7 @@ def render_missing_urls_tab(connection: Any) -> None:
     with st.form(f"company_url_form_{selected_company_name}"):
         careers_url = st.text_input(
             "Careers URL",
-            value=selected_company.get("careers_url")
-            or starter_entry.get("careers_url")
-            or "",
+            value=selected_company.get("careers_url") or starter_entry.get("careers_url") or "",
             placeholder="https://company.example/careers",
         )
         st.write(f"ATS hint: `{selected_company.get('ats_hint') or '-'}`")
@@ -1192,9 +1464,7 @@ def render_intervention_queue_tab(connection: Any) -> None:
     st.markdown('<div class="detail-card">', unsafe_allow_html=True)
     st.write(f"Company: `{selected_intervention.get('company_name') or '-'}`")
     st.write(f"Reason: `{selected_intervention.get('reason') or '-'}`")
-    st.write(
-        f"Occurrences: `{int(selected_intervention.get('occurrence_count', 1) or 1)}`"
-    )
+    st.write(f"Occurrences: `{int(selected_intervention.get('occurrence_count', 1) or 1)}`")
     st.write(f"Detected at: `{format_timestamp(selected_intervention.get('detected_at'))}`")
     st.write(f"Remediation: `{selected_intervention.get('remediation_label') or '-'}`")
     st.write(f"Suggested action: {selected_intervention.get('suggested_action') or '-'}")
@@ -1508,9 +1778,7 @@ def render_daily_summary_tab(connection: Any) -> None:
     verified_metric_col1, verified_metric_col2, verified_metric_col3 = st.columns(3)
     verified_metric_col4, verified_metric_col5 = st.columns(2)
     with verified_metric_col1:
-        verified_count = len(
-            [item for item in verified_records if item.get("verified")]
-        )
+        verified_count = len([item for item in verified_records if item.get("verified")])
         st.metric("Verified Companies", verified_count)
     with verified_metric_col2:
         st.metric("Active Saved Jobs", len(active_verified_jobs))
@@ -1583,9 +1851,7 @@ def render_daily_summary_tab(connection: Any) -> None:
                 f"{newest.get('reason') or '-'} | "
                 f"{format_timestamp(newest.get('detected_at'))}"
             )
-            st.write(
-                f"Most recent: `{recent_summary}`"
-            )
+            st.write(f"Most recent: `{recent_summary}`")
         else:
             st.success("No interventions are currently blocking work.")
             if intervention_history:
@@ -1624,63 +1890,529 @@ def render_daily_summary_tab(connection: Any) -> None:
         )
 
 
+def load_live_review_slice() -> tuple[dict[str, Any], list[dict[str, str]]]:
+    """Load the latest explicitly prepared review slice for the focused workspace."""
+
+    return get_current_slice_api()["load_current_review_slice"](CURRENT_REVIEW_SLICE_MANIFEST_PATH)
+
+
+def render_current_slice_overview() -> None:
+    """Render the default, focused view of the latest live review slice."""
+
+    manifest, rows = load_live_review_slice()
+    render_section_heading("Run summary")
+    if not manifest:
+        st.info("No current review slice is ready yet. Prepare a trusted live run first.")
+        return
+
+    run_records = list(manifest.get("run_records") or [])
+    companies = list(manifest.get("companies") or [])
+    discovered = sum(int(record.get("jobs_discovered", 0) or 0) for record in run_records)
+    saved = sum(int(record.get("jobs_saved", 0) or 0) for record in run_records)
+    run_day, run_time = split_live_run_timestamp(manifest.get("generated_at"))
+    st.markdown(
+        "<div class='slice-note'><strong>Fresh live review:</strong> this workspace is "
+        "intentionally scoped to the current RBC + Scotiabank runs. Historical active jobs "
+        "remain available from All Verified Jobs.</div>",
+        unsafe_allow_html=True,
+    )
+    metric_col1, metric_col2, metric_col3, metric_col4, metric_col5 = st.columns(5)
+    with metric_col1:
+        st.metric("Run scope", "2 banks")
+        st.caption("RBC + Scotiabank")
+    with metric_col2:
+        st.metric("Companies", len(companies))
+    with metric_col3:
+        st.metric("Jobs discovered", discovered)
+    with metric_col4:
+        st.metric("Ready to review", len(rows))
+    with metric_col5:
+        st.metric("Last live run", run_day)
+        st.caption(run_time)
+
+    st.markdown("<div class='soft-card'>", unsafe_allow_html=True)
+    st.markdown("**Collection status**")
+    for record in run_records:
+        company = str(record.get("company_name") or "Company")
+        scope = str(record.get("source_scope_status") or "scope not recorded")
+        stop = str(record.get("pagination_stop_reason") or "stop not recorded")
+        sort = str(record.get("sort_status") or "sort not recorded")
+        st.markdown(
+            f"<span class='status-pill'>{company}</span> Canada scope: **{scope}** | "
+            f"Pages: **{record.get('pages_visited', 0)}** | Stop: **{stop}** | "
+            f"Sort: **{sort}**",
+            unsafe_allow_html=True,
+        )
+    st.caption(
+        f"{saved} relevant jobs were persisted in the live runs; {len(rows)} rows are in this "
+        "review slice."
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+def _filter_current_review_rows(
+    rows: list[dict[str, str]],
+    *,
+    selected_company: str,
+    selected_tier: str,
+    minimum_score: int,
+    selected_decision: str,
+    selected_location: str,
+    keyword: str,
+) -> list[dict[str, str]]:
+    filtered: list[dict[str, str]] = []
+    for row in rows:
+        if selected_company != "All" and row.get("company") != selected_company:
+            continue
+        if selected_tier != "All" and row.get("relevance_tier") != selected_tier:
+            continue
+        if int(row.get("score", 0) or 0) < minimum_score:
+            continue
+        decision = str(row.get("user_decision") or "").strip()
+        review_state = display_review_state(row.get("review_state"), decision)
+        if selected_decision == "Review needed" and review_state == "Previously reviewed":
+            continue
+        if (
+            selected_decision
+            in {
+                "Previously reviewed",
+                "New",
+                "Score changed",
+                "Tier changed",
+                "Newly selected after calibration",
+            }
+            and review_state != selected_decision
+        ):
+            continue
+        if (
+            selected_decision
+            not in {
+                "All",
+                "Review needed",
+                "Previously reviewed",
+                "New",
+                "Score changed",
+                "Tier changed",
+                "Newly selected after calibration",
+            }
+            and decision != selected_decision
+        ):
+            continue
+        location = str(row.get("location") or "")
+        if selected_location != "All" and selected_location not in location:
+            continue
+        search_text = " ".join(
+            str(row.get(field) or "")
+            for field in ("title", "company", "location", "match_reasons", "risk_flags")
+        ).lower()
+        if keyword.strip() and keyword.strip().lower() not in search_text:
+            continue
+        filtered.append(row)
+    return filtered
+
+
+def render_review_table(rows: list[dict[str, str]]) -> None:
+    """Render a light, compact review table with safe, readable job links."""
+
+    header = "".join(
+        f"<th>{label}</th>"
+        for label in [
+            "Company",
+            "Title",
+            "Location",
+            "Tier",
+            "Score",
+            "Match signals",
+            "Decision",
+            "Posting",
+        ]
+    )
+    body_rows: list[str] = []
+    for row in rows:
+        job_url = str(row.get("job_url") or "").strip()
+        open_link = (
+            f"<a href='{escape(job_url, quote=True)}' target='_blank' rel='noreferrer'>Open</a>"
+            if job_url
+            else "-"
+        )
+        body_rows.append(
+            "<tr>"
+            f"<td>{escape(str(row.get('company') or '-'))}</td>"
+            f"<td title='{escape(str(row.get('title') or ''), quote=True)}'>"
+            f"{escape(truncate_text(row.get('title'), limit=58))}</td>"
+            f"<td>{escape(truncate_text(row.get('location'), limit=34))}</td>"
+            f"<td>{escape(str(row.get('relevance_tier') or '-'))}</td>"
+            f"<td class='score'>{escape(str(row.get('score') or '0'))}</td>"
+            f"<td title='{escape(str(row.get('match_reasons') or ''), quote=True)}'>"
+            f"{escape(truncate_text(row.get('match_reasons'), limit=62))}</td>"
+            f"<td class='decision'>{escape(str(row.get('user_decision') or 'Unreviewed'))}</td>"
+            f"<td>{open_link}</td>"
+            "</tr>"
+        )
+    st.markdown(
+        f"<table class='review-table'><thead><tr>{header}</tr></thead>"
+        f"<tbody>{''.join(body_rows)}</tbody></table>",
+        unsafe_allow_html=True,
+    )
+
+
+def _job_card_markup(job: dict[str, str], *, is_selected: bool) -> str:
+    """Build one compact job card while safely escaping source-provided values."""
+
+    tier = display_relevance_tier(job.get("relevance_tier"))
+    tier_class = badge_class_for_tier(job.get("relevance_tier"))
+    change_type = display_change_type(job.get("change_type"))
+    review_state = display_review_state(job.get("review_state"), job.get("user_decision"))
+    match_summary = escape(truncate_text(job.get("match_reasons"), limit=125))
+    change_class = {
+        "New": "badge-new",
+        "Updated": "badge-updated",
+    }.get(change_type, "badge-existing")
+    return (
+        f"<div class='job-card {'job-card-selected' if is_selected else ''}'>"
+        f"<div class='job-card-title'>{escape(str(job.get('title') or 'Untitled role'))}</div>"
+        f"<div class='job-card-meta'>{escape(str(job.get('company') or '-'))} | "
+        f"{escape(str(job.get('location') or 'Location not listed'))} | "
+        f"{escape(str(job.get('posting_date') or 'Posting date not listed'))}</div>"
+        f"<span class='badge {tier_class}'>{escape(tier)}</span>"
+        f"<span class='badge badge-score'>Score {escape(str(job.get('score') or '0'))}</span>"
+        f"<span class='badge {change_class}'>{escape(change_type)}</span>"
+        f"<span class='badge badge-existing'>{escape(review_state)}</span>"
+        f"<div class='job-card-reason'>{match_summary}</div>"
+        f"</div>"
+    )
+
+
+def _select_current_job(job_key: str) -> None:
+    """Keep the active job stable while filters and decisions refresh the page."""
+
+    st.session_state["current_slice_selected_job_key"] = job_key
+
+
+def render_current_slice_review(connection: Any) -> None:
+    """Render the primary card-and-detail experience for the fresh live slice."""
+
+    del connection  # Decisions intentionally live in the separate user working CSV.
+    current_slice_api = get_current_slice_api()
+    manifest, rows = load_live_review_slice()
+    feedback = st.session_state.pop("current_slice_feedback", None)
+    render_section_heading("Fresh jobs for your review")
+    st.caption(
+        "Review the latest technical opportunities from trusted Canadian employer sources. "
+        "Your decision and notes stay in a dedicated working copy."
+    )
+    if feedback:
+        st.success(feedback)
+    if not rows:
+        st.info("No fresh live review rows are available yet.")
+        return
+
+    companies = ["All", *sorted({str(row.get("company") or "-") for row in rows})]
+    tiers = ["All", *sorted({display_relevance_tier(row.get("relevance_tier")) for row in rows})]
+    locations = [
+        "All",
+        *sorted({str(row.get("location") or "Location not listed") for row in rows}),
+    ]
+    decisions = [
+        "Review needed",
+        "All",
+        "Previously reviewed",
+        "New",
+        "Score changed",
+        "Tier changed",
+        "Newly selected after calibration",
+        "useful",
+        "maybe",
+        "not_useful",
+        "false_positive",
+        "already_applied",
+        "saved_for_later",
+    ]
+    st.markdown("<div class='filter-shell'>", unsafe_allow_html=True)
+    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+    filter_col5, filter_col6, filter_col7 = st.columns([1.1, 1.4, 1.3])
+    with filter_col1:
+        selected_company = st.selectbox("Company", companies, key="slice_company_filter")
+    with filter_col2:
+        selected_tier_label = st.selectbox("Fit", tiers, key="slice_tier_filter")
+    with filter_col3:
+        minimum_score = st.slider("Minimum score", 0, 100, 0, 5, key="slice_score_filter")
+    with filter_col4:
+        selected_decision = st.selectbox(
+            "Review status",
+            decisions,
+            format_func=display_review_filter,
+            key="slice_review_status_filter_v2",
+        )
+    with filter_col5:
+        selected_location = st.selectbox("Location", locations, key="slice_location_filter")
+    with filter_col6:
+        keyword = st.text_input(
+            "Search roles", placeholder="DevOps, cloud, support", key="slice_keyword_filter"
+        )
+    with filter_col7:
+        selected_sort = st.selectbox(
+            "Sort by",
+            ["Freshness and fit", "Highest score", "Newest posting", "Company"],
+            key="slice_sort_filter",
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
+    selected_tier = {
+        "Core technical fit": "core_target_fit",
+        "Adjacent technical fit": "adjacent_customer_facing_technical_fit",
+        "Not relevant": "not_relevant",
+    }.get(selected_tier_label, "All")
+    filtered_rows = _filter_current_review_rows(
+        rows,
+        selected_company=selected_company,
+        selected_tier=selected_tier,
+        minimum_score=minimum_score,
+        selected_decision=selected_decision,
+        selected_location=selected_location,
+        keyword=keyword,
+    )
+    if selected_sort == "Highest score":
+        filtered_rows.sort(key=lambda row: int(row.get("score", 0) or 0), reverse=True)
+    elif selected_sort == "Newest posting":
+        filtered_rows.sort(key=review_posting_timestamp, reverse=True)
+    elif selected_sort == "Company":
+        filtered_rows.sort(key=lambda row: (str(row.get("company") or ""), row.get("title") or ""))
+    else:
+        freshness_order = {"New": 0, "Updated": 1, "Existing": 2}
+        filtered_rows.sort(
+            key=lambda row: (
+                freshness_order.get(str(row.get("change_type") or ""), 3),
+                -int(row.get("score", 0) or 0),
+                -review_posting_timestamp(row),
+            )
+        )
+
+    st.caption(f"{len(filtered_rows)} jobs match your current filters.")
+    if not filtered_rows:
+        st.info("Try broadening the filters to bring roles back into view.")
+        return
+    available_keys = {str(row.get("job_key") or "") for row in filtered_rows}
+    selected_key = str(st.session_state.get("current_slice_selected_job_key") or "")
+    if selected_key not in available_keys:
+        selected_key = str(filtered_rows[0].get("job_key") or "")
+        _select_current_job(selected_key)
+    selected_job = next(
+        row for row in filtered_rows if str(row.get("job_key") or "") == selected_key
+    )
+
+    list_column, detail_column = st.columns([1.08, 0.92], gap="large")
+    with list_column:
+        st.markdown("#### Opportunities")
+        with st.container(height=680, border=False):
+            for job in filtered_rows:
+                job_key = str(job.get("job_key") or "")
+                st.markdown(
+                    _job_card_markup(job, is_selected=job_key == selected_key),
+                    unsafe_allow_html=True,
+                )
+                action_col1, action_col2 = st.columns([1, 1])
+                with action_col1:
+                    st.button(
+                        "View details",
+                        key=stable_review_widget_key("select", job_key),
+                        on_click=_select_current_job,
+                        args=(job_key,),
+                        use_container_width=True,
+                    )
+                with action_col2:
+                    if job.get("job_url"):
+                        st.link_button("Open posting", job["job_url"], use_container_width=True)
+    with detail_column:
+        with st.container(height=680, border=False):
+            selected_title = escape(str(selected_job.get("title") or "Untitled role"))
+            selected_company = str(selected_job.get("company") or "-")
+            selected_location = str(selected_job.get("location") or "Location not listed")
+            selected_tier = display_relevance_tier(selected_job.get("relevance_tier"))
+            selected_tier_class = badge_class_for_tier(selected_job.get("relevance_tier"))
+            selected_change = display_change_type(selected_job.get("change_type"))
+            selected_review_state = display_review_state(
+                selected_job.get("review_state"), selected_job.get("user_decision")
+            )
+            st.markdown("<div class='detail-panel'>", unsafe_allow_html=True)
+            st.markdown(
+                "<div class='detail-eyebrow'>Selected opportunity</div>", unsafe_allow_html=True
+            )
+            st.markdown(
+                f"<div class='detail-title'>{selected_title}</div>",
+                unsafe_allow_html=True,
+            )
+            st.caption(f"{selected_company} | {selected_location}")
+            st.markdown(
+                f"<span class='badge {selected_tier_class}'>{selected_tier}</span>"
+                f"<span class='badge badge-score'>Score {selected_job.get('score') or '0'}</span>"
+                f"<span class='badge badge-new'>{selected_change}</span>"
+                f"<span class='badge badge-existing'>{selected_review_state}</span>",
+                unsafe_allow_html=True,
+            )
+            if selected_job.get("job_url"):
+                st.link_button(
+                    "Open official job posting",
+                    selected_job["job_url"],
+                    use_container_width=True,
+                )
+            st.write("**Why it matched**")
+            st.write(selected_job.get("match_reasons") or "No matching explanation recorded.")
+            risk_flags = str(selected_job.get("risk_flags") or "").strip()
+            if risk_flags:
+                st.warning(f"Review note: {risk_flags.replace('negative signal: ', '')}")
+            info_col1, info_col2 = st.columns(2)
+            with info_col1:
+                st.caption(f"Posted: {selected_job.get('posting_date') or 'Not listed'}")
+                st.caption(f"First seen: {format_timestamp(selected_job.get('first_seen'))}")
+            with info_col2:
+                st.caption(f"Last seen: {format_timestamp(selected_job.get('last_seen'))}")
+                st.caption(f"Current review: {display_decision(selected_job.get('user_decision'))}")
+            decision_options = [
+                "",
+                "useful",
+                "maybe",
+                "not_useful",
+                "false_positive",
+                "already_applied",
+                "saved_for_later",
+            ]
+            current_decision = str(selected_job.get("user_decision") or "")
+            with st.form(stable_review_widget_key("decision_form", selected_key)):
+                decision = st.selectbox(
+                    "Your review decision",
+                    decision_options,
+                    index=decision_options.index(current_decision)
+                    if current_decision in decision_options
+                    else 0,
+                    format_func=lambda option: (
+                        display_decision(option) if option else "Choose a decision"
+                    ),
+                    key=stable_review_widget_key("decision", selected_key),
+                )
+                notes = st.text_area(
+                    "Notes",
+                    value=str(selected_job.get("user_notes") or ""),
+                    placeholder="Why this role is useful, not useful, or what to do next.",
+                    key=stable_review_widget_key("notes", selected_key),
+                )
+                submitted = st.form_submit_button("Save review", use_container_width=True)
+            if submitted:
+                updated = current_slice_api["update_current_review_decision"](
+                    manifest_path=CURRENT_REVIEW_SLICE_MANIFEST_PATH,
+                    job_key=str(selected_job.get("job_key") or ""),
+                    decision=decision,
+                    notes=notes,
+                )
+                if updated:
+                    st.session_state["current_slice_feedback"] = "Review decision saved."
+                    st.rerun()
+                else:
+                    st.error("The selected role was not found in the working review file.")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+
+def render_current_slice_run_details() -> None:
+    """Expose trustworthy live-run metadata without mixing in older source status rows."""
+
+    manifest, _ = load_live_review_slice()
+    render_section_heading("Run Details")
+    if not manifest:
+        st.info("No current live review slice is available.")
+        return
+    rows = []
+    for record in manifest.get("run_records") or []:
+        rows.append(
+            {
+                "Company": record.get("company_name") or "-",
+                "Canada scope": record.get("source_scope_status") or "-",
+                "Scope method": record.get("source_scope_method") or "-",
+                "Sorting": record.get("sort_status") or "-",
+                "Pages": int(record.get("pages_visited", 0) or 0),
+                "Stop reason": record.get("pagination_stop_reason") or "-",
+                "Discovered": int(record.get("jobs_discovered", 0) or 0),
+                "Scored": int(record.get("jobs_scored", 0) or 0),
+                "Relevant": int(record.get("jobs_relevant", 0) or 0),
+                "New": int(record.get("jobs_inserted", 0) or 0),
+                "Updated": int(record.get("jobs_updated", 0) or 0),
+                "Unchanged": int(record.get("jobs_unchanged", 0) or 0),
+            }
+        )
+    st.dataframe(rows, hide_index=True, use_container_width=True)
+    st.caption(
+        "RBC remains on its normal 20-page production cap. Scotiabank uses its approved "
+        "all-available-pages exception because its source has no usable newest-first control."
+    )
+
+
 def main() -> None:
     """Run the Streamlit app."""
 
     render_styles()
     connection = get_connection()
 
+    manifest, _ = load_live_review_slice()
+    run_day, run_time = split_live_run_timestamp(manifest.get("generated_at"))
+    run_records = list(manifest.get("run_records") or [])
+    healthy = bool(run_records) and all(
+        str(record.get("last_status") or "").lower() in {"completed", "success"}
+        for record in run_records
+    )
+    health_label = "Collection healthy" if healthy else "Check run details"
+    refreshed_label = f"{escape(run_day)} {escape(run_time)}"
     st.markdown(
-        """
+        f"""
         <div class="hero">
-            <div class="hero-title">Job Discovery Browser Co-Pilot</div>
-            <p class="hero-copy">
-                Human-in-the-loop job discovery for Canadian banks and IT consulting companies.
-                Keep the workflow visible, safe, and ready for manual review.
-            </p>
+            <div class="eyebrow">Verified Canadian employer sources</div>
+            <div class="hero-title">Job Discovery</div>
+            <p class="hero-copy">Fresh technical opportunities, ready for a quick human review.</p>
+            <div class="header-status">Last live refresh: <strong>{refreshed_label}</strong>
+            &nbsp; | &nbsp; <span class="status-pill">RBC + Scotiabank</span>
+            <span class="status-pill">{escape(health_label)}</span></div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    sections = [
-        "Daily Summary",
-        "Source Readiness",
-        "Jobs Found",
-        "Saved Job Review",
-        "Application Tracker",
-        "Company Watchlist",
-        "Missing URLs",
-        "Manual Job Entry",
-        "Intervention Queue",
-        "Exports",
-    ]
-    selected_section = st.selectbox(
-        "Dashboard section",
-        options=sections,
-        index=0,
-    )
-
-    if selected_section == "Daily Summary":
-        render_daily_summary_tab(connection)
-    elif selected_section == "Source Readiness":
-        render_source_readiness_tab(connection)
-    elif selected_section == "Jobs Found":
+    jobs_tab, summary_tab, source_tab, all_jobs_tab, workspace_tab = st.tabs(DASHBOARD_PRIMARY_TABS)
+    with jobs_tab:
+        render_current_slice_review(connection)
+    with summary_tab:
+        render_current_slice_overview()
+        render_current_slice_run_details()
+    with source_tab:
+        render_source_readiness_tab(
+            connection,
+            company_filter=set(manifest.get("companies") or []),
+        )
+    with all_jobs_tab:
         render_jobs_tab(connection)
-    elif selected_section == "Saved Job Review":
-        render_saved_job_review_tab(connection)
-    elif selected_section == "Application Tracker":
-        render_application_tracker_tab(connection)
-    elif selected_section == "Company Watchlist":
-        render_company_watchlist_tab(connection)
-    elif selected_section == "Missing URLs":
-        render_missing_urls_tab(connection)
-    elif selected_section == "Manual Job Entry":
-        render_manual_job_entry_tab(connection)
-    elif selected_section == "Intervention Queue":
-        render_intervention_queue_tab(connection)
-    else:
-        render_exports_tab()
+    with workspace_tab:
+        workspace_section = st.selectbox(
+            "More workspace tools",
+            [
+                "Application tracker",
+                "Company watchlist",
+                "Missing URLs",
+                "Manual job entry",
+                "Intervention queue",
+                "Exports",
+                "Full daily summary",
+            ],
+        )
+        if workspace_section == "Application tracker":
+            render_application_tracker_tab(connection)
+        elif workspace_section == "Company watchlist":
+            render_company_watchlist_tab(connection)
+        elif workspace_section == "Missing URLs":
+            render_missing_urls_tab(connection)
+        elif workspace_section == "Manual job entry":
+            render_manual_job_entry_tab(connection)
+        elif workspace_section == "Intervention queue":
+            render_intervention_queue_tab(connection)
+        elif workspace_section == "Exports":
+            render_exports_tab()
+        else:
+            render_daily_summary_tab(connection)
 
 
 if __name__ == "__main__":
